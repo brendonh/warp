@@ -39,6 +39,10 @@ class DBSession(Storm):
     avatar_id = Int()
     avatar = Reference(avatar_id, Avatar.id)
         
+    def setAvatar(self, avatar):
+        self.avatar = avatar
+        runtime['store'].commit()
+
     def touch(self):
         # Warp sessions don't expire (yet),
         # so they don't do anything when poked
@@ -55,7 +59,9 @@ class WarpResourceWrapper(object):
     isLeaf = False
 
     def getChildWithDefault(self, firstSegment, request):
-        request.getSession()
+        session = request.getSession()
+        if session is not None:
+            request.avatar = session.avatar
 
         if firstSegment == '__login__':
             return LoginHandler()
@@ -82,16 +88,29 @@ class LoginHandler(LoginBase):
     implements(IResource)
 
     def doIt(self, request):
-        print "LOGIN"
         if request.method != 'POST':
             return
+
+        [email] = request.args.get('email', [None])
+        [password] = request.args.get('password', [None])
+
+        if not (email and password):
+            return
+
+        avatar = runtime['store'].find(Avatar,
+                                       Avatar.email == unicode(email),
+                                       Avatar.password == unicode(password)
+                                       ).one()
+
+        if avatar is not None:
+            request.session.setAvatar(avatar)
 
 
 
 class LogoutHandler(LoginBase):
 
     def doIt(self, request):
-        print "LOGOUT"
+        request.session.setAvatar(None)
 
 
 
@@ -106,6 +125,18 @@ class WarpResource(object):
         return self
 
     def render(self, request):
-        return "Hello World"
+        if request.avatar is None:
+            loggedIn = "Not logged in."
+        else:
+            loggedIn = "Logged in as %s" % request.avatar.email.encode("utf-8")
+
+        return """
+%s<br />
+<form method="POST" action="/__login__">
+Email: <input type="text" name="email" /><br />
+Pass: <input type="text" name="password" /><br />
+<input type="submit" value="Log in" />
+</form>
+""" % loggedIn
 
 
