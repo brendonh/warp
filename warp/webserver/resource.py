@@ -9,32 +9,6 @@ from warp.store.avatar import Avatar
 from warp import runtime
 
 
-class WarpResourceWrapper(object):
-    implements(IResource)
-
-    isLeaf = False
-
-    def getChildWithDefault(self, firstSegment, request):
-        request.getSession()
-        if firstSegment == '__login__':
-            return self.login(request)
-        elif firstSegment == '__logout__':
-            return self.logout(request)
-        return WarpResource()
-
-    
-    def login(self, request):
-        print "LOGIN"
-        return WarpResource()
-        #if request.method != 'POST':
-        #    raise Exception("Oh noes!")
-        
-
-    def logout(self, request):
-        print "LOGOUT"
-        return WarpResource()
-
-
 
 class WarpSite(Site):
 
@@ -72,6 +46,52 @@ class DBSession(Storm):
 
     def __repr__(self):
         return "<Session '%s'>" % self.uid
+
+
+
+class WarpResourceWrapper(object):
+    implements(IResource)
+
+    isLeaf = False
+
+    def getChildWithDefault(self, firstSegment, request):
+        request.getSession()
+
+        if firstSegment == '__login__':
+            return LoginHandler()
+        elif firstSegment == '__logout__':
+            return LogoutHandler()
+
+        return WarpResource()
+
+
+
+class LoginBase(object):
+
+    isLeaf = True
+
+    def render(self, request):
+        self.doIt(request)
+        url = "/%s" % "/".join(request.postpath)
+        request.redirect(url)
+        return "Redirecting..."
+
+
+
+class LoginHandler(LoginBase):
+    implements(IResource)
+
+    def doIt(self, request):
+        print "LOGIN"
+        if request.method != 'POST':
+            return
+
+
+
+class LogoutHandler(LoginBase):
+
+    def doIt(self, request):
+        print "LOGOUT"
 
 
 
