@@ -34,6 +34,10 @@ def getCreationSQL(store):
                     email VARCHAR, 
                     password VARCHAR,
                     UNIQUE(email))"""),
+                ('warp_session', """
+                CREATE TABLE warp_session (
+                    uid BYTEA NOT NULL PRIMARY KEY,
+                    avatar_id INTEGER REFERENCES warp_avatar(id))"""),
                 ],
             },
     }[connType]

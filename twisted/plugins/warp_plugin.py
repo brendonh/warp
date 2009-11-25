@@ -6,7 +6,7 @@ from twisted.application.service import IServiceMaker
 from twisted.application import internet
 from twisted.web.server import Site
 
-from warp.webserver import guard
+from warp.webserver import resource
 from warp.store import store
 
 
@@ -26,8 +26,8 @@ class WarpServiceMaker(object):
         config = __import__('config').config
 
         store.setupStore(config)
-        wrapper = guard.getWrapper(config)
-        factory = Site(wrapper)
+        #wrapper = guard.getWrapper(config)
+        factory = resource.WarpSite(resource.WarpResourceWrapper())
         return internet.TCPServer(config["port"], factory)
 
 

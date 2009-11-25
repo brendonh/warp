@@ -1,7 +1,7 @@
 from storm.locals import *
 
 
-class UserAvatar(Storm):
+class Avatar(Storm):
     __storm_table__ = "warp_avatar"
 
     id = Int(primary=True)
