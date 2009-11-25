@@ -7,9 +7,12 @@ from twisted.application import internet
 from twisted.web.server import Site
 
 from warp.webserver import guard
+from warp.store import store
+
 
 class Options(usage.Options):
     optParameters = []
+
 
 class WarpServiceMaker(object):
     implements(IServiceMaker, IPlugin)
@@ -19,11 +22,13 @@ class WarpServiceMaker(object):
 
     def makeService(self, options):
 
-        # To come from an option later
+        # XXX Todo: optionally get it from options later
         config = __import__('config').config
 
+        store.setupStore(config)
         wrapper = guard.getWrapper(config)
         factory = Site(wrapper)
         return internet.TCPServer(config["port"], factory)
+
 
 serviceMaker = WarpServiceMaker()
