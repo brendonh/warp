@@ -1,6 +1,5 @@
 from storm.locals import *
 
-
 class Avatar(Storm):
     __storm_table__ = "warp_avatar"
 
