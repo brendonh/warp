@@ -68,14 +68,19 @@ class WarpResource(object):
             request.redirect(request.childLink('index'))
             return "Redirecting..."
 
+        node = getattr(__import__("nodes", fromlist=[self.nodeName]),
+                       self.nodeName)
+
         templatePath = (config['siteDir']
                         .child('nodes')
                         .child(self.nodeName)
                         .child(self.facetName + ".mak"))
 
-        template = Template(filename=templatePath.path)
+        template = Template(filename=templatePath.path,
+                            format_exceptions=True)
 
-        return template.render()
+        return template.render(node=node,
+                               avatar=request.avatar)
 
 
 

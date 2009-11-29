@@ -4,7 +4,7 @@ from storm.locals import *
 
 
 class Person(Storm):    
-    id = Integer(primary=True)
+    id = Int(primary=True)
     name = Unicode()
-    birthdate = Datetime(tzinfo=pytz.UTC)
+    birthdate = DateTime(tzinfo=pytz.UTC)
 
