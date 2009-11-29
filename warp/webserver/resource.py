@@ -5,6 +5,8 @@ from twisted.web.resource import IResource, NoResource
 from warp.webserver import auth, node
 from warp.runtime import config
 
+
+
 class WarpResourceWrapper(object):
     implements(IResource)
 
@@ -22,7 +24,8 @@ class WarpResourceWrapper(object):
         elif not firstSegment:
             return Redirect(config['default'])
 
-        return WarpResource(firstSegment, request)
+        return WarpResource(firstSegment)
+
 
 
 class Redirect(object):
@@ -36,16 +39,34 @@ class Redirect(object):
         return "Redirecting..."
 
 
+
 class WarpResource(object):
     implements(IResource)
 
     # You can always add a slash
     isLeaf = False
 
-    def __init__(self, nodeName, request):
-        print "Node:", nodeName         
+
+    def __init__(self, nodeName):
+        self.nodeName = nodeName
+        self.facetName = None
+        self.args = []
+        
+
+    def getChildWithDefault(self, segment, request):
+        self.facetName = segment
+        self.isLeaf = True
+        return self
+
             
     def render(self, request):
+        self.args = request.postpath
+        print self
+
+        if not self.facetName:
+            request.redirect(request.childLink('index'))
+            return "Redirecting..."
+
         if request.avatar is None:
             loggedIn = "Not logged in."
         else:
@@ -60,4 +81,8 @@ Pass: <input type="text" name="password" /><br />
 </form>
 """ % loggedIn
 
+
+    def __repr__(self):
+        return "<NodeResource: %s::%s (%s)>" % (
+            self.nodeName, self.facetName, self.args)
 
