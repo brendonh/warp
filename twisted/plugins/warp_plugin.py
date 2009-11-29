@@ -31,7 +31,7 @@ class WarpServiceMaker(object):
 
         sys.path.insert(0, siteDir.path)
 
-        configModule = __import__('config')
+        configModule = __import__('warpconfig')
         config = configModule.config
         runtime.config.update(config)
         runtime.config['siteDir'] = siteDir

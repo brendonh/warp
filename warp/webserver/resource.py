@@ -1,6 +1,6 @@
 from zope.interface import implements
 
-from twisted.web.resource import IResource
+from twisted.web.resource import IResource, NoResource
 
 from warp.webserver import auth, node
 from warp.runtime import config
@@ -9,10 +9,6 @@ class WarpResourceWrapper(object):
     implements(IResource)
 
     isLeaf = False
-
-    def __init__(self):
-        node.findNodes()
-
 
     def getChildWithDefault(self, firstSegment, request):
         session = request.getSession()
@@ -23,8 +19,21 @@ class WarpResourceWrapper(object):
             return auth.LoginHandler()
         elif firstSegment == '__logout__':
             return auth.LogoutHandler()
+        elif not firstSegment:
+            return Redirect(config['default'])
 
-        return WarpResource()
+        return WarpResource(firstSegment, request)
+
+
+class Redirect(object):
+    implements(IResource)
+
+    def __init__(self, url):
+        self.url = url
+
+    def render(self, request):
+        request.redirect(self.url)
+        return "Redirecting..."
 
 
 class WarpResource(object):
@@ -33,10 +42,9 @@ class WarpResource(object):
     # You can always add a slash
     isLeaf = False
 
-    def getChildWithDefault(self, segment, request):
-        print "Segment:", segment
-        return self
-
+    def __init__(self, nodeName, request):
+        print "Node:", nodeName         
+            
     def render(self, request):
         if request.avatar is None:
             loggedIn = "Not logged in."
