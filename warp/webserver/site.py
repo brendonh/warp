@@ -5,13 +5,14 @@ from twisted.web.server import Session, Site
 from warp.common.avatar import Avatar
 from warp.runtime import store
 
+
+
 class WarpSite(Site):
 
     def makeSession(self):
         uid = self._mkuid()
         session = DBSession()
         session.uid = uid
-        store = runtime['store']
         store.add(session)
         store.commit()
         return session

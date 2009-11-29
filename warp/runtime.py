@@ -7,4 +7,8 @@ from storm.locals import Store
 # Thanks to _habnabit for this clever trick!
 store = Store.__new__(Store)
 
+config = {}
+
+sql = {}
+
 __all__ = ['store']

@@ -2,14 +2,14 @@ from twisted.python import log
 
 from storm.locals import *
 
-import warp.runtime
+from warp import runtime
 
 def setupStore(config):
-    store = warp.runtime.store
+    store = runtime.store
     store.__init__(create_database(config['db']))
 
     sqlBundle = getCreationSQL(store)
-    tableExists = sqlBundle['tableExists']
+    tableExists = runtime.sql['tableExists'] = sqlBundle['tableExists']
 
     for (table, creationSQL) in sqlBundle['creations']:
 

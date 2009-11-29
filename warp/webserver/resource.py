@@ -2,12 +2,17 @@ from zope.interface import implements
 
 from twisted.web.resource import IResource
 
-from warp.webserver import auth
+from warp.webserver import auth, node
+from warp.runtime import config
 
 class WarpResourceWrapper(object):
     implements(IResource)
 
     isLeaf = False
+
+    def __init__(self):
+        node.findNodes()
+
 
     def getChildWithDefault(self, firstSegment, request):
         session = request.getSession()
