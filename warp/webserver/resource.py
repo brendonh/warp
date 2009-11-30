@@ -1,10 +1,11 @@
 from zope.interface import implements
 
-from twisted.web.resource import IResource, NoResource
+from twisted.web.resource import IResource
+from twisted.web.error import NoResource
 
 from mako.template import Template
 
-from warp.webserver import auth, node
+from warp.webserver import auth
 from warp.runtime import config
 
 
