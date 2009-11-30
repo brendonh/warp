@@ -60,9 +60,9 @@ class WarpResourceWrapper(object):
 
 
     def getNode(self, name):
-        try:
-            node = getattr(__import__("nodes", fromlist=[name]), name)
-        except AttributeError:
+        node = getattr(__import__("nodes", fromlist=[name]), name, None)
+        
+        if node is None:
             return NoResource()
 
         return NodeResource(node)
@@ -106,9 +106,15 @@ class NodeResource(object):
             request.redirect(request.childLink('index'))
             return "Redirecting..."
 
+        renderFunc = getattr(self.node, 'render_%s' % self.facetName, None)
+        if renderFunc is not None:
+            return renderFunc(request)
+
         templatePath = self.getTemplate()
         if templatePath is not None:
             return self.renderTemplate(templatePath, request)
+
+        return NoResource().render(request)
 
 
     def getTemplate(self):
