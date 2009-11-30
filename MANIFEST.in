@@ -1,1 +1,2 @@
 recursive-include twisted *.py
+recursive-include examplesite *
