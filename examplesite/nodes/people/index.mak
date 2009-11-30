@@ -1,3 +1,5 @@
+<%inherit file="/site.mak"/>
+
 <p>Hello, this is the people page.</p>
 
 <p>Person: ${node.Person | h}</p>

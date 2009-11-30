@@ -9,6 +9,9 @@
     <link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico"></link>
     <link rel="stylesheet" href="/css/site.css" type="text/css"></link>
 
+    <script type="text/javascript" src="/warp/jquery-1.3.2.min.js"></script>
+    <script type="text/javascript" src="/warp/jquery.comet.js"></script>
+
   </head>
 
   <body>

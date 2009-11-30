@@ -68,14 +68,15 @@ class CometSession(object):
 
 
 
-def get_session(request):
+def get_session(request, createIfMissing=False):
     sid = request.args['id'][0]
     try:
         return sessions[sid]
     except KeyError:
-        session = CometSession(sid)
-        sessions[sid] = session
-        return session
+        if createIfMissing:
+            session = CometSession(sid)
+            sessions[sid] = session
+            return session
 
 
 
@@ -85,10 +86,10 @@ def render_id(request):
 
 
 def render_longpoll(request):
-    return get_session(request).addListener(request)
+    return get_session(request, True).addListener(request)
     
 
 def render_testpush(request):
-    session = get_session(request)
+    session = get_session(request, True)
     session.push({'key': 'value'})
     return "Ok"
