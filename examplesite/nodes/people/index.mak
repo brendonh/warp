@@ -2,9 +2,9 @@
 
 <p>Person: ${node.Person | h}</p>
 
-<p>Avatar: ${avatar | h}</p>
+<p>Avatar: ${request.avatar | h}</p>
 
-% if avatar:
+% if request.avatar:
 <form method="POST" action="/__logout__">
 <input type="submit" value = "Log Out" />
 </form>
