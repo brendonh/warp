@@ -8,12 +8,16 @@ from twisted.web import static
 from twisted.python.filepath import InsecurePath
 
 from mako.template import Template
+from mako.lookup import TemplateLookup
 
 from warp.webserver import auth
 from warp.runtime import config
 
 if '.ico' not in static.File.contentTypes:
     static.File.contentTypes['.ico'] = 'image/vnd.microsoft.icon'
+
+
+templateLookup = TemplateLookup(directories=["templates"])
 
 
 class WarpResourceWrapper(object):
@@ -103,32 +107,14 @@ class WarpResource(object):
                         .child(self.facetName + ".mak"))
 
         template = Template(filename=templatePath.path,
+                            lookup=templateLookup,
                             format_exceptions=True)
 
         return template.render(node=node,
                                avatar=request.avatar)
 
 
-
-
-
-
-#         if request.avatar is None:
-#             loggedIn = "Not logged in."
-#         else:
-#             loggedIn = "Logged in as %s" % request.avatar.email.encode("utf-8")
-
-#         return """
-# %s<br />
-# <form method="POST" action="/__login__">
-# Email: <input type="text" name="email" /><br />
-# Pass: <input type="text" name="password" /><br />
-# <input type="submit" value="Log in" />
-# </form>
-# """ % loggedIn
-
-
-#     def __repr__(self):
-#         return "<NodeResource: %s::%s (%s)>" % (
-#             self.nodeName, self.facetName, self.args)
+    def __repr__(self):
+        return "<NodeResource: %s::%s (%s)>" % (
+            self.nodeName, self.facetName, self.args)
 
