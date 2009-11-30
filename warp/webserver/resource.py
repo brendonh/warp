@@ -106,19 +106,29 @@ class NodeResource(object):
             request.redirect(request.childLink('index'))
             return "Redirecting..."
 
+        templatePath = self.getTemplate()
+        if templatePath is not None:
+            return self.renderTemplate(templatePath, request)
+
+
+    def getTemplate(self):
         templatePath = FilePath(
             self.node.__file__
             ).sibling(self.facetName + ".mak")
 
+        if templatePath.exists():
+            return templatePath
+
+
+    def renderTemplate(self, templatePath, request):
         template = Template(filename=templatePath.path,
                             lookup=templateLookup,
                             format_exceptions=True)
 
         return template.render(node=self.node,
-                               avatar=request.avatar)
+                               request=request)
 
 
     def __repr__(self):
         return "<NodeResource: %s::%s (%s)>" % (
             self.node.__name__, self.facetName, self.args)
-
