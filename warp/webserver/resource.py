@@ -23,9 +23,11 @@ class WarpResourceWrapper(object):
 
     def getChildWithDefault(self, firstSegment, request):
         
-        fp = self.buildFilePath(request)
-        if fp is not None:
-            return static.File(fp.path)
+        if firstSegment:
+            fp = self.buildFilePath(request)
+            if fp is not None:
+                del request.postpath[:]
+                return static.File(fp.path)
 
         session = request.getSession()
         if session is not None:
@@ -48,7 +50,7 @@ class WarpResourceWrapper(object):
                 filePath = filePath.child(segment)
             except InsecurePath:
                 return None
-        
+
         if filePath.exists():
             return filePath
 
