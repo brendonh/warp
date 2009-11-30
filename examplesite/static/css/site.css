@@ -1,0 +1,29 @@
+h1 {
+  color: #009;
+  font-size: 18px;
+  margin: 10px;
+}
+
+.section {
+  width: 500px;
+  border: 1px dotted #999;
+  margin: 10px;
+  padding: 10px;
+}
+
+.section td {
+  padding-bottom: 5px;
+  padding-right: 5px;
+}
+
+.section input.submit {
+  display: block;
+  width: 200px;
+  margin: 0 auto;
+}
+
+.output {
+  border: 1px dotted red;
+  margin: 10px;
+  padding: 10px;
+}

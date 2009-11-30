@@ -10,7 +10,7 @@ from twisted.python.filepath import FilePath, InsecurePath
 from mako.template import Template
 from mako.lookup import TemplateLookup
 
-from warp.webserver import auth
+from warp.webserver import auth, comet
 from warp.runtime import config
 
 if '.ico' not in static.File.contentTypes:
@@ -41,6 +41,8 @@ class WarpResourceWrapper(object):
             return auth.LoginHandler()
         elif firstSegment == '__logout__':
             return auth.LogoutHandler()
+        elif firstSegment == '_comet':
+            return NodeResource(comet)
         elif not firstSegment:
             return Redirect(config['default'])
 
