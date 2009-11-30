@@ -1,4 +1,9 @@
-import uuid, json
+import uuid
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from twisted.internet import reactor
 from twisted.web.server import NOT_DONE_YET
@@ -38,6 +43,8 @@ class CometSession(object):
         self.pollTimeout = reactor.callLater(
             POLL_TIMEOUT, self.cbPollTimeout)
 
+        request.notifyFinish().addBoth(self._listenerDied)
+
         return NOT_DONE_YET
 
             
@@ -54,16 +61,18 @@ class CometSession(object):
         
 
     def cbPollTimeout(self):
-        self._flushWith([], True)
+        self._flushWith([])
 
 
-    def _flushWith(self, stuff, isTimeout=False):
+    def _listenerDied(self, _):
+        self.pollTimeout.cancel()
+        self.listener = None
+
+
+    def _flushWith(self, stuff):
         msg = json.dumps(stuff)
         self.listener.write(msg)
         self.listener.finish()
-        self.listener = None
-        if not isTimeout:
-            self.pollTimeout.cancel()
 
 
 
