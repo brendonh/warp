@@ -5,7 +5,7 @@ from zope.interface import implements
 from twisted.web.resource import IResource
 from twisted.web.error import NoResource
 from twisted.web import static
-from twisted.python.filepath import InsecurePath
+from twisted.python.filepath import FilePath, InsecurePath
 
 from mako.template import Template
 from mako.lookup import TemplateLookup
@@ -44,7 +44,7 @@ class WarpResourceWrapper(object):
         elif not firstSegment:
             return Redirect(config['default'])
 
-        return WarpResource(firstSegment)
+        return self.getNode(firstSegment)
 
 
     def buildFilePath(self, request):
@@ -59,6 +59,14 @@ class WarpResourceWrapper(object):
             return filePath
 
 
+    def getNode(self, name):
+        try:
+            node = getattr(__import__("nodes", fromlist=[name]), name)
+        except AttributeError:
+            return NoResource()
+
+        return NodeResource(node)
+
 
 class Redirect(object):
     implements(IResource)
@@ -72,15 +80,15 @@ class Redirect(object):
 
 
 
-class WarpResource(object):
+class NodeResource(object):
     implements(IResource)
 
     # You can always add a slash
     isLeaf = False
 
 
-    def __init__(self, nodeName):
-        self.nodeName = nodeName
+    def __init__(self, node):
+        self.node = node
         self.facetName = None
         self.args = []
         
@@ -92,29 +100,25 @@ class WarpResource(object):
 
             
     def render(self, request):
-        self.args = request.postpath
+        self.args = request.postpath            
 
         if not self.facetName:
             request.redirect(request.childLink('index'))
             return "Redirecting..."
 
-        node = getattr(__import__("nodes", fromlist=[self.nodeName]),
-                       self.nodeName)
-
-        templatePath = (config['siteDir']
-                        .child('nodes')
-                        .child(self.nodeName)
-                        .child(self.facetName + ".mak"))
+        templatePath = FilePath(
+            self.node.__file__
+            ).sibling(self.facetName + ".mak")
 
         template = Template(filename=templatePath.path,
                             lookup=templateLookup,
                             format_exceptions=True)
 
-        return template.render(node=node,
+        return template.render(node=self.node,
                                avatar=request.avatar)
 
 
     def __repr__(self):
         return "<NodeResource: %s::%s (%s)>" % (
-            self.nodeName, self.facetName, self.args)
+            self.node.__name__, self.facetName, self.args)
 
