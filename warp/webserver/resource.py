@@ -1,13 +1,19 @@
+import os.path
+
 from zope.interface import implements
 
 from twisted.web.resource import IResource
 from twisted.web.error import NoResource
+from twisted.web import static
+from twisted.python.filepath import InsecurePath
 
 from mako.template import Template
 
 from warp.webserver import auth
 from warp.runtime import config
 
+if '.ico' not in static.File.contentTypes:
+    static.File.contentTypes['.ico'] = 'image/vnd.microsoft.icon'
 
 
 class WarpResourceWrapper(object):
@@ -16,6 +22,11 @@ class WarpResourceWrapper(object):
     isLeaf = False
 
     def getChildWithDefault(self, firstSegment, request):
+        
+        fp = self.buildFilePath(request)
+        if fp is not None:
+            return static.File(fp.path)
+
         session = request.getSession()
         if session is not None:
             request.avatar = session.avatar
@@ -28,6 +39,18 @@ class WarpResourceWrapper(object):
             return Redirect(config['default'])
 
         return WarpResource(firstSegment)
+
+
+    def buildFilePath(self, request):
+        filePath = config['siteDir'].child('static')
+        for segment in request.path.split('/'):
+            try:
+                filePath = filePath.child(segment)
+            except InsecurePath:
+                return None
+        
+        if filePath.exists():
+            return filePath
 
 
 
