@@ -32,7 +32,7 @@ class WarpResourceWrapper(object):
 
 
     def getChildWithDefault(self, firstSegment, request):
-        
+
         if firstSegment:
             fp = self.buildFilePath(request)
             if fp is not None:
@@ -63,7 +63,7 @@ class WarpResourceWrapper(object):
             except InsecurePath:
                 return None
 
-        if filePath.exists():
+        if filePath.exists() and filePath.isfile():
             return filePath
 
 

@@ -5,7 +5,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from twisted.internet import reactor
+from twisted.internet import reactor, error
 from twisted.web.server import NOT_DONE_YET
 
 sessions = {}
@@ -65,7 +65,11 @@ class CometSession(object):
 
 
     def _listenerDied(self, _):
-        self.pollTimeout.cancel()
+        try:
+            self.pollTimeout.cancel()
+        except error.AlreadyCalled:
+            pass
+
         self.listener = None
 
 
