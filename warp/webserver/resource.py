@@ -17,13 +17,19 @@ if '.ico' not in static.File.contentTypes:
     static.File.contentTypes['.ico'] = 'image/vnd.microsoft.icon'
 
 
-templateLookup = TemplateLookup(directories=["templates"])
-
+templateLookup = None
 
 class WarpResourceWrapper(object):
     implements(IResource)
 
     isLeaf = False
+
+    def __init__(self):
+        global templateLookup
+        lookupDir = config['siteDir'].child("templates").path
+        templateLookup = TemplateLookup(directories=[lookupDir])
+
+
 
     def getChildWithDefault(self, firstSegment, request):
         
@@ -72,6 +78,8 @@ class WarpResourceWrapper(object):
 
 class Redirect(object):
     implements(IResource)
+
+    isLeaf = True
 
     def __init__(self, url):
         self.url = url

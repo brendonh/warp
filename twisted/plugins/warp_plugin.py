@@ -12,14 +12,17 @@ from twisted.python.filepath import FilePath
 from warp.webserver import resource, site
 from warp.common import store
 from warp import runtime
+from warp.iwarp import IWarpService
 
 
 class Options(usage.Options):
-    optParameters = []
+    optParameters = [
+        ["siteDir", "d", ".", "Base directory of the warp site"],
+        ]
 
 
 class WarpServiceMaker(object):
-    implements(IServiceMaker, IPlugin)
+    implements(IServiceMaker, IPlugin, IWarpService)
     tapname = "warp"
     description = "Warp webserver"
     options = Options
@@ -27,7 +30,7 @@ class WarpServiceMaker(object):
     def makeService(self, options):
 
         # XXX Todo: optionally get it from options later
-        siteDir = FilePath('.')
+        siteDir = FilePath(options['siteDir'])
 
         sys.path.insert(0, siteDir.path)
 
@@ -41,7 +44,12 @@ class WarpServiceMaker(object):
             configModule.startup()
 
         factory = site.WarpSite(resource.WarpResourceWrapper())
-        return internet.TCPServer(config["port"], factory)
+        service = internet.TCPServer(config["port"], factory)
+
+        if hasattr(configModule, 'mungeService'):
+            service = configModule.mungeService(service)
+
+        return service
 
 
 serviceMaker = WarpServiceMaker()
