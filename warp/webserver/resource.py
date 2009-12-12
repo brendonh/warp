@@ -2,10 +2,12 @@ import os.path
 
 from zope.interface import implements
 
+from twisted.python import util
+from twisted.python.filepath import FilePath, InsecurePath
+
 from twisted.web.resource import IResource
 from twisted.web.error import NoResource
 from twisted.web import static
-from twisted.python.filepath import FilePath, InsecurePath
 
 from warp.webserver import auth, comet
 from warp.runtime import config, store, templateLookup
@@ -25,6 +27,16 @@ class WarpResourceWrapper(object):
         lookupDir = config['siteDir'].child("templates").path
         templateLookup.__init__(directories=[lookupDir])
 
+        self.warpStaticPath = FilePath(__file__).parent().parent().child('static')
+
+        self.dispatch =  {
+            '__login__': self.handle_login,
+            '__logout__': self.handle_logout,
+            '_comet': self.handle_comet,
+            '_warp': self.handle_warpstatic,
+            '': self.handle_default,
+        }
+
 
     def getChildWithDefault(self, firstSegment, request):
 
@@ -38,14 +50,10 @@ class WarpResourceWrapper(object):
         if session is not None:
             request.avatar = session.avatar
 
-        if firstSegment == '__login__':
-            return auth.LoginHandler()
-        elif firstSegment == '__logout__':
-            return auth.LogoutHandler()
-        elif firstSegment == '_comet':
-            return NodeResource(comet)
-        elif not firstSegment:
-            return Redirect(config['default'])
+        handler = self.dispatch.get(firstSegment)
+
+        if handler is not None:
+            return handler(request)
 
         return self.getNode(firstSegment)
 
@@ -53,10 +61,8 @@ class WarpResourceWrapper(object):
     def buildFilePath(self, request):
         filePath = config['siteDir'].child('static')
         for segment in request.path.split('/'):
-            try:
-                filePath = filePath.child(segment)
-            except InsecurePath:
-                return None
+            try: filePath = filePath.child(segment)
+            except InsecurePath: return None
 
         if filePath.exists() and filePath.isfile():
             return filePath
@@ -69,6 +75,34 @@ class WarpResourceWrapper(object):
             return NoResource()
 
         return NodeResource(node)
+
+
+    def handle_login(self, request):
+        return auth.LoginHandler()
+
+    def handle_logout(self, request):
+        return auth.LogoutHandler()
+
+    def handle_comet(self, request):
+        return NodeResource(comet)
+
+    def handle_warpstatic(self, request):
+        filePath = self.warpStaticPath
+        for segment in request.path.split('/')[2:]:
+            try: filePath = filePath.child(segment)
+            except InsecurePath: return None
+
+        if filePath.exists() and filePath.isfile():
+            del request.postpath[:]
+            return static.File(filePath.path)
+
+        print "Couldn't find", filePath
+
+        return NoResource()
+
+    def handle_default(self, request):
+        return Redirect(config['default'])
+
 
 
 class Redirect(object):

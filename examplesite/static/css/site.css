@@ -4,6 +4,10 @@ h1 {
   margin: 10px;
 }
 
+p, form {
+  margin: 10px;
+}
+
 .section {
   width: 500px;
   border: 1px dotted #999;
