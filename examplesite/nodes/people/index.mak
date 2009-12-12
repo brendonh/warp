@@ -9,9 +9,9 @@ jQuery(document).ready(function(){
     mtype: 'GET',
     colNames:['ID', 'Name', 'Birthdate'],
     colModel :[ 
-      {name:'id', index:'id', width:50}, 
-      {name:'name', index:'name', width:100}, 
-      {name:'birthdate', index:'birthdate', width:100}, 
+      {name:'id', index:'id', width:50, align:'center'}, 
+      {name:'name', index:'name', width:200}, 
+      {name:'birthdate', index:'birthdate', width:150, align:'center'}, 
     ],
     pager: '#pager',
     rowNum:10,

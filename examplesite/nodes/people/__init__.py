@@ -40,10 +40,14 @@ def render_list_json(request):
              'cell': [str(row.id), row.name, row.birthdate.strftime("%x %H:%M")]}
             for row in results]
 
+    (totalPages, addOne) = divmod(totalResults, rowsPerPage)
+    if addOne: totalPages += 1
+        
+    
     obj = {
-        'total': str(totalResults),
+        'total': totalPages,
         'page': params['page'],
-        'records': str(len(results)),
+        'records': len(results),
         'rows': rows,
     }
 
