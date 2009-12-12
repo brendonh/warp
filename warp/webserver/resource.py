@@ -7,17 +7,14 @@ from twisted.web.error import NoResource
 from twisted.web import static
 from twisted.python.filepath import FilePath, InsecurePath
 
-from mako.template import Template
-from mako.lookup import TemplateLookup
-
 from warp.webserver import auth, comet
-from warp.runtime import config
+from warp.runtime import config, store, templateLookup
+from warp import helpers
+
 
 if '.ico' not in static.File.contentTypes:
     static.File.contentTypes['.ico'] = 'image/vnd.microsoft.icon'
 
-
-templateLookup = None
 
 class WarpResourceWrapper(object):
     implements(IResource)
@@ -25,10 +22,8 @@ class WarpResourceWrapper(object):
     isLeaf = False
 
     def __init__(self):
-        global templateLookup
         lookupDir = config['siteDir'].child("templates").path
-        templateLookup = TemplateLookup(directories=[lookupDir])
-
+        templateLookup.__init__(directories=[lookupDir])
 
 
     def getChildWithDefault(self, firstSegment, request):
@@ -116,13 +111,15 @@ class NodeResource(object):
             request.redirect(request.childLink('index'))
             return "Redirecting..."
 
+        request.node = self.node
+
         renderFunc = getattr(self.node, 'render_%s' % self.facetName, None)
         if renderFunc is not None:
             return renderFunc(request)
 
         templatePath = self.getTemplate()
         if templatePath is not None:
-            return self.renderTemplate(templatePath, request)
+            return helpers.renderTemplate(request, templatePath.path)
 
         return NoResource().render(request)
 
@@ -134,15 +131,6 @@ class NodeResource(object):
 
         if templatePath.exists():
             return templatePath
-
-
-    def renderTemplate(self, templatePath, request):
-        template = Template(filename=templatePath.path,
-                            lookup=templateLookup,
-                            format_exceptions=True)
-
-        return template.render(node=self.node,
-                               request=request)
 
 
     def __repr__(self):
