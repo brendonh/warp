@@ -24,10 +24,14 @@ class WarpResourceWrapper(object):
     isLeaf = False
 
     def __init__(self):
-        lookupDir = config['siteDir'].child("templates").path
-        templateLookup.__init__(directories=[lookupDir])
+        self.warpBasePath = FilePath(__file__).parent().parent()
+        self.warpStaticPath = self.warpBasePath.child('static')
+        self.warpTemplatePath = self.warpBasePath.child("templates")
 
-        self.warpStaticPath = FilePath(__file__).parent().parent().child('static')
+        siteTemplateDir = config['siteDir'].child("templates").path
+        warpTemplateDir = self.warpTemplatePath.path
+        templateLookup.__init__(directories=[siteTemplateDir, warpTemplateDir])
+
 
         self.dispatch =  {
             '__login__': self.handle_login,

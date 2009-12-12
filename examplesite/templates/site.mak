@@ -8,11 +8,10 @@
 
     <link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico"></link>
 
-    <link rel="stylesheet" href="/_warp/reset.css" type="text/css"></link>
-    <link rel="stylesheet" href="/css/site.css" type="text/css"></link>
+<%include file="/standard/includes.mak" />
+<%include file="/jqgrid/includes.mak" />
 
-    <script type="text/javascript" src="/_warp/jquery-1.3.2.min.js"></script>
-    <script type="text/javascript" src="/_warp/jquery.comet.js"></script>
+    <link rel="stylesheet" href="/css/site.css" type="text/css"></link>
 
   </head>
 

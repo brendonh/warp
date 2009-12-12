@@ -5,7 +5,7 @@
 var startComet = function() {
     $.comet.init(
       function() {
-        $.get("/people/startCounter", {id: $.comet.id});
+        $.get("/demo/startCounter", {id: $.comet.id});
         $.comet("message", function(message) {
           $("#message").html("Counter set to: " + message['counter']);
         });
