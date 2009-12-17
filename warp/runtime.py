@@ -11,9 +11,8 @@ store = Store.__new__(Store)
 
 templateLookup = TemplateLookup.__new__(TemplateLookup)
 
-
 config = {}
 
 sql = {}
 
-__all__ = ['store']
+internal = {}

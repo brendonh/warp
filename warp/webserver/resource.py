@@ -73,7 +73,7 @@ class WarpResourceWrapper(object):
 
 
     def getNode(self, name):
-        node = getattr(__import__("nodes", fromlist=[name]), name, None)
+        node = helpers.getNode(name)
         
         if node is None:
             return NoResource()
@@ -150,6 +150,7 @@ class NodeResource(object):
             return "Redirecting..."
 
         request.node = self.node
+        request.resource = self
 
         renderFunc = getattr(self.node, 'render_%s' % self.facetName, None)
         if renderFunc is not None:

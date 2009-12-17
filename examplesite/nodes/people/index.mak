@@ -7,11 +7,14 @@ jQuery(document).ready(function(){
     url:'list_json',
     datatype: 'json',
     mtype: 'GET',
-    colNames:['ID', 'Name', 'Birthdate'],
+    colNames:${list(model.listTitles or model.listColumns)},
     colModel :[ 
-      {name:'id', index:'id', width:50, align:'center'}, 
-      {name:'name', index:'name', width:200}, 
-      {name:'birthdate', index:'birthdate', width:150, align:'center'}, 
+<%
+for c in model.listColumns:
+    d = {'name': c, 'id': c}
+    d.update(model.listAttrs.get(c, {}))
+    context.write("%s," % repr(d))
+%>
     ],
     pager: '#pager',
     rowNum:10,
@@ -19,7 +22,7 @@ jQuery(document).ready(function(){
     sortname: 'id',
     sortorder: 'asc',
     viewrecords: true,
-    caption: 'People'
+    caption: '${model.model.__name__} List'
   }); 
 }); 
 

@@ -1,0 +1,59 @@
+.warpCrud {
+  border: 1px solid #F6A828;
+  margin: 10px;
+  float: left;
+}
+
+.warpCrud h1 {
+  background-color: #F6A828;  
+  color: white;
+  margin: 0;
+  padding: 10px;
+  font-weight: bold;
+  font-family: Sans;
+}
+
+
+/* Nav */
+.warpCrud .tabs {
+  border-bottom: 1px solid #F6A828;
+}
+
+.warpCrud .tabs a {
+  display: block;
+  float: left;
+  padding: 5px 10px;
+  margin-left: 5px;
+  text-decoration: none;
+  color: #900;
+  font-size: 12px;
+  line-height: 1.5em;
+}
+
+.warpCrud .tabs a.active {
+  background-color: #F6A828;
+  color: white;
+}
+
+.warpCrud .tabs a:hover {
+  text-decoration: underline;
+}
+
+.warpCrud .tabs input[type="button"] {
+  float: right;
+  font-size: 12px;
+  padding: 0;
+  margin: 2px 5px;
+}
+
+/* Fields */
+
+.warpCrud > table {
+  margin: 10px;
+  border-collapse: separate;
+  border-spacing: 10px 10px;
+}
+
+.warpCrud th {
+  text-align: right;
+}

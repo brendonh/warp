@@ -3,18 +3,20 @@ try:
 except ImportError:
     import simplejson as json
 
+from mako.template import Template
+
 from storm.locals import Desc
 
-from warp.runtime import store
+from warp.runtime import store, templateLookup, internal
 from warp import helpers
 
 from models import Person
 
+model = Person
 
 def render_index(request):
-    people = store.find(Person).order_by(Person.name)
     return helpers.renderLocalTemplate(request, "index.mak", 
-                                       people=people)
+                                       model=model.__warp_crud__)
 
 
 def render_list_json(request):
@@ -24,7 +26,7 @@ def render_list_json(request):
 
     # XXX Todo -- Search
 
-    sortCol = getattr(Person, params['sidx'])
+    sortCol = getattr(model, params['sidx'])
     if params['sord'] == 'desc':
         sortCol = Desc(sortCol)
 
@@ -32,12 +34,17 @@ def render_list_json(request):
     start = (int(params['page']) - 1) * rowsPerPage
     end = start + rowsPerPage
 
-    totalResults = store.find(Person).count()
+    totalResults = store.find(model).count()
     
-    results = list(store.find(Person).order_by(sortCol)[start:end])
+    results = list(store.find(model).order_by(sortCol)[start:end])
+
+    makeRow = lambda row: [row.renderListView(colName)
+                           for colName in row.listColumns]
+
+    crudClass = model.__warp_crud__
 
     rows = [{'id': row.id, 
-             'cell': [str(row.id), row.name, row.birthdate.strftime("%x %H:%M")]}
+             'cell': makeRow(crudClass(row))}
             for row in results]
 
     (totalPages, addOne) = divmod(totalResults, rowsPerPage)
@@ -52,3 +59,33 @@ def render_list_json(request):
     }
 
     return json.dumps(obj)
+
+
+
+def _getCrudTemplate():
+    if 'crudTemplate' not in internal:
+        internal['crudTemplate'] = Template(
+            '<%inherit file="/site.mak" /><%include file="/crud/crud.mak" />',
+            lookup=templateLookup,
+            output_encoding="utf-8")
+    return internal['crudTemplate']
+
+
+
+def render_view(request):   
+    objID = int(request.resource.args[0])
+    obj = store.get(model, objID)
+
+    return helpers.renderTemplateObj(request,
+                                     _getCrudTemplate(),
+                                     obj=model.__warp_crud__(obj))
+
+
+
+def render_edit(request):
+    objID = int(request.resource.args[0])
+    obj = store.get(model, objID)
+
+    return helpers.renderTemplateObj(request,
+                                     _getCrudTemplate(),
+                                     obj=model.__warp_crud__(obj))
