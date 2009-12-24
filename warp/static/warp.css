@@ -48,7 +48,7 @@
 
 /* Fields */
 
-.warpCrud > table {
+.warpCrud form > table {
   margin: 10px;
   border-collapse: separate;
   border-spacing: 10px 10px;
@@ -56,4 +56,10 @@
 
 .warpCrud th {
   text-align: right;
+  vertical-align: top;
+  line-height: 1.5em;
+}
+
+.ui-datepicker {
+  font-size: 11px;
 }

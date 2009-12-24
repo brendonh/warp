@@ -1,4 +1,4 @@
-<% from warp.helpers import link, button %>
+<% from warp.helpers import link, button, url %>
 
 <div class="warpCrud">
   <h1>${obj.model.__name__}: ${obj.name()}</h1>
@@ -16,14 +16,30 @@
     <div style="clear: both"> </div>
   </div>
       
+<%
+if facet == 'edit':
+    renderFunc = obj.renderEdit
+else:
+    renderFunc = obj.renderView
+%>
 
+<form action="${url(node, 'save', args)}" onsubmit="alert('Hah hah'); return false;">
   <table>
 %for (col, colTitle) in zip(obj.crudColumns, obj.crudTitles or obj.crudColumns):
     <tr>
       <th>${colTitle}:</th>
-      <td>${obj.renderView(col)}</td>
+      <td>${renderFunc(col)}</td>
     </tr>
 %endfor
+
+%if facet == 'edit':
+    <tr>
+      <td></td>
+      <td><input type="submit" value="Save" /></td>
+    </tr>
+%endif
+
   </table>
+</form>
 
 </div>
