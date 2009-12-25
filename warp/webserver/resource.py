@@ -160,6 +160,12 @@ class NodeResource(object):
         if templatePath is not None:
             return helpers.renderTemplate(request, templatePath.path)
 
+        renderer = getattr(self.node, 'renderer', None)
+        if renderer is not None:
+            renderMethod = getattr(renderer, 'render_%s' % self.facetName, None)
+            if renderMethod is not None:
+                return renderMethod(request)
+
         return NoResource().render(request)
 
 
