@@ -7,10 +7,10 @@ from mako.template import Template
 
 from storm.locals import Desc
 
-from warp.runtime import store, templateLookup, internal
+from warp.runtime import store, templateLookup, internal, exposedStormClasses
 from warp import helpers
 from warp.crud.model import CrudModel
-from warp.crud import editors
+from warp.crud import colproxy
 from warp.helpers import link, getNode
 
 
@@ -34,12 +34,12 @@ class CrudPerson(CrudModel):
 
     def render_list_name(self):
         return link(
-            self.defaultView("name"),
+            self.obj.name,
             getNode("people"), 
             "view", [self.obj.id])
 
-    def render_edit_note(self):
-        return editors.AreaEditor(self.obj, "note")
+    def render_proxy_note(self):
+        return colproxy.AreaProxy(self.obj, "note")
 
     def name(self):
         return self.obj.name
@@ -124,3 +124,76 @@ def render_edit(request):
     return helpers.renderTemplateObj(request,
                                      _getCrudTemplate(),
                                      obj=model.__warp_crud__(obj))
+
+
+def render_save(request):
+    bits = json.load(request.content)
+
+    errors = []
+    actions = []
+
+    for (key, val) in bits.iteritems():
+
+        try:
+            model, objID, attr = key.split(u'-')
+            objID = int(objID)
+        except ValueError:
+            errors.append((key, u"Invalid key: %s" % key))
+            continue
+
+        try:
+            model = exposedStormClasses[model]
+        except KeyError:
+            errors.append((key, u"Unknown model for key '%s'" % key))
+            continue
+
+        try:
+            model.__warp_crud__
+        except AttributeError:
+            errors.append((key, u"Model has no crud class for key '%s'" % key))
+            continue
+
+        obj = store.get(model, objID)
+        if obj is None:
+            errors.append((key, u"Invalid ID for key '%s'" % key))
+            continue
+
+        try:
+            attr = str(attr)
+        except UnicodeEncodeError:
+            errors.append((key, u"Invalid attribute name for key '%s'" % key))
+            continue
+
+        # XXX TODO -- Access check goes here (or, uh, somewhere)
+        # ...
+
+        crud = model.__warp_crud__(obj)
+        actions.append( (key, crud, attr, val) )
+
+
+    if errors:
+        return json.dumps({
+                'success': False,
+                'errors': errors
+                })
+
+
+    for (key, crud, attr, val) in actions:
+        error = crud.save(attr, val)
+        if error is not None:
+            errors.append((key, error))
+
+
+    if errors:
+        store.rollback()
+        return json.dumps({
+                'success': False,
+                'errors': errors
+                })
+
+    store.commit()
+
+    # XXX TODO -- Somehow figure out redirect URL here
+    return json.dumps({
+            "success":True
+            })

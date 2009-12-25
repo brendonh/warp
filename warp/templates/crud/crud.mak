@@ -23,7 +23,7 @@ else:
     renderFunc = obj.renderView
 %>
 
-<form class="warp">
+<form class="warp" action="${url(node, 'save', args)}">
   <table>
 %for (col, colTitle) in zip(obj.crudColumns, obj.crudTitles or obj.crudColumns):
     <tr>

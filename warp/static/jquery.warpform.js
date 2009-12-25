@@ -11,7 +11,8 @@
 (function($) {
 
     $.fn.warpform = function() {
-        $(this).bind("submit",  $.fn.warpform.submit);
+        var form = $(this);
+        form.bind("submit",  $.fn.warpform.submit);
     };
 
     $.fn.warpform.setup = function() {
@@ -21,22 +22,49 @@
     };
 
     $.fn.warpform.submit = function() {
+        var form = $(this);
+        try {
+            var bits = _collectForm(form);
+            _sendForm(form, bits);
+        } catch(e) {
+            console.debug("Error submitting form: " + e);
+        }
+        return false;
+    };
+
+    $.fn.warpform.handleResponse = function(form, data) {
+        console.debug("Response for " + form);
+        console.dir(data);
+    };
+
+    function _collectForm(form) {
         var bits = {};
-        $(this).find(":input").each(function(i, tag) {
+        form.find(":input").each(function(i, tag) {
             var el = $(tag);
             var key = _getElementBits(el);
             if (!key) return;
             var collectorName = _getCollectorName(el);
             $.fn.warpform.collectors[collectorName](key, el, bits);
         });
-        try {
-            console.debug(JSON.stringify(bits));
-        } catch(e) { 
-            console.debug(e);
-        }
-        return false;
-    };
+        return bits;
+    }
     
+    function _sendForm(form, bits) {
+        $.ajax({
+            "url": form.attr("action"),
+            "type": "POST",
+            "contentType": "application/json",
+            "data": JSON.stringify(bits),
+            "dataType": "json",
+            "success": function(data, textStatus) {
+                $.fn.warpform.handleResponse(form, data);
+            },
+            "error": function (XMLHttpRequest, textStatus, errorThrown) {
+                console.debug("Error: " + textStatus);
+            }
+        });
+    };
+
     function _getElementBits(el) {
         var m = /^warpform-(.+)$/.exec(el.attr("name"));
         if (!m) return;

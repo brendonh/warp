@@ -16,3 +16,9 @@ config = {}
 sql = {}
 
 internal = {}
+
+exposedStormClasses = {}
+
+def expose(cls):
+    exposedStormClasses[unicode(cls.__name__)] = cls
+    return cls

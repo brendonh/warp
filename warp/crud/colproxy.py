@@ -1,6 +1,8 @@
+import pytz
+from datetime import datetime
 
 
-class BaseEditor(object):
+class BaseProxy(object):
 
     def __init__(self, obj, col):
         self.obj = obj
@@ -12,26 +14,37 @@ class BaseEditor(object):
             self.obj.id, 
             self.col)
 
+    def render_view(self):
+        return unicode(getattr(self.obj, self.col))
+
+    def save(self, val):
+        try:
+            setattr(self.obj, self.col, val)
+        except (TypeError, ValueError):
+            return u"Invalid value"
+            
 
 
-class StringEditor(BaseEditor):
+class StringProxy(BaseProxy):
     
-    def render(self):
+    def render_edit(self):
         return '<input type="text" name="warpform-%s" value="%s" />' % (
             self.fieldName(),
             getattr(self.obj, self.col))
 
 
-class AreaEditor(BaseEditor):
+
+class AreaProxy(StringProxy):
     
-    def render(self):
+    def render_edit(self):
         return '<textarea name="warpform-%s" cols="30" rows="5">%s</textarea>' % (
             self.fieldName(),
             getattr(self.obj, self.col))
 
 
-class BooleanEditor(BaseEditor):
-    def render(self):
+
+class BooleanProxy(BaseProxy):
+    def render_edit(self):
         val = getattr(self.obj, self.col)
         if val:
             checkedBit = 'checked="checked" '
@@ -42,7 +55,8 @@ class BooleanEditor(BaseEditor):
             self.fieldName(), val, checkedBit)
 
 
-class DateEditor(BaseEditor):
+
+class DateProxy(BaseProxy):
 
     jsTemplate = """
 <script type="text/javascript">
@@ -50,14 +64,33 @@ $(function() { $("#date-field-%s").datepicker(); });
 </script>
 """
 
-    def render(self):
+    dateFormat = "%m/%d/%Y"
+    timeFormat = "%H:%M"
+    fullFormat = "%s %s" % (dateFormat, timeFormat)
+
+
+    def render_view(self):
+        return getattr(self.obj, self.col).strftime(self.fullFormat)
+
+
+    def render_edit(self):
         fieldName = self.fieldName()
         val = getattr(self.obj, self.col)
 
         dateField = '<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
-            fieldName, fieldName, val.strftime("%m/%d/%Y"))
+            fieldName, fieldName, val.strftime(self.dateFormat))
 
         timeField = '<input type="text" name="warpform-%s" class="warpform-time" value="%s" size="4" />' % (
-            fieldName, val.strftime("%H:%M"))
+            fieldName, val.strftime(self.timeFormat))
 
         return "%s %s %s" % (dateField, timeField, self.jsTemplate % fieldName)
+
+
+    def save(self, val):
+        try:
+            # XXX TODO - Timezone according to avatar preferences
+            dt = datetime.strptime(val, self.fullFormat).replace(tzinfo=pytz.UTC)
+        except ValueError:
+            return u"Value '%s' didn't match format '%s'" % (val, self.fullFormat)
+        
+        setattr(self.obj, self.col, dt)

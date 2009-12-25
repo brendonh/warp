@@ -54,10 +54,13 @@
   border-spacing: 10px 10px;
 }
 
+.warpCrud th, .warpCrud td {
+  line-height: 1.5em;
+}
+
 .warpCrud th {
   text-align: right;
   vertical-align: top;
-  line-height: 1.5em;
 }
 
 .ui-datepicker {
