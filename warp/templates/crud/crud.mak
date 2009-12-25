@@ -23,7 +23,7 @@ else:
     renderFunc = obj.renderView
 %>
 
-<form action="${url(node, 'save', args)}" onsubmit="alert('Hah hah'); return false;">
+<form class="warp">
   <table>
 %for (col, colTitle) in zip(obj.crudColumns, obj.crudTitles or obj.crudColumns):
     <tr>

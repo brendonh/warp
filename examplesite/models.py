@@ -9,5 +9,6 @@ class Person(Storm):
     name = Unicode()
     birthdate = DateTime(tzinfo=pytz.UTC)
     note = Unicode()
+    alive = Bool()
 
 

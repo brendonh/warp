@@ -44,8 +44,8 @@ class CrudPerson(CrudModel):
     def name(self):
         return self.obj.name
 
-    crudColumns = ("name", "birthdate", "note")
-    crudTitles = ("Name", "Birthdate", "My Notes")
+    crudColumns = ("name", "birthdate", "note", "alive")
+    crudTitles = ("Name", "Birthdate", "My Notes", "Alive?")
 
 
 

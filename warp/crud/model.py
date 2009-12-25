@@ -22,6 +22,7 @@ class CrudModel(object):
         Int: editors.StringEditor,
         Unicode: editors.StringEditor,
         DateTime: editors.DateEditor,
+        Bool: editors.BooleanEditor,
     }
 
     listAttrs = {}
