@@ -66,3 +66,13 @@
 .ui-datepicker {
   font-size: 11px;
 }
+
+.warp-error-highlight {
+  background-color: #fcc;
+}
+
+.warp-error {
+  font-size: 12px;
+  color: #900;
+  width: 300px;
+}

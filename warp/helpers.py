@@ -51,4 +51,3 @@ def button(label, node, facet="index", args=[], confirm=None):
     if confirm is not None:
         action = "if (confirm('%s')) { %s }" % (confirm, action)
     return '<input type="button" value="%s" onclick="%s">' % (label, action)
-    

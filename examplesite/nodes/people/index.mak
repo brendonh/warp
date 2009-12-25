@@ -1,5 +1,12 @@
 <%inherit file="/site.mak" />
 
+<%
+if model.listTitles:
+   listTitles = model.listTitles
+else:
+   listTitles = [c.title() for c in model.listColumns]
+%>
+
 <script type="text/javascript">
 
 jQuery(document).ready(function(){ 
@@ -7,7 +14,7 @@ jQuery(document).ready(function(){
     url:'list_json',
     datatype: 'json',
     mtype: 'GET',
-    colNames:${list(model.listTitles or model.listColumns)},
+    colNames:${list(listTitles)},
     colModel :[ 
 <%
 for c in model.listColumns:

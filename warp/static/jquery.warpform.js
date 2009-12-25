@@ -24,6 +24,12 @@
     $.fn.warpform.submit = function() {
         var form = $(this);
         try {
+
+            // The bug here is that it doesn't check whether fields are already disabled,
+            // and remember that fact if so.
+            form.find(":input").attr("disabled", "disabled").removeClass("warp-error-highlight")
+            form.find(".warp-error").empty();
+
             var bits = _collectForm(form);
             _sendForm(form, bits);
         } catch(e) {
@@ -33,8 +39,21 @@
     };
 
     $.fn.warpform.handleResponse = function(form, data) {
-        console.debug("Response for " + form);
-        console.dir(data);
+        if (data['success']) {
+            var redirect = form.attr("warp:redirect")
+            if (redirect) document.location.href = redirect;
+            return;
+        } else {
+            for (var i in data['errors']) {
+                var bits = data['errors'][i];
+                var key = bits[0];
+                var error = bits[1];
+                var el = form.find(":input[name='warpform-" + key + "']");
+                el.addClass("warp-error-highlight");
+                el.parent().siblings(".warp-error").append(error + '<br />');
+            }
+        }
+        form.find(":input").removeAttr("disabled");
     };
 
     function _collectForm(form) {
@@ -47,7 +66,7 @@
             $.fn.warpform.collectors[collectorName](key, el, bits);
         });
         return bits;
-    }
+    };
     
     function _sendForm(form, bits) {
         $.ajax({
@@ -104,14 +123,14 @@
 
     function _assembleDateTime(dateAndTime) {
         return dateAndTime[0] + " " + dateAndTime[1];
-    }
+    };
 
     $.fn.warpform.collectors = {
         "string": function(k, el, bits) { bits[k] = el.val(); },
         "date": _collectDate,
         "time": _collectTime,
         "bool": function(k, el, bits) { bits[k] = el.attr("checked") ? true : false; }
-    }
+    };
 
 })(jQuery);
 

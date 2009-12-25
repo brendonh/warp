@@ -56,6 +56,22 @@ class BooleanProxy(BaseProxy):
 
 
 
+class IntProxy(BaseProxy):
+
+    def render_edit(self):
+        return '<input type="text" name="warpform-%s" value="%s" size="4" />' % (
+            self.fieldName(),
+            getattr(self.obj, self.col))
+
+    def save(self, val):
+        try:
+            val = int(val)
+        except ValueError:
+            return u"'%s' is not an integer." % val
+
+        setattr(self.obj, self.col, val)
+
+
 class DateProxy(BaseProxy):
 
     jsTemplate = """

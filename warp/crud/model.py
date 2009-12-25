@@ -13,7 +13,7 @@ class CrudModel(object):
     __metaclass__ = MetaCrudModel
 
     editRenderers = {
-        Int: colproxy.StringProxy,
+        Int: colproxy.IntProxy,
         Unicode: colproxy.StringProxy,
         DateTime: colproxy.DateProxy,
         Bool: colproxy.BooleanProxy,

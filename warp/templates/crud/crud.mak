@@ -1,4 +1,4 @@
-<% from warp.helpers import link, button, url %>
+<%! from warp.helpers import link, button, url %>
 
 <div class="warpCrud">
   <h1>${obj.model.__name__}: ${obj.name()}</h1>
@@ -21,14 +21,32 @@ if facet == 'edit':
     renderFunc = obj.renderEdit
 else:
     renderFunc = obj.renderView
+
+if redirect:
+   redirectBit = ' warp:redirect="%s"' % redirect
+else:
+   redirectBit = ''
+
 %>
 
-<form class="warp" action="${url(node, 'save', args)}">
+<form class="warp" action="${url(node, 'save', args)}"${redirectBit}>
+
   <table>
-%for (col, colTitle) in zip(obj.crudColumns, obj.crudTitles or obj.crudColumns):
+
+<%
+if obj.crudTitles:
+  crudTitles = obj.crudTitles
+else:
+  crudTitles = [c.title() for c in obj.crudColumns]
+%>
+
+%for (col, colTitle) in zip(obj.crudColumns, crudTitles):
     <tr>
       <th>${colTitle}:</th>
       <td>${renderFunc(col)}</td>
+      % if facet == 'edit':
+      <td class="warp-error"></td>
+      % endif
     </tr>
 %endfor
 
@@ -40,6 +58,7 @@ else:
 %endif
 
   </table>
+
 </form>
 
 </div>
