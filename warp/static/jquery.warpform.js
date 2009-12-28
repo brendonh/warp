@@ -48,32 +48,64 @@
                 var bits = data['errors'][i];
                 var key = bits[0];
                 var error = bits[1];
-                var el = form.find(":input[name='warpform-" + key + "']");
-                el.addClass("warp-error-highlight");
-                el.parent().siblings(".warp-error").append(error + '<br />');
+
+                if (key) {
+                    var el = form.find(":input[name='warpform-" + key + "']");
+                    el.addClass("warp-error-highlight");
+                    el.parent().siblings(".warp-error").append(error + '<br />');
+                } else {
+                    form.find(".generic-errors").append(error + '<br />').show();
+                }
             }
         }
         form.find(":input").removeAttr("disabled");
     };
 
     function _collectForm(form) {
-        var bits = {};
+
+        var objects = {};
+
         form.find(":input").each(function(i, tag) {
             var el = $(tag);
             var key = _getElementBits(el);
             if (!key) return;
+
+            var keyParts = key.split('-');
+            var model = keyParts[0];
+            var id = keyParts[1];
+            var field = keyParts[2];
+
+            var objKey = model + '-' + id;
+            var obj = objects[objKey];
+            if (!obj) {
+                obj = {'model': model, 'fields': {}};
+                if (id[0] == '*') {
+                    obj['action'] = 'create';
+                    id = id.substring(1);
+                } else {
+                    obj['action'] = 'update';
+                }
+                obj['id'] = id;
+                objects[objKey] = obj;
+            }
+
             var collectorName = _getCollectorName(el);
-            $.fn.warpform.collectors[collectorName](key, el, bits);
+            $.fn.warpform.collectors[collectorName](key, el, field, obj['fields']);
         });
-        return bits;
+        
+        var objList = [];
+        for (key in objects) objList.push(objects[key]);
+
+        return objList;
     };
     
-    function _sendForm(form, bits) {
+    function _sendForm(form, objects) {
+        console.dir(objects);
         $.ajax({
             "url": form.attr("action"),
             "type": "POST",
             "contentType": "application/json",
-            "data": JSON.stringify(bits),
+            "data": JSON.stringify(objects),
             "dataType": "json",
             "success": function(data, textStatus) {
                 $.fn.warpform.handleResponse(form, data);
@@ -103,22 +135,22 @@
         return collector;
     };
 
-    function _collectDate(k, el, bits) {
-        if (!bits[k]) {
-            bits[k] = [el.val(), 0];
+    function _collectDate(k, el, f, obj) {
+        if (!obj[f]) {
+            obj[f] = [el.val(), 0];
             return;
         }
-        bits[k][0] = el.val();
-        bits[k] = _assembleDateTime(bits[k]);
+        obj[f][0] = el.val();
+        obj[f] = _assembleDateTime(obj[f]);
     };
 
-    function _collectTime(k, el, bits) {
-        if (!bits[k]) {
-            bits[k] = [0, el.val()];
+    function _collectTime(k, el, f, obj) {
+        if (!obj[f]) {
+            obj[f] = [0, el.val()];
             return;
         }
-        bits[k][1] = el.val();
-        bits[k] = _assembleDateTime(bits[k]);
+        obj[f][1] = el.val();
+        obj[f] = _assembleDateTime(obj[f]);
     };
 
     function _assembleDateTime(dateAndTime) {
@@ -126,12 +158,13 @@
     };
 
     $.fn.warpform.collectors = {
-        "string": function(k, el, bits) { bits[k] = el.val(); },
+        "string": function(k, el, f, obj) { obj[f] = el.val(); },
         "date": _collectDate,
         "time": _collectTime,
-        "bool": function(k, el, bits) { bits[k] = el.attr("checked") ? true : false; }
+        "bool": function(k, el, f, obj) { obj[f] = el.attr("checked") ? true : false; }
     };
 
 })(jQuery);
 
 jQuery(document).ready($.fn.warpform.setup);
+

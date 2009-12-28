@@ -40,7 +40,7 @@ class CrudModel(object):
         return self.obj.id
 
 
-    def _getProxy(self, colName, request):
+    def getProxy(self, colName, request):
         funcName = "render_proxy_%s" % colName
         if hasattr(self, funcName):
             return getattr(self, funcName)(request)
@@ -57,25 +57,25 @@ class CrudModel(object):
         funcName = "render_list_%s" % colName
         if hasattr(self, funcName):
             return getattr(self, funcName)(request)
-        return self._getProxy(colName, request).render_view(request)
+        return self.getProxy(colName, request).render_view(request)
 
 
     def renderView(self, colName, request):
         funcName = "render_%s" % colName
         if hasattr(self, funcName):
             return getattr(self, funcName)(request)
-        return self._getProxy(colName, request).render_view(request)
+        return self.getProxy(colName, request).render_view(request)
 
 
     def renderEdit(self, colName, request):
         funcName = "render_edit_%s" % colName
         if hasattr(self, funcName):
             return getattr(self, funcName)(request)
-        return self._getProxy(colName, request).render_edit(request)
+        return self.getProxy(colName, request).render_edit(request)
 
         
     def save(self, colName, val, request):
         funcName = "save_%s" % colName
         if hasattr(self, funcName):
             return getattr(self, funcName)(val, request)
-        return self._getProxy(colName, request).save(val, request)
+        return self.getProxy(colName, request).save(val, request)

@@ -96,8 +96,8 @@ class CrudRenderer(object):
 
 
     def render_save(self, request):
-        bits = json.load(request.content)
-        errors = form.applyForm(bits, request)
+        objects = json.load(request.content)
+        errors = form.applyForm(objects, request)
     
         if errors:
             store.rollback()
@@ -112,3 +112,15 @@ class CrudRenderer(object):
                     "success": True
                     })
 
+
+    def render_create(self, request):
+        template = templateLookup.get_template("/crud/form.mak")
+
+        fakeObj = self.model()
+
+        # XXX TODO - Take a counter argument from the request here, 
+        # so Javascript can product lots of these which don't conflict.
+        fakeObj.fakeID = '*1'
+
+        return helpers.renderTemplateObj(request, template, 
+                                         obj=self.crudModel(fakeObj))

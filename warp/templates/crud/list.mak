@@ -1,3 +1,4 @@
+<%! from warp.helpers import url %>
 <%inherit file="/site.mak" />
 
 <%
@@ -33,10 +34,30 @@ for c in model.listColumns:
   }); 
 }); 
 
+var popupCreateBox = function(button) {
+    $(button).hide();
+    $("#createBox").html("Loading...").show();
+    $.get("${url(node, "create")}", function(content) {
+      $("#createBox").html(content).find("form").warpform();
+    });
+};
+
+
 </script>
 
 <div style="margin: 10px">
+
   <table id="list"></table>
   <div id="pager"></div> 
-</div>
 
+  <div style="margin-top: 10px">
+
+    <input type="button" value="Create New" 
+           id="createButton"
+           onclick="popupCreateBox(this)" />
+
+    <div id="createBox" class="popupBox warpCrud"></div>
+
+  </div>
+
+</div>

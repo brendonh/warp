@@ -9,9 +9,12 @@ class BaseProxy(object):
         self.col = col
 
     def fieldName(self):
+
+        id = self.obj.fakeID if hasattr(self.obj, 'fakeID') else self.obj.id
+
         return "%s-%s-%s" % (
             self.obj.__class__.__name__,
-            self.obj.id, 
+            id,
             self.col)
 
     def render_view(self, request):
@@ -31,6 +34,14 @@ class StringProxy(BaseProxy):
         return '<input type="text" name="warpform-%s" value="%s" />' % (
             self.fieldName(),
             getattr(self.obj, self.col))
+
+
+class NonEmptyStringProxy(StringProxy):
+
+    def save(self, val, request):
+        if not val:
+            return u"Cannot be empty"
+        super(NonEmptyStringProxy, self).save(val, request)
 
 
 

@@ -76,3 +76,7 @@
   color: #900;
   width: 300px;
 }
+
+.popupBox {
+  display: none;
+}
