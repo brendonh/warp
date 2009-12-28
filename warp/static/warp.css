@@ -80,3 +80,7 @@
 .popupBox {
   display: none;
 }
+
+.del-link {
+  color: red;
+}

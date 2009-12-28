@@ -112,9 +112,6 @@ class CrudRenderer(object):
             results = dict((k, [o.id for o in v])
                            for (k,v) in info.iteritems())
 
-            print "~~~~~~~~~~~~~~~~~~~~~~~~"
-            print results
-
             return json.dumps({
                     "success": True,
                     "results": results,
@@ -132,3 +129,15 @@ class CrudRenderer(object):
 
         return helpers.renderTemplateObj(request, template, 
                                          obj=self.crudModel(fakeObj))
+
+
+    def render_delete(self, request):
+        objID = int(request.resource.args[0])
+        obj = store.get(self.model, objID)
+
+        if obj is not None:
+            store.remove(obj)
+            store.commit()
+
+        request.redirect(helpers.url(request.node))
+        return "Redirecting..."

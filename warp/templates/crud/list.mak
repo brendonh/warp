@@ -12,12 +12,18 @@ else:
 
 var grid;
 
+
+function delLinkFormatter (cellvalue, options, rowObject) {
+  return '[<a href="javascript:deleteObj('+rowObject[0]+')" style="color: red">Del</a>]';
+}
+
+
 jQuery(document).ready(function(){ 
   grid = jQuery("#list").jqGrid({
     url:'list_json',
     datatype: 'json',
     mtype: 'GET',
-    colNames:${list(listTitles)},
+    colNames:${list(listTitles) + ['Actions']},
     colModel :[ 
 <%
 for c in model.listColumns:
@@ -25,6 +31,9 @@ for c in model.listColumns:
     d.update(model.listAttrs.get(c, {}))
     context.write("%s," % repr(d))
 %>
+    {'name': 'Actions', 'id': '_actions',
+     'align': 'center', 'width': 50,
+     'formatter':delLinkFormatter},
     ],
     pager: '#pager',
     rowNum:10,
@@ -45,7 +54,7 @@ var popupCreateBox = function(button) {
 };
 
 var popupCreateDone = function(data) {
-    jQuery("#list").trigger("reloadGrid");
+    $("#list").trigger("reloadGrid");
     var form = $("#createBox").find("form");
     form.get(0).reset();
     form.find(":input").removeAttr("disabled");
@@ -53,6 +62,12 @@ var popupCreateDone = function(data) {
     $("#createButton").show();
 };
 
+var deleteObj = function(id) {
+    if (confirm("Delete?")) {
+        $.post("${url(node, 'delete')}/" + id, {},
+               function() { $("#list").trigger("reloadGrid"); });
+    }
+}
 
 </script>
 
