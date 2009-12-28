@@ -18,6 +18,16 @@ if '.ico' not in static.File.contentTypes:
     static.File.contentTypes['.ico'] = 'image/vnd.microsoft.icon'
 
 
+
+def getNode(name):
+    node = helpers.getNode(name)
+        
+    if node is None:
+        return NoResource()
+
+    return NodeResource(node)
+
+
 class WarpResourceWrapper(object):
     implements(IResource)
 
@@ -39,7 +49,7 @@ class WarpResourceWrapper(object):
             '_comet': self.handle_comet,
             '_warp': self.handle_warpstatic,
             '': self.handle_default,
-        }
+        }     
 
 
     def getChildWithDefault(self, firstSegment, request):
@@ -59,7 +69,7 @@ class WarpResourceWrapper(object):
         if handler is not None:
             return handler(request)
 
-        return self.getNode(firstSegment)
+        return getNode(firstSegment)
 
 
     def buildFilePath(self, request):
@@ -70,15 +80,6 @@ class WarpResourceWrapper(object):
 
         if filePath.exists() and filePath.isfile():
             return filePath
-
-
-    def getNode(self, name):
-        node = helpers.getNode(name)
-        
-        if node is None:
-            return NoResource()
-
-        return NodeResource(node)
 
 
     def handle_login(self, request):
@@ -99,8 +100,6 @@ class WarpResourceWrapper(object):
         if filePath.exists() and filePath.isfile():
             del request.postpath[:]
             return static.File(filePath.path)
-
-        print "Couldn't find", filePath
 
         return NoResource()
 
@@ -137,45 +136,67 @@ class NodeResource(object):
         
 
     def getChildWithDefault(self, segment, request):
-        self.facetName = segment
-        self.isLeaf = True
-        return self
+
+        if not segment:
+            return Redirect(request.childLink('index'))
+
+        renderFunc = self.getRenderFunc(segment)
+        if renderFunc is not None:
+            self.facetName = segment
+            self.renderFunc = renderFunc
+            self.isLeaf = True
+            return self
+
+        subNode = self.getSubNode(segment)
+        if subNode is not None:
+            return NodeResource(subNode)
+
+        return NoResource()
 
             
     def render(self, request):
-        self.args = request.postpath            
 
         if not self.facetName:
             request.redirect(request.childLink('index'))
             return "Redirecting..."
 
+        self.args = request.postpath
+
         request.node = self.node
         request.resource = self
+        return self.renderFunc(request)
 
-        renderFunc = getattr(self.node, 'render_%s' % self.facetName, None)
+
+    def getRenderFunc(self, facetName):
+
+        renderFunc = getattr(self.node, 'render_%s' % facetName, None)
         if renderFunc is not None:
-            return renderFunc(request)
+            return renderFunc
 
-        templatePath = self.getTemplate()
+        templatePath = self.getTemplate(facetName)
         if templatePath is not None:
-            return helpers.renderTemplate(request, templatePath.path)
+            return lambda r: helpers.renderTemplate(r, templatePath.path)
 
         renderer = getattr(self.node, 'renderer', None)
         if renderer is not None:
-            renderMethod = getattr(renderer, 'render_%s' % self.facetName, None)
+            renderMethod = getattr(renderer, 'render_%s' % facetName, None)
             if renderMethod is not None:
-                return renderMethod(request)
+                return renderMethod
 
-        return NoResource().render(request)
+        return None
 
 
-    def getTemplate(self):
+    def getTemplate(self, facetName):
         templatePath = FilePath(
             self.node.__file__
-            ).sibling(self.facetName + ".mak")
+            ).sibling(facetName + ".mak")
 
         if templatePath.exists():
             return templatePath
+
+
+    def getSubNode(self, nodeName):
+        return getattr(__import__(self.node.__name__, fromlist=[nodeName]), nodeName, None)
 
 
     def __repr__(self):
