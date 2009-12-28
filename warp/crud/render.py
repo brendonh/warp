@@ -97,19 +97,27 @@ class CrudRenderer(object):
 
     def render_save(self, request):
         objects = json.load(request.content)
-        errors = form.applyForm(objects, request)
+        (success, info) = form.applyForm(objects, request)
     
-        if errors:
+        if not success:
             store.rollback()
             return json.dumps({
                     'success': False,
-                    'errors': errors
+                    'errors': info
                     })
 
         else:
             store.commit()
+
+            results = dict((k, [o.id for o in v])
+                           for (k,v) in info.iteritems())
+
+            print "~~~~~~~~~~~~~~~~~~~~~~~~"
+            print results
+
             return json.dumps({
-                    "success": True
+                    "success": True,
+                    "results": results,
                     })
 
 

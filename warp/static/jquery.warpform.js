@@ -10,9 +10,10 @@
 
 (function($) {
 
-    $.fn.warpform = function() {
+    $.fn.warpform = function(successCallback) {
         var form = $(this);
-        form.bind("submit",  $.fn.warpform.submit);
+        form.bind("submit",  function(e) { 
+            return $.fn.warpform.submit(form, successCallback) });
     };
 
     $.fn.warpform.setup = function() {
@@ -21,8 +22,7 @@
         });
     };
 
-    $.fn.warpform.submit = function() {
-        var form = $(this);
+    $.fn.warpform.submit = function(form, callback) {
         try {
 
             // The bug here is that it doesn't check whether fields are already disabled,
@@ -30,19 +30,27 @@
             form.find(":input").attr("disabled", "disabled").removeClass("warp-error-highlight")
             form.find(".warp-error").empty();
 
-            var bits = _collectForm(form);
-            _sendForm(form, bits);
+            var objects = _collectForm(form);
+            _sendForm(form, objects, callback);
         } catch(e) {
             console.debug("Error submitting form: " + e);
         }
         return false;
     };
 
-    $.fn.warpform.handleResponse = function(form, data) {
+    $.fn.warpform.handleResponse = function(form, data, callback) {
+        console.dir(data);
         if (data['success']) {
-            var redirect = form.attr("warp:redirect")
-            if (redirect) document.location.href = redirect;
-            return;
+
+            if (callback) {
+                callback(data);
+                return;
+            } else {
+                var redirect = form.attr("warp:redirect");
+                if (redirect) document.location.href = redirect;
+                return;
+            }
+
         } else {
             for (var i in data['errors']) {
                 var bits = data['errors'][i];
@@ -99,8 +107,7 @@
         return objList;
     };
     
-    function _sendForm(form, objects) {
-        console.dir(objects);
+    function _sendForm(form, objects, callback) {
         $.ajax({
             "url": form.attr("action"),
             "type": "POST",
@@ -108,7 +115,7 @@
             "data": JSON.stringify(objects),
             "dataType": "json",
             "success": function(data, textStatus) {
-                $.fn.warpform.handleResponse(form, data);
+                $.fn.warpform.handleResponse(form, data, callback);
             },
             "error": function (XMLHttpRequest, textStatus, errorThrown) {
                 console.debug("Error: " + textStatus);

@@ -10,8 +10,10 @@ else:
 
 <script type="text/javascript">
 
+var grid;
+
 jQuery(document).ready(function(){ 
-  jQuery("#list").jqGrid({
+  grid = jQuery("#list").jqGrid({
     url:'list_json',
     datatype: 'json',
     mtype: 'GET',
@@ -38,8 +40,17 @@ var popupCreateBox = function(button) {
     $(button).hide();
     $("#createBox").html("Loading...").show();
     $.get("${url(node, "create")}", function(content) {
-      $("#createBox").html(content).find("form").warpform();
+      $("#createBox").html(content).find("form").warpform(popupCreateDone);
     });
+};
+
+var popupCreateDone = function(data) {
+    jQuery("#list").trigger("reloadGrid");
+    var form = $("#createBox").find("form");
+    form.get(0).reset();
+    form.find(":input").removeAttr("disabled");
+    $("#createBox").hide();
+    $("#createButton").show();
 };
 
 

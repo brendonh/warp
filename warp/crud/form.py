@@ -4,6 +4,11 @@ def applyForm(objects, request):
 
     errors = []
     actions = []
+    results = {
+        'created': [],
+        'updated': [],
+        'deleted': [],
+    }
 
     for jsobj in objects:
 
@@ -27,6 +32,7 @@ def applyForm(objects, request):
             obj = model()
             store.add(obj)
             obj.fakeID = '*' + jsobj['id']
+            results['created'].append(obj)
 
         else:
 
@@ -40,6 +46,8 @@ def applyForm(objects, request):
             if obj is None:
                 errors.append((None, u"Missing ID '%s' for model '%s'" % (jsobj['id'], jsobj['model'])))
                 continue
+
+            results['updated'].append(obj)
 
 
         for (key, val) in jsobj['fields'].iteritems():
@@ -57,7 +65,7 @@ def applyForm(objects, request):
 
 
     if errors:
-        return errors
+        return (False, errors)
 
     for (crud, attr, val) in actions:
         error = crud.save(attr, val, request)
@@ -66,7 +74,6 @@ def applyForm(objects, request):
             errors.append((key, error))
 
     if errors:
-        return errors
+        return (False, errors)
 
-
-    return []
+    return (True, results)
