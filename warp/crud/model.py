@@ -36,14 +36,14 @@ class CrudModel(object):
                 for (k,v) in self.model._storm_columns.iteritems())
 
 
-    def name(self):
+    def name(self, request):
         return self.obj.id
 
 
-    def _getProxy(self, colName):
+    def _getProxy(self, colName, request):
         funcName = "render_proxy_%s" % colName
         if hasattr(self, funcName):
-            return getattr(self, funcName)()
+            return getattr(self, funcName)(request)
         return self.defaultProxy(colName)
 
 
@@ -53,29 +53,29 @@ class CrudModel(object):
         return self.editRenderers[valType](self.obj, colName)
 
 
-    def renderListView(self, colName):
+    def renderListView(self, colName, request):
         funcName = "render_list_%s" % colName
         if hasattr(self, funcName):
-            return getattr(self, funcName)()
-        return self._getProxy(colName).render_view()
+            return getattr(self, funcName)(request)
+        return self._getProxy(colName, request).render_view(request)
 
 
-    def renderView(self, colName):
+    def renderView(self, colName, request):
         funcName = "render_%s" % colName
         if hasattr(self, funcName):
-            return getattr(self, funcName)()
-        return self._getProxy(colName).render_view()
+            return getattr(self, funcName)(request)
+        return self._getProxy(colName, request).render_view(request)
 
 
-    def renderEdit(self, colName):
+    def renderEdit(self, colName, request):
         funcName = "render_edit_%s" % colName
         if hasattr(self, funcName):
-            return getattr(self, funcName)()
-        return self._getProxy(colName).render_edit()
+            return getattr(self, funcName)(request)
+        return self._getProxy(colName, request).render_edit(request)
 
         
-    def save(self, colName, val):
+    def save(self, colName, val, request):
         funcName = "save_%s" % colName
         if hasattr(self, funcName):
-            return getattr(self, funcName)(val)
-        return self._getProxy(colName).save(val)
+            return getattr(self, funcName)(val, request)
+        return self._getProxy(colName, request).save(val, request)

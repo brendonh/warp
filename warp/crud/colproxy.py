@@ -14,10 +14,10 @@ class BaseProxy(object):
             self.obj.id, 
             self.col)
 
-    def render_view(self):
+    def render_view(self, request):
         return unicode(getattr(self.obj, self.col))
 
-    def save(self, val):
+    def save(self, val, request):
         try:
             setattr(self.obj, self.col, val)
         except (TypeError, ValueError):
@@ -27,7 +27,7 @@ class BaseProxy(object):
 
 class StringProxy(BaseProxy):
     
-    def render_edit(self):
+    def render_edit(self, request):
         return '<input type="text" name="warpform-%s" value="%s" />' % (
             self.fieldName(),
             getattr(self.obj, self.col))
@@ -36,7 +36,7 @@ class StringProxy(BaseProxy):
 
 class AreaProxy(StringProxy):
     
-    def render_edit(self):
+    def render_edit(self, request):
         return '<textarea name="warpform-%s" cols="30" rows="5">%s</textarea>' % (
             self.fieldName(),
             getattr(self.obj, self.col))
@@ -44,7 +44,7 @@ class AreaProxy(StringProxy):
 
 
 class BooleanProxy(BaseProxy):
-    def render_edit(self):
+    def render_edit(self, request):
         val = getattr(self.obj, self.col)
         if val:
             checkedBit = 'checked="checked" '
@@ -58,12 +58,12 @@ class BooleanProxy(BaseProxy):
 
 class IntProxy(BaseProxy):
 
-    def render_edit(self):
+    def render_edit(self, request):
         return '<input type="text" name="warpform-%s" value="%s" size="4" />' % (
             self.fieldName(),
             getattr(self.obj, self.col))
 
-    def save(self, val):
+    def save(self, val, request):
         try:
             val = int(val)
         except ValueError:
@@ -85,11 +85,11 @@ $(function() { $("#date-field-%s").datepicker(); });
     fullFormat = "%s %s" % (dateFormat, timeFormat)
 
 
-    def render_view(self):
+    def render_view(self, request):
         return getattr(self.obj, self.col).strftime(self.fullFormat)
 
 
-    def render_edit(self):
+    def render_edit(self, request):
         fieldName = self.fieldName()
         val = getattr(self.obj, self.col)
 
@@ -102,7 +102,7 @@ $(function() { $("#date-field-%s").datepicker(); });
         return "%s %s %s" % (dateField, timeField, self.jsTemplate % fieldName)
 
 
-    def save(self, val):
+    def save(self, val, request):
         try:
             # XXX TODO - Timezone according to avatar preferences
             dt = datetime.strptime(val, self.fullFormat).replace(tzinfo=pytz.UTC)

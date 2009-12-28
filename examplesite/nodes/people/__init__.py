@@ -18,16 +18,16 @@ class CrudPerson(CrudModel):
         'rating': {'width': 50, 'align': 'center'},
     }
 
-    def render_list_name(self):
+    def render_list_name(self, request):
         return link(
             self.obj.name,
             getNode("people"), 
             "view", [self.obj.id])
 
-    def render_proxy_note(self):
+    def render_proxy_note(self, request):
         return colproxy.AreaProxy(self.obj, "note")
 
-    def name(self):
+    def name(self, request):
         return self.obj.name
 
 

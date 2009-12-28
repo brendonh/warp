@@ -1,7 +1,7 @@
 <%! from warp.helpers import link, button, url %>
 
 <div class="warpCrud">
-  <h1>${obj.model.__name__}: ${obj.name()}</h1>
+  <h1>${obj.model.__name__}: ${obj.name(request)}</h1>
 
   <div class="tabs">
     ${link("List", node)}
@@ -43,7 +43,7 @@ else:
 %for (col, colTitle) in zip(obj.crudColumns, crudTitles):
     <tr>
       <th>${colTitle}:</th>
-      <td>${renderFunc(col)}</td>
+      <td>${renderFunc(col, request)}</td>
       % if facet == 'edit':
       <td class="warp-error"></td>
       % endif

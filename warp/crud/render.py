@@ -44,7 +44,7 @@ class CrudRenderer(object):
     
         results = list(store.find(self.model).order_by(sortCol)[start:end])
         
-        makeRow = lambda row: [row.renderListView(colName)
+        makeRow = lambda row: [row.renderListView(colName, request)
                                for colName in row.listColumns]
 
         rows = [{'id': row.id, 
@@ -97,7 +97,7 @@ class CrudRenderer(object):
 
     def render_save(self, request):
         bits = json.load(request.content)
-        errors = form.applyForm(bits)
+        errors = form.applyForm(bits, request)
     
         if errors:
             store.rollback()
