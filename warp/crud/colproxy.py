@@ -150,13 +150,10 @@ class ImageProxy(BaseProxy):
 
 
     def save(self, val, request):
-        print '~~~~~~~~~~~~~~~~~~~~~~~'
-        print "HI I GOT THIS:", val
         tf = internal['uploadCache'].get(val)
         if not tf:
-            print "MISSING"
             return
-        print "File:", tf
+
         tf.seek(0)
         setattr(self.obj, self.col, tf.read())
         tf.close()
