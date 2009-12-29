@@ -164,6 +164,11 @@ class NodeResource(object):
 
         request.node = self.node
         request.resource = self
+
+        # Should be configurable somehow
+        request.setHeader("Pragma", "no-cache")
+        request.setHeader("Expires", "-1")
+
         return self.renderFunc(request)
 
 

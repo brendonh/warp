@@ -27,7 +27,7 @@
 
         var subCount = $.fn.warpform.submissionCounter++;
         $.fn.warpform.uploadCallbacks[subCount] = {
-            '_ids': [],
+            "_ids": []
         };
 
         try {
@@ -50,6 +50,8 @@
         }
         return false;
     };
+
+
 
     $.fn.warpform.handleResponse = function(form, data, callback) {
         if (data['success']) {
@@ -80,6 +82,7 @@
         }
         form.find(":input").removeAttr("disabled");
     };
+
 
 
     // Upload-related stuff
@@ -129,7 +132,7 @@
 
         return objList;
     };
-    
+
 
     function _pendForm(form, objects, callback, subCount) {
 
@@ -242,8 +245,9 @@
         "date": _collectDate,
         "time": _collectTime,
         "bool": function(k, el, f, obj) { obj[f] = el.attr("checked") ? true : false; },
-        "upload": _uploadFile,
+        "upload": _uploadFile
     };
+
 
 })(jQuery);
 
