@@ -1,13 +1,18 @@
+import tempfile
+
 try:
     import json
 except ImportError:
     import simplejson as json
 
+from twisted.web.resource import NoResource
+from twisted.web import static
+
 from mako.template import Template
 
 from storm.locals import Desc
 
-from warp.runtime import store, templateLookup, internal
+from warp.runtime import store, templateLookup, internal, exposedStormClasses
 from warp import helpers
 from warp.crud import form
 
@@ -97,6 +102,7 @@ class CrudRenderer(object):
 
     def render_save(self, request):
         objects = json.load(request.content)
+
         (success, info) = form.applyForm(objects, request)
     
         if not success:
@@ -141,3 +147,64 @@ class CrudRenderer(object):
 
         request.redirect(helpers.url(request.node))
         return "Redirecting..."
+
+
+    def render_image(self, request):
+        try:
+            className, objID, attrName = request.resource.args
+            objID = int(objID)
+            klass = exposedStormClasses[className]
+            obj = store.get(klass, objID)
+        except:
+            return NoResource().render(request)
+        
+        val = getattr(obj, attrName)
+        
+        if val is None:
+            return NoResource().render(request)
+        else:
+            return static.Data(val, "image/jpeg").render(request)
+
+
+
+    def render_uploadframe(self, request):
+        form = """
+    <form method="post" enctype="multipart/form-data" action="%s">
+      <input type="file" name="uploaded-file" />
+      <input type="hidden" name="submitID" value="" />
+      <input type="hidden" name="callbackID" value="" />
+    </form>""" % helpers.url(request.node, "uploadfile")
+        return tinyTemplate % form
+
+
+    def render_uploadfile(self, request):
+        content = request.args.get('uploaded-file', [''])[0]
+        if not content:
+            return self.render_uploadframe(request)
+
+        tf = tempfile.NamedTemporaryFile()
+        tf.write(content)
+        tfName = tf.name.rsplit('/', 1)[-1]
+
+        internal['uploadCache'][tfName] = tf
+
+        submitID = request.args['submitID'][0]
+        callbackID = request.args['callbackID'][0]
+
+        return tinyTemplate % """
+<em style="line-height: 1.5em; color: #090; font-weight: normal;">[Uploaded OK]</em>
+<script type="text/javascript">
+  parent.jQuery.fn.warpform.submissionCallbacks[%s](%s, "%s");
+</script>""" % (submitID, callbackID, tfName)
+
+
+tinyTemplate = """
+<html>
+  <head>
+    <link rel="stylesheet" href="/_warp/reset.css" type="text/css"></link>
+  </head>
+  <body>
+    %s
+  </body>
+</html>
+"""

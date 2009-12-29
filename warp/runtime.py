@@ -15,7 +15,9 @@ config = {}
 
 sql = {}
 
-internal = {}
+internal = {
+    'uploadCache': {}
+}
 
 exposedStormClasses = {}
 

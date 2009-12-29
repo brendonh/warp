@@ -14,6 +14,7 @@
         var form = $(this);
         form.bind("submit",  function(e) { 
             return $.fn.warpform.submit(form, successCallback) });
+        form.find(":input").removeAttr("disabled");
     };
 
     $.fn.warpform.setup = function() {
@@ -23,6 +24,12 @@
     };
 
     $.fn.warpform.submit = function(form, callback) {
+
+        var subCount = $.fn.warpform.submissionCounter++;
+        $.fn.warpform.uploadCallbacks[subCount] = {
+            '_ids': [],
+        };
+
         try {
 
             // The bug here is that it doesn't check whether fields are already disabled,
@@ -30,8 +37,14 @@
             form.find(":input").attr("disabled", "disabled").removeClass("warp-error-highlight")
             form.find(".warp-error").empty();
 
-            var objects = _collectForm(form);
-            _sendForm(form, objects, callback);
+            var objects = _collectForm(form, subCount);
+
+            if ($.fn.warpform.uploadCallbacks[subCount]['_ids'].length) {
+                _pendForm(form, objects, callback, subCount);
+            } else {
+                _sendForm(form, objects, callback);
+            }
+
         } catch(e) {
             console.debug("Error submitting form: " + e);
         }
@@ -39,7 +52,6 @@
     };
 
     $.fn.warpform.handleResponse = function(form, data, callback) {
-        console.dir(data);
         if (data['success']) {
 
             if (callback) {
@@ -69,7 +81,18 @@
         form.find(":input").removeAttr("disabled");
     };
 
-    function _collectForm(form) {
+
+    // Upload-related stuff
+    $.fn.warpform.submissionCounter = 0;
+    $.fn.warpform.submissionCallbacks = {};
+
+    $.fn.warpform.callbackCounter = 0;
+    $.fn.warpform.uploadCallbacks = {};
+
+
+    // Internal
+
+    function _collectForm(form, subCount) {
 
         var objects = {};
 
@@ -98,7 +121,7 @@
             }
 
             var collectorName = _getCollectorName(el);
-            $.fn.warpform.collectors[collectorName](key, el, field, obj['fields']);
+            $.fn.warpform.collectors[collectorName](key, el, field, obj['fields'], subCount);
         });
         
         var objList = [];
@@ -107,6 +130,35 @@
         return objList;
     };
     
+
+    function _pendForm(form, objects, callback, subCount) {
+
+        $.fn.warpform.submissionCallbacks[subCount] = function(id, fileID) {
+
+            var uploadCallbacks = $.fn.warpform.uploadCallbacks[subCount];
+
+            var fieldCallback = uploadCallbacks[id];
+
+            if (fieldCallback) {
+
+                fieldCallback(fileID);
+
+                delete uploadCallbacks[subCount][id];
+
+                for(var i=0; i<uploadCallbacks['_ids'].length; i++) {
+                    if(uploadCallbacks['_ids'][i]==id)
+                        uploadCallbacks['_ids'].splice(i,1); 
+                } 
+
+                // Submit if no pending callbacks remain
+                if (!uploadCallbacks['_ids'].length) {
+                    _sendForm(form, objects, callback);
+                }
+            }
+        };
+    };
+
+
     function _sendForm(form, objects, callback) {
         $.ajax({
             "url": form.attr("action"),
@@ -164,14 +216,35 @@
         return dateAndTime[0] + " " + dateAndTime[1];
     };
 
+    function _uploadFile(k, el, f, obj, subCount) {
+        var frame = window.frames[k];
+        var uploadForm = frame.document.forms[0];
+
+        if (!(uploadForm && uploadForm["uploaded-file"].value)) {
+            return null;
+        }
+
+        var callbackID = $.fn.warpform.callbackCounter++;
+        uploadForm['submitID'].value = subCount;
+        uploadForm['callbackID'].value = callbackID;
+        uploadForm.submit();
+        $.fn.warpform.uploadCallbacks[subCount][callbackID] = function(value) {
+            obj[f] = value;
+        };
+        $.fn.warpform.uploadCallbacks[subCount]['_ids'].push(callbackID);
+    };
+
+
+    // Field hooks
+    
     $.fn.warpform.collectors = {
         "string": function(k, el, f, obj) { obj[f] = el.val(); },
         "date": _collectDate,
         "time": _collectTime,
-        "bool": function(k, el, f, obj) { obj[f] = el.attr("checked") ? true : false; }
+        "bool": function(k, el, f, obj) { obj[f] = el.attr("checked") ? true : false; },
+        "upload": _uploadFile,
     };
 
 })(jQuery);
 
 jQuery(document).ready($.fn.warpform.setup);
-

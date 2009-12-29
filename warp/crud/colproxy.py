@@ -1,6 +1,9 @@
 import pytz
 from datetime import datetime
 
+from warp.runtime import internal
+from warp.helpers import url, getNode
+
 
 class BaseProxy(object):
 
@@ -20,6 +23,13 @@ class BaseProxy(object):
     def render_view(self, request):
         return unicode(getattr(self.obj, self.col))
 
+    
+    def render_edit(self, request):
+        return '<input type="text" name="warpform-%s" value="%s" />' % (
+            self.fieldName(),
+            getattr(self.obj, self.col))
+
+
     def save(self, val, request):
         try:
             setattr(self.obj, self.col, val)
@@ -29,11 +39,7 @@ class BaseProxy(object):
 
 
 class StringProxy(BaseProxy):
-    
-    def render_edit(self, request):
-        return '<input type="text" name="warpform-%s" value="%s" />' % (
-            self.fieldName(),
-            getattr(self.obj, self.col))
+    pass
 
 
 class NonEmptyStringProxy(StringProxy):
@@ -83,6 +89,7 @@ class IntProxy(BaseProxy):
         setattr(self.obj, self.col, val)
 
 
+
 class DateProxy(BaseProxy):
 
     jsTemplate = """
@@ -121,3 +128,37 @@ $(function() { $("#date-field-%s").datepicker(); });
             return u"Value '%s' didn't match format '%s'" % (val, self.fullFormat)
         
         setattr(self.obj, self.col, dt)
+
+
+
+class ImageProxy(BaseProxy):
+
+    def render_view(self, request):
+        return '<img src="%s" />' % url(
+            request.node, "image", 
+            (self.obj.__class__.__name__, self.obj.id, self.col))
+
+
+    def render_edit(self, request):
+        fieldName = self.fieldName()
+        field = '<input type="hidden" name="warpform-%s" class="warpform-upload" />' % fieldName
+        iframe = '<iframe name="%s" src="%s" width="300" height="30" id="iframe-%s"></iframe>' % (
+            fieldName,
+            url(request.node, "uploadframe"),
+            fieldName)
+        return field + iframe
+
+
+    def save(self, val, request):
+        print '~~~~~~~~~~~~~~~~~~~~~~~'
+        print "HI I GOT THIS:", val
+        tf = internal['uploadCache'].get(val)
+        if not tf:
+            print "MISSING"
+            return
+        print "File:", tf
+        tf.seek(0)
+        setattr(self.obj, self.col, tf.read())
+        tf.close()
+        del internal['uploadCache'][val]
+        return
