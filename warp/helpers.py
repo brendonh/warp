@@ -7,7 +7,9 @@ from warp.runtime import store, templateLookup, config
 
 
 def getNode(name):
-    return getattr(__import__("nodes", fromlist=[name]), name, None)
+    return getattr(__import__("nodes.%s" % name, 
+                              fromlist=[name]), 
+                   name, None)
     
 
 def renderTemplateObj(request, template, **kw):
