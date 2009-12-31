@@ -2,6 +2,7 @@ from storm.locals import *
 
 from warp.crud import colproxy, columns
 
+
 class MetaCrudModel(type):
     def __init__(klass, name, bases, dct):
         if 'model' in dct:
@@ -29,16 +30,9 @@ class CrudModel(object):
     listTitles = None
     crudTitles = None
 
-    colMap = None
-
 
     def __init__(self, obj):
         self.obj = obj
-
-        if self.colMap is None:
-            self.__class__.colMap = dict(
-                (v.name, k.__class__)
-                for (k,v) in self.model._storm_columns.iteritems())
 
 
     def name(self, request):
@@ -54,7 +48,8 @@ class CrudModel(object):
 
     def defaultProxy(self, colName):
         val = getattr(self.obj, colName)
-        valType = self.colMap[colName]
+        # Avoid triggering the property __get__
+        valType = self.obj.__class__.__dict__[colName].__class__
         return self.editRenderers[valType](self.obj, colName)
 
 
