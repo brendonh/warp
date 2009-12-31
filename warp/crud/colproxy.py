@@ -159,3 +159,31 @@ class ImageProxy(BaseProxy):
         tf.close()
         del internal['uploadCache'][val]
         return
+
+
+
+class PriceProxy(BaseProxy):
+
+    def render_view(self, request):
+        return "$%i.%.2i" % divmod(getattr(self.obj, self.col), 100)
+
+    def render_edit(self, request):
+        return '<input type="text" name="warpform-%s" value="%s" size="8" />' % (
+            self.fieldName(),
+            self.render_view(request))
+
+    def save(self, val, request):
+        val = val.lstrip('$')
+        
+        try:
+            if '.' in val:
+                dollars, cents = map(int, val.split('.', 1))
+                if cents > 100:
+                    return u"Cents must be 0 - 99"
+                val = (dollars * 100) + cents
+            else:
+                val = int(val) * 100
+        except ValueError:
+            return u"'%s' is not a price." % val
+
+        setattr(self.obj, self.col, val)

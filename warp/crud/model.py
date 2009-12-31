@@ -1,6 +1,6 @@
 from storm.locals import *
 
-from warp.crud import colproxy
+from warp.crud import colproxy, columns
 
 class MetaCrudModel(type):
     def __init__(klass, name, bases, dct):
@@ -17,6 +17,11 @@ class CrudModel(object):
         Unicode: colproxy.StringProxy,
         DateTime: colproxy.DateProxy,
         Bool: colproxy.BooleanProxy,
+
+        # Warp column subclasses
+        columns.Text: colproxy.AreaProxy,
+        columns.Image: colproxy.ImageProxy,
+        columns.Price: colproxy.PriceProxy,
     }
 
     listAttrs = {}
