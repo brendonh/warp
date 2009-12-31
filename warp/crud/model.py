@@ -18,6 +18,8 @@ class CrudModel(object):
         Unicode: colproxy.StringProxy,
         DateTime: colproxy.DateProxy,
         Bool: colproxy.BooleanProxy,
+        Reference: colproxy.ReferenceProxy,
+        ReferenceSet: colproxy.ReferenceSetProxy,
 
         # Warp column subclasses
         columns.Text: colproxy.AreaProxy,

@@ -1,3 +1,5 @@
+import sys
+
 from twisted.python import util, filepath
 
 from mako.template import Template
@@ -10,6 +12,11 @@ def getNode(name):
     return getattr(__import__("nodes.%s" % name, 
                               fromlist=[name]), 
                    name, None)
+
+def getNodeByCrudClass(crudClass):
+    # !!! God, what *shoud* this do?
+    return sys.modules[crudClass.__module__]
+
     
 
 def renderTemplateObj(request, template, **kw):

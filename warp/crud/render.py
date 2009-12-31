@@ -10,7 +10,7 @@ from twisted.web import static
 
 from mako.template import Template
 
-from storm.locals import Desc
+from storm.locals import Desc, Reference
 
 from warp.runtime import store, templateLookup, internal, exposedStormClasses
 from warp import helpers
@@ -25,8 +25,8 @@ class CrudRenderer(object):
 
 
     def render_index(self, request):
-        template = templateLookup.get_template("/crud/list.mak")
-        return helpers.renderTemplateObj(request, template, 
+        return helpers.renderTemplateObj(request, 
+                                         self._getListTemplate(), 
                                          model=self.crudModel)
 
 
@@ -38,6 +38,10 @@ class CrudRenderer(object):
         # XXX Todo -- Search
 
         sortCol = getattr(self.model, params['sidx'])
+        
+        if isinstance(sortCol, Reference):
+            sortCol = sortCol._local_key[0]
+
         if params['sord'] == 'desc':
             sortCol = Desc(sortCol)
 
@@ -45,12 +49,22 @@ class CrudRenderer(object):
         start = (int(params['page']) - 1) * rowsPerPage
         end = start + rowsPerPage
 
-        totalResults = store.find(self.model).count()
+        conditions = []
+        whereJSON = request.args.get('where', [None])[0]
+        if whereJSON is not None:
+            where = json.loads(whereJSON)
+            for (k, v) in where.iteritems():
+                conditions.append(getattr(self.model, k) == v)
+
+        totalResults = store.find(self.model, *conditions).count()
     
-        results = list(store.find(self.model).order_by(sortCol)[start:end])
+        results = list(store.find(self.model, *conditions).order_by(sortCol)[start:end])
         
+        exclude = json.loads(request.args.get('exclude', ['[]'])[0])
+
         makeRow = lambda row: [row.renderListView(colName, request)
-                               for colName in row.listColumns]
+                               for colName in row.listColumns
+                               if colName not in exclude]
 
         rows = [{'id': row.id, 
                  'cell': makeRow(self.crudModel(row))}
@@ -70,6 +84,14 @@ class CrudRenderer(object):
         return json.dumps(obj)
 
 
+    def _getListTemplate(self):
+        if 'crudListTemplate' not in internal:
+            internal['crudListTemplate'] = Template(
+                '<%inherit file="/site.mak" /><%include file="/crud/list.mak" />',
+                lookup=templateLookup,
+                output_encoding="utf-8")
+        return internal['crudListTemplate']
+            
 
     def _getCrudTemplate(self):
         if 'crudTemplate' not in internal:
@@ -125,6 +147,10 @@ class CrudRenderer(object):
 
 
     def render_create(self, request):
+
+        presets = json.loads(request.args.get('presets', [''])[0] or '{}')
+        noEdit = json.loads(request.args.get('noedit', [''])[0] or '[]')
+
         template = templateLookup.get_template("/crud/form.mak")
 
         fakeObj = self.model()
@@ -132,9 +158,22 @@ class CrudRenderer(object):
         # XXX TODO - Take a counter argument from the request here, 
         # so Javascript can product lots of these which don't conflict.
         fakeObj.fakeID = '*1'
+        fakeObj.noEdit = noEdit
 
-        return helpers.renderTemplateObj(request, template, 
-                                         obj=self.crudModel(fakeObj))
+        for (k,v) in presets.iteritems():
+            setattr(fakeObj, k, v)
+
+        # We do an add/rollback dance here to work around some strange Storm
+        # behaviour, where references don't get a value unless their object
+        # is added, even if it isn't committed.
+        store.add(fakeObj)
+
+        rv =  helpers.renderTemplateObj(request, template, 
+                                        obj=self.crudModel(fakeObj))
+
+        store.rollback()
+
+        return rv
 
 
     def render_delete(self, request):

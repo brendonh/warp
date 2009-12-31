@@ -5,14 +5,14 @@
 editing = facet in ('edit', 'create')
 
 if editing:
-    renderFunc = obj.renderEdit
+  renderFunc = obj.renderEdit
 else:
-    renderFunc = obj.renderView
+  renderFunc = obj.renderView
 
 if redirect:
-   redirectBit = ' warp:redirect="%s"' % redirect
+  redirectBit = ' warp:redirect="%s"' % redirect
 else:
-   redirectBit = ''
+  redirectBit = ''
 
 %>
 
@@ -33,9 +33,16 @@ else:
 %>
 
 %for (col, colTitle) in zip(obj.crudColumns, crudTitles):
+
+<%
+renderVal = renderFunc(col, request)
+if renderVal is None:
+  continue
+%>
+
     <tr>
       <th>${colTitle}:</th>
-      <td>${renderFunc(col, request)}</td>
+      <td>${renderVal}</td>
       % if editing:
       <td class="warp-error"></td>
       % endif

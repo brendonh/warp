@@ -1,11 +1,17 @@
-<%! from warp.helpers import url %>
-<%inherit file="/site.mak" />
+<%! from warp.helpers import url, getNodeByCrudClass %>
 
 <%
 if model.listTitles:
-   listTitles = model.listTitles
+   listTitles = [t for (c,t) in zip(model.listColumns, model.listTitles)
+                 if c not in (exclude or [])]
 else:
-   listTitles = [c.title() for c in model.listColumns]
+   listTitles = [c.title() for c in model.listColumns if c not in (exclude or [])]
+
+
+# This might not be the same as the request node, because
+# this list gets embedded in other pages.
+crudNode = getNodeByCrudClass(model)
+
 %>
 
 <script type="text/javascript">
@@ -20,16 +26,18 @@ function delLinkFormatter (cellvalue, options, rowObject) {
 
 jQuery(document).ready(function(){ 
   grid = jQuery("#list").jqGrid({
-    url:'list_json',
+    url: '${url(crudNode, 'list_json')}',
+    postData: ${postData or '{}'},
     datatype: 'json',
     mtype: 'GET',
     colNames:${list(listTitles) + ['Actions']},
     colModel :[ 
 <%
 for c in model.listColumns:
-    d = {'name': c, 'id': c}
-    d.update(model.listAttrs.get(c, {}))
-    context.write("%s," % repr(d))
+  if c in (exclude or []): continue
+  d = {'name': c, 'id': c}
+  d.update(model.listAttrs.get(c, {}))
+  context.write("%s," % repr(d))
 %>
     {'name': 'Actions', 'id': '_actions',
      'align': 'center', 'width': 50,
@@ -40,15 +48,14 @@ for c in model.listColumns:
     rowList:[10,20,30],
     sortname: 'id',
     sortorder: 'asc',
-    viewrecords: true,
-    caption: '${model.model.__name__} List'
+    viewrecords: true
   }); 
 }); 
 
 var popupCreateBox = function(button) {
     $(button).hide();
     $("#createBox").html("Loading...").show();
-    $.get("${url(node, "create")}", function(content) {
+    $.get("${url(crudNode, "create")}?presets=${presets or '' | u}&noedit=${noEdit or '' | u}", function(content) {
       $("#createBox").html(content).find("form").warpform(popupCreateDone);
     });
 };
@@ -64,7 +71,7 @@ var popupCreateDone = function(data) {
 
 var deleteObj = function(id) {
     if (confirm("Delete?")) {
-        $.post("${url(node, 'delete')}/" + id, {},
+        $.post("${url(crudNode, 'delete')}/" + id, {},
                function() { $("#list").trigger("reloadGrid"); });
     }
 }

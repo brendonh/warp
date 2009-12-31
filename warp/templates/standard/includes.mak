@@ -18,4 +18,9 @@
   padding-top: 3px;
   vertical-align: middle;
 }
+
+.ui-jqgrid-titlebar {
+  line-height: normal;
+}
+
     </style>

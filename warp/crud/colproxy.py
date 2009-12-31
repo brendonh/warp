@@ -1,8 +1,8 @@
-import pytz
+import pytz, operator
 from datetime import datetime
 
-from warp.runtime import internal
-from warp.helpers import url, getNode
+from warp.runtime import internal, store, templateLookup
+from warp.helpers import url, link, getNode, renderTemplateObj, getNodeByCrudClass
 
 
 class BaseProxy(object):
@@ -187,3 +187,96 @@ class PriceProxy(BaseProxy):
             return u"'%s' is not a price." % val
 
         setattr(self.obj, self.col, val)
+
+
+
+class ReferenceProxy(BaseProxy):
+
+    def render_view(self, request):
+        obj = getattr(self.obj, self.col)
+        crud = obj.__warp_crud__(obj)
+
+        module = getNodeByCrudClass(crud)
+
+        return link(crud.name(request),
+                    module, "view", [obj.id])
+
+
+    def render_edit(self, request):
+        obj = getattr(self.obj, self.col)
+
+        reference = self.obj.__class__.__dict__[self.col]
+
+        idCol = reference._local_key[0].name
+        noEdit = getattr(self.obj, 'noEdit', [])
+
+        refClass = reference._relation.remote_cls
+        crudClass = refClass.__warp_crud__
+
+        if self.col in noEdit or idCol in noEdit:
+            return '<input type="hidden" name="warpform-%s" value="%s" />%s' % (
+                self.fieldName(), obj.id, crudClass(obj).name(request))
+
+        allObjs = [(crudClass(o).name(request), o) for o in store.find(refClass)]
+        allObjs.sort()
+
+        if obj is None:
+            sel = lambda o: ""
+        else:
+            sel = lambda o: ' selected="selected"' if o.id == obj.id else ''
+
+
+        options = ['<option value="%s"%s>%s</option>' % 
+                   (o.id, sel(o), name)
+                   for (name, o) in allObjs]
+
+        return '<select name="warpform-%s">\n%s\n</select>' % (
+            self.fieldName(), "\n".join(options))
+
+
+    def save(self, val, request):
+        try:
+            val = int(val)
+        except ValueError:
+            return u"Invalid value"
+            
+        refClass = self.obj.__class__.__dict__[self.col]._relation.remote_cls
+
+        obj = store.get(refClass, val)
+
+        if obj is None:
+            return u"No such object (id %s)" % val
+
+        setattr(self.obj, self.col, obj)
+        
+
+
+class ReferenceSetProxy(BaseProxy):
+    """
+    Currently supports only one-to-many
+    """
+
+    def render_view(self, request):
+
+        relation = self.obj.__class__.__dict__[self.col]._relation1
+        refClass = relation.remote_cls
+        remoteColName = relation.remote_key[0].name
+
+        presets = '{"%s": %s}' % (remoteColName, self.obj.id)
+        postData = "{'where': '%s', 'exclude': '[\"%s\"]'}" % (presets, remoteColName.rstrip("_id"))
+
+        noEdit = '["%s"]' % remoteColName
+
+        template = templateLookup.get_template("/crud/list.mak")
+
+        return renderTemplateObj(request, 
+                                 template, 
+                                 model=refClass.__warp_crud__,
+                                 presets=presets,
+                                 postData=postData,
+                                 noEdit=noEdit,
+                                 exclude=[remoteColName.rstrip("_id")])
+
+
+    def render_edit(self, request):
+        return None
