@@ -1,0 +1,63 @@
+/* Global stuff */
+
+body {
+  font-family: Verdana, Arial, Sans;
+  background-color: #eee;
+}
+
+a { text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+form { display: inline; }
+
+/* Header */
+
+.header h1 {
+  font-family: Serif;
+  font-size: 28px;
+  color: #009;
+  padding: 10px;
+}
+
+.header .nav-bar {
+  min-width: 600px;
+  padding: 5px 10px;
+  background-color: #66c;
+  line-height: 1.5em;
+}
+
+.header .nav-bar a, .header .nav-bar a:visited {
+  color: white;
+}
+
+.header .nav-bar .links {
+  float: left;
+}
+
+.header .login {
+  font-size: 12px;
+  color: white;
+  float: right;
+  text-align: right;
+}
+
+.header .login input[type="text"], .header .login input[type="password"] {
+  border: 1px solid black;
+  width: 100px;
+}
+
+
+.content {
+  padding: 15px;
+}
+
+.content h2 {
+  font-family: Serif;
+  font-size: 24px;
+  color: #444;
+  margin-bottom: 20px;
+}
+
+.content p {
+  margin-bottom: 10px;
+}
