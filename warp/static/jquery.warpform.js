@@ -21,6 +21,25 @@
         $("form.warp").each(function() {
             $(this).warpform();
         });
+
+        $("input.warp-autoclear").each(function() {
+
+            var tag = this;
+            var $tag = $(this);
+            var origValue = $tag.val();
+            var origColor = $tag.css("color");
+            var origType = $tag.attr("type");
+
+            $tag.css("color", "#999");
+            tag.type = "text";
+
+            $tag.focus(function() {
+                tag.type = origType;
+                $tag.css("color", origColor);
+                if ($tag.val() == origValue) $tag.val("");
+            });
+        });
+
     };
 
     $.fn.warpform.submit = function(form, callback) {
