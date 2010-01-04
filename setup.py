@@ -21,10 +21,7 @@ setup(name="warp",
         "pytz",
         ],
 
-      packages = [
-        "warp",
-        "twisted.plugins"
-        ],
+      packages = find_packages('.') + ["twisted.plugins"],
 
       package_data = {
         "twisted": ['plugins/warp_plugin.py'],
