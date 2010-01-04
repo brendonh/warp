@@ -19,6 +19,7 @@ setup(name="warp",
         "storm >= 0.12",
         "Mako >= 0.2.5",
         "pytz",
+        "simplejson",
         ],
 
       packages = find_packages('.') + ["twisted.plugins"],
