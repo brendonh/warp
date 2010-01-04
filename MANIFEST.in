@@ -1,5 +1,5 @@
-recursive-include twisted *.py
 recursive-include examplesite *
 recursive-include warp/priv *
 recursive-include warp/static *
 recursive-include warp/templates *
+graft twisted

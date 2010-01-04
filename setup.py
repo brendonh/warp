@@ -19,5 +19,15 @@ setup(name="warp",
         "storm >= 0.12",
         "Mako >= 0.2.5",
         "pytz",
-        ]
+        ],
+
+      packages = [
+        "warp",
+        "twisted.plugins"
+        ],
+
+      package_data = {
+        "twisted": ['plugins/warp_plugin.py'],
+        }
+
 )
