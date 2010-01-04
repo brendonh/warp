@@ -11,14 +11,24 @@ from twisted.python.filepath import FilePath
 
 from warp.webserver import resource, site
 from warp.common import store
-from warp import runtime
 from warp.iwarp import IWarpService
+from warp import runtime
+
+
+class SkeletonOptions(usage.Options):
+    optParameters = (
+        ("siteDir", "d", ".", "Base directory of the warp site"),
+    )
 
 
 class Options(usage.Options):
-    optParameters = [
-        ["siteDir", "d", ".", "Base directory of the warp site"],
-        ]
+    optParameters = (
+        ("siteDir", "d", ".", "Base directory of the warp site"),
+    )
+
+    subCommands = (
+        ("skeleton", None, SkeletonOptions, "Copy Warp site skeleton into current directory"),
+    )
 
 
 class WarpServiceMaker(object):
@@ -29,8 +39,14 @@ class WarpServiceMaker(object):
 
     def makeService(self, options):
 
-        # XXX Todo: optionally get it from options later
         siteDir = FilePath(options['siteDir'])
+
+        if options.subCommand == "skeleton":
+            print "Creating skeleton..."
+            from warp.tools import skeleton
+            skeleton.createSkeleton(siteDir)
+            raise SystemExit
+
 
         sys.path.insert(0, siteDir.path)
 
