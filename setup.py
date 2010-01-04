@@ -13,4 +13,11 @@ setup(name="warp",
       long_description=open('README').read(),
 
       download_url="http://github.com/brendonh/warp/tarball/master#egg=warp",
+
+      install_requires = [
+        "twisted >= 8.2",
+        "storm >= 0.12",
+        "Mako >= 0.2.5",
+        "pytz",
+        ]
 )
