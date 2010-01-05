@@ -29,6 +29,9 @@ setup(name="warp",
 
 )
 
+# Do not look beyond this point, unless you want to destroy your
+# confidence in the software you are about to use.
+
 
 def cleanupTwistedCache():
     from twisted.plugin import IPlugin, getPlugins
@@ -44,8 +47,6 @@ def cleanupTwistedCache():
 
 
 import sys
-print "%%%%%%%%%%%%%%%%%%%%%%%%%%"
-print sys.argv
-
-import atexit
-atexit.register(cleanupTwistedCache)
+if 'bdist_egg' in sys.argv:
+    import atexit
+    atexit.register(cleanupTwistedCache)
