@@ -33,21 +33,19 @@ setup(name="warp",
 def cleanupTwistedCache():
     from twisted.plugin import IPlugin, getPlugins
 
-    try:
-        list(getPlugins(IPlugin))
-    except IOError:
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
-        print "Unable to flush Twisted's plugin cache, because you don't have"
-        print "write access to it. Before using warp, please run:"
-        print
-        print "sudo python -c \"from twisted.plugin import IPlugin, getPlugins; list(getPlugins(IPlugin))\""
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    except Exception, e:
-        print "Huh WHAT"
-        print e
-    except:
-        print "Got something else, apparently"
+    print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    print "Attempting to flush Twisted's plugin cache."
 
+    list(getPlugins(IPlugin))
+
+    print
+    print "If you got a traceback there, it's fine, don't worry."
+    print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
+
+import sys
+print "%%%%%%%%%%%%%%%%%%%%%%%%%%"
+print sys.argv
 
 import atexit
 atexit.register(cleanupTwistedCache)
