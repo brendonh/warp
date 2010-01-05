@@ -28,25 +28,3 @@ setup(name="warp",
         }
 
 )
-
-# Do not look beyond this point, unless you want to destroy your
-# confidence in the software you are about to use.
-
-
-def cleanupTwistedCache():
-    from twisted.plugin import IPlugin, getPlugins
-
-    print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    print "Attempting to flush Twisted's plugin cache."
-
-    list(getPlugins(IPlugin))
-
-    print
-    print "If you got a traceback there, it's fine, don't worry."
-    print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
-
-import sys
-if 'bdist_egg' in sys.argv:
-    import atexit
-    atexit.register(cleanupTwistedCache)
