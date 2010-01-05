@@ -31,10 +31,12 @@ setup(name="warp",
 
 
 def cleanupTwistedCache():
+    import exceptions
+    from twisted.plugin import IPlugin, getPlugins
+
     try:
-        from twisted.plugin import IPlugin, getPlugins
         list(getPlugins(IPlugin))
-    except IOError:
+    except exceptions.IOError:
         print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
         print "Unable to flush Twisted's plugin cache, because you don't have"
         print "write access to it. Before using warp, please run:"
