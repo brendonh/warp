@@ -31,9 +31,17 @@ setup(name="warp",
 
 
 def cleanupTwistedCache():
-    print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
-    print "Haha cache cleanup"
-    print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    try:
+        from twisted.plugin import IPlugin, getPlugins
+        list(getPlugins(IPlugin))
+    except IOError:
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        print "Unable to flush Twisted's plugin cache, because you don't have"
+        print "write access to it. Before using warp, please run:"
+        print
+        print "sudo python -c \"from twisted.plugin import IPlugin, getPlugins; list(getPlugins(IPlugin))\""
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
 
 import atexit
 atexit.register(cleanupTwistedCache)
