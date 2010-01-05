@@ -35,7 +35,6 @@ def cleanupTwistedCache():
 
     try:
         #list(getPlugins(IPlugin))
-        print "Hey"
     except IOError:
         print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
         print "Unable to flush Twisted's plugin cache, because you don't have"
@@ -46,6 +45,8 @@ def cleanupTwistedCache():
     except Exception, e:
         print "Huh WHAT"
         print e
+    except:
+        print "Got something else, apparently"
 
 
 import atexit
