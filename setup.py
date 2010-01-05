@@ -34,7 +34,8 @@ def cleanupTwistedCache():
     from twisted.plugin import IPlugin, getPlugins
 
     try:
-        list(getPlugins(IPlugin))
+        #list(getPlugins(IPlugin))
+        print "Hey"
     except IOError:
         print "~~~~~~~~~~~~~~~~~~~~~~~~~~"
         print "Unable to flush Twisted's plugin cache, because you don't have"
