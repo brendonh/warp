@@ -1,4 +1,4 @@
-<%! from warp.helpers import url, getNodeByCrudClass %>
+<%! from warp.helpers import url, getCrudNode %>
 
 <%
 if model.listTitles:
@@ -10,7 +10,7 @@ else:
 
 # This might not be the same as the request node, because
 # this list gets embedded in other pages.
-crudNode = getNodeByCrudClass(model)
+crudNode = getCrudNode(model)
 
 %>
 
@@ -57,6 +57,10 @@ var popupCreateBox = function(button) {
     $("#createBox").html("Loading...").show();
     $.get("${url(crudNode, "create")}?presets=${presets or '' | u}&noedit=${noEdit or '' | u}", function(content) {
       $("#createBox").html(content).find("form").warpform(popupCreateDone);
+
+      // Hack
+      $("#createBox").find(".warpform-date").datepicker();
+
     });
 };
 

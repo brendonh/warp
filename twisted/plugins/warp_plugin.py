@@ -20,6 +20,10 @@ class SkeletonOptions(usage.Options):
         ("siteDir", "d", ".", "Base directory of the warp site"),
     )
 
+class NodeOptions(usage.Options):
+    def parseArgs(self, name):
+        self['name'] = name
+
 
 class Options(usage.Options):
     optParameters = (
@@ -28,6 +32,8 @@ class Options(usage.Options):
 
     subCommands = (
         ("skeleton", None, SkeletonOptions, "Copy Warp site skeleton into current directory"),
+        ("node", None, NodeOptions, "Create a new node"),
+        ("console", None, usage.Options, "Python console with Warp runtime available"),
     )
 
 
@@ -47,6 +53,15 @@ class WarpServiceMaker(object):
             skeleton.createSkeleton(siteDir)
             raise SystemExit
 
+        elif options.subCommand == "node":
+            nodes = siteDir.child("nodes")
+            if not nodes.exists():
+                print "Please run this from a Warp site directory"
+                raise SystemExit
+
+            from warp.tools import skeleton
+            skeleton.createNode(nodes, options.subOptions['name'])
+            raise SystemExit
 
         sys.path.insert(0, siteDir.path)
 
@@ -58,6 +73,15 @@ class WarpServiceMaker(object):
 
         if hasattr(configModule, 'startup'):
             configModule.startup()
+
+
+        if options.subCommand == "console":
+            import code
+            locals = {'store': runtime.store}
+            c = code.InteractiveConsole(locals)
+            c.interact()
+            raise SystemExit
+
 
         factory = site.WarpSite(resource.WarpResourceWrapper())
         service = internet.TCPServer(config["port"], factory)

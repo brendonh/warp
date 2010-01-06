@@ -21,12 +21,12 @@ class CrudRenderer(object):
 
     def __init__(self, model):
         self.model = model
-        self.crudModel = model.__warp_crud__
+        self.crudModel = helpers.getCrudClass(model)
 
 
     def render_index(self, request):
         return helpers.renderTemplateObj(request, 
-                                         self._getListTemplate(), 
+                                         self._getListTemplate(),
                                          model=self.crudModel)
 
 
@@ -108,7 +108,7 @@ class CrudRenderer(object):
         
         return helpers.renderTemplateObj(request,
                                          self._getCrudTemplate(),
-                                         obj=self.crudModel(obj))
+                                         crud=self.crudModel(obj))
 
 
 
@@ -118,7 +118,7 @@ class CrudRenderer(object):
 
         return helpers.renderTemplateObj(request,
                                          self._getCrudTemplate(),
-                                         obj=self.crudModel(obj),
+                                         crud=self.crudModel(obj),
                                          redirect=helpers.url(request.node, 'view', request.resource.args))
 
 
@@ -169,7 +169,7 @@ class CrudRenderer(object):
         store.add(fakeObj)
 
         rv =  helpers.renderTemplateObj(request, template, 
-                                        obj=self.crudModel(fakeObj))
+                                        crud=self.crudModel(fakeObj))
 
         store.rollback()
 

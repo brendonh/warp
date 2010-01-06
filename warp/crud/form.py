@@ -1,4 +1,5 @@
 from warp.runtime import store, exposedStormClasses
+from warp.helpers import getCrudClass
 
 def applyForm(objects, request):
 
@@ -16,15 +17,9 @@ def applyForm(objects, request):
             raise ValueError("Invalid object: %s" % jsobj)
             
         try:
-            model = exposedStormClasses[jsobj['model']]
+            model, crudClass = exposedStormClasses[jsobj['model']]
         except KeyError:
-            errors.append((None, u"Unknown model: %s" % jsobj['model']))
-            continue
-
-        try:
-            model.__warp_crud__
-        except AttributeError:
-            errors.append((None, u"Model %s has no crud class" % jsobj['model']))
+            errors.append((None, u"Unknown or unexposed model: %s" % jsobj['model']))
             continue
 
 
@@ -60,7 +55,7 @@ def applyForm(objects, request):
             # XXX TODO -- Access check goes here (or, uh, somewhere)
             # ...
 
-            crud = model.__warp_crud__(obj)
+            crud = crudClass(obj)
             actions.append( (crud, attr, val) )
 
 

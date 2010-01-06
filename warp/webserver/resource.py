@@ -202,9 +202,12 @@ class NodeResource(object):
 
     def getSubNode(self, nodeName):
         currentPackage = self.node.__name__.rsplit('.', 1)[0]
-        return getattr(__import__("%s.%s" % (currentPackage, nodeName), 
-                                  fromlist=[nodeName]), 
-                       nodeName, None)
+        try:
+            return getattr(__import__("%s.%s" % (currentPackage, nodeName), 
+                                      fromlist=[nodeName]), 
+                           nodeName, None)
+        except ImportError:
+            return None
 
 
     def __repr__(self):

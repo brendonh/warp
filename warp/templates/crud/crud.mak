@@ -1,7 +1,7 @@
 <%! from warp.helpers import link, button, url %>
 
 <div class="warpCrud">
-  <h1>${obj.model.__name__}: ${obj.name(request)}</h1>
+  <h1>${crud.obj.__class__.__name__}: ${crud.name(request)}</h1>
 
   <div class="tabs">
     ${link("List", node)}

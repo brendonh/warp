@@ -4,7 +4,7 @@ from twisted.python import util, filepath
 
 from mako.template import Template
 
-from warp.runtime import store, templateLookup, config
+from warp.runtime import store, templateLookup, config, exposedStormClasses
 
 
 
@@ -13,8 +13,16 @@ def getNode(name):
                               fromlist=[name]), 
                    name, None)
 
-def getNodeByCrudClass(crudClass):
-    # !!! God, what *shoud* this do?
+
+def getCrudClass(cls):
+    return exposedStormClasses[cls.__name__][1]
+
+def getCrudObj(obj):
+    return getCrudClass(obj.__class__)(obj)
+
+
+def getCrudNode(crudClass):
+    # XXX WHAT - God, what *shoud* this do??
     return sys.modules[crudClass.__module__]
 
     

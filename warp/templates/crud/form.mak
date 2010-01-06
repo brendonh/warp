@@ -5,9 +5,9 @@
 editing = facet in ('edit', 'create')
 
 if editing:
-  renderFunc = obj.renderEdit
+  renderFunc = crud.renderEdit
 else:
-  renderFunc = obj.renderView
+  renderFunc = crud.renderView
 
 if redirect:
   redirectBit = ' warp:redirect="%s"' % redirect
@@ -26,13 +26,13 @@ else:
   </tr>
 
 <%
-if obj.crudTitles:
-  crudTitles = obj.crudTitles
+if crud.crudTitles:
+  crudTitles = crud.crudTitles
 else:
-  crudTitles = [c.title() for c in obj.crudColumns]
+  crudTitles = [c.title() for c in crud.crudColumns]
 %>
 
-%for (col, colTitle) in zip(obj.crudColumns, crudTitles):
+%for (col, colTitle) in zip(crud.crudColumns, crudTitles):
 
 <%
 renderVal = renderFunc(col, request)

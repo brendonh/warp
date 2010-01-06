@@ -41,7 +41,6 @@ class LoginHandler(LoginBase):
             request.session.setAvatar(avatar)
 
 
-
 class LogoutHandler(LoginBase):
 
     def doIt(self, request):

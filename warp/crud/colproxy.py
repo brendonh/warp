@@ -1,8 +1,8 @@
 import pytz, operator
 from datetime import datetime
 
-from warp.runtime import internal, store, templateLookup
-from warp.helpers import url, link, getNode, renderTemplateObj, getNodeByCrudClass
+from warp.runtime import internal, store, templateLookup, exposedStormClasses
+from warp.helpers import url, link, getNode, renderTemplateObj, getCrudClass, getCrudObj, getCrudNode
 
 
 class BaseProxy(object):
@@ -21,13 +21,13 @@ class BaseProxy(object):
             self.col)
 
     def render_view(self, request):
-        return unicode(getattr(self.obj, self.col))
+        return unicode(getattr(self.obj, self.col) or "")
 
     
     def render_edit(self, request):
         return '<input type="text" name="warpform-%s" value="%s" />' % (
             self.fieldName(),
-            getattr(self.obj, self.col))
+            getattr(self.obj, self.col) or "")
 
 
     def save(self, val, request):
@@ -112,10 +112,10 @@ $(function() { $("#date-field-%s").datepicker(); });
         val = getattr(self.obj, self.col)
 
         dateField = '<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
-            fieldName, fieldName, val.strftime(self.dateFormat))
+            fieldName, fieldName, val.strftime(self.dateFormat) if val else "")
 
         timeField = '<input type="text" name="warpform-%s" class="warpform-time" value="%s" size="4" />' % (
-            fieldName, val.strftime(self.timeFormat))
+            fieldName, val.strftime(self.timeFormat) if val else "")
 
         return "%s %s %s" % (dateField, timeField, self.jsTemplate % fieldName)
 
@@ -123,11 +123,17 @@ $(function() { $("#date-field-%s").datepicker(); });
     def save(self, val, request):
         try:
             # XXX TODO - Timezone according to avatar preferences
-            dt = datetime.strptime(val, self.fullFormat).replace(tzinfo=pytz.UTC)
+            dt = datetime.strptime(val, self.fullFormat)
         except ValueError:
             return u"Value '%s' didn't match format '%s'" % (val, self.fullFormat)
-        
-        setattr(self.obj, self.col, dt)
+
+        # We do this dance to avoid having to know about the
+        # tzinfo of the column
+        orig = getattr(self.obj, self.col)
+        for field in ("year", "month", "day", "hour", "minute", "second", "microsecond"):
+            orig = orig.replace(**{field: getattr(dt, field)})
+                
+        setattr(self.obj, self.col, orig)
 
 
 
@@ -194,12 +200,12 @@ class ReferenceProxy(BaseProxy):
 
     def render_view(self, request):
         obj = getattr(self.obj, self.col)
-        crud = obj.__warp_crud__(obj)
+        crud = getCrud(obj)
 
-        module = getNodeByCrudClass(crud)
+        node = getCrodNode(crud)
 
         return link(crud.name(request),
-                    module, "view", [obj.id])
+                    node, "view", [obj.id])
 
 
     def render_edit(self, request):
@@ -211,7 +217,7 @@ class ReferenceProxy(BaseProxy):
         noEdit = getattr(self.obj, 'noEdit', [])
 
         refClass = reference._relation.remote_cls
-        crudClass = refClass.__warp_crud__
+        crudClass = getCrudClass(refClass)
 
         if self.col in noEdit or idCol in noEdit:
             return '<input type="hidden" name="warpform-%s" value="%s" />%s' % (
@@ -271,7 +277,7 @@ class ReferenceSetProxy(BaseProxy):
 
         return renderTemplateObj(request, 
                                  template, 
-                                 model=refClass.__warp_crud__,
+                                 model=getCrudClass(refClass),
                                  presets=presets,
                                  postData=postData,
                                  noEdit=noEdit,

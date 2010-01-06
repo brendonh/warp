@@ -3,15 +3,7 @@ from storm.locals import *
 from warp.crud import colproxy, columns
 
 
-class MetaCrudModel(type):
-    def __init__(klass, name, bases, dct):
-        if 'model' in dct:
-            dct['model'].__warp_crud__ = klass
-
-
 class CrudModel(object):
-
-    __metaclass__ = MetaCrudModel
 
     editRenderers = {
         Int: colproxy.IntProxy,

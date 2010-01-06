@@ -21,6 +21,6 @@ internal = {
 
 exposedStormClasses = {}
 
-def expose(cls):
-    exposedStormClasses[unicode(cls.__name__)] = cls
-    return cls
+def expose(modelClass, crudClass):
+    exposedStormClasses[unicode(modelClass.__name__)] = (modelClass, crudClass)
+
