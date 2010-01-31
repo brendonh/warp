@@ -150,14 +150,13 @@ class CrudRenderer(object):
 
         presets = json.loads(request.args.get('presets', [''])[0] or '{}')
         noEdit = json.loads(request.args.get('noedit', [''])[0] or '[]')
+        fakeID = request.args.get('fakeID', [''])[0] or 1
 
         template = templateLookup.get_template("/crud/form.mak")
 
         fakeObj = self.model()
 
-        # XXX TODO - Take a counter argument from the request here, 
-        # so Javascript can product lots of these which don't conflict.
-        fakeObj.fakeID = '*1'
+        fakeObj.fakeID = '*%s' % fakeID
         fakeObj.noEdit = noEdit
 
         for (k,v) in presets.iteritems():

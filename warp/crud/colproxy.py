@@ -296,3 +296,4 @@ class ReferenceSetProxy(BaseProxy):
 
     def render_edit(self, request):
         return None
+        

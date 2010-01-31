@@ -17,7 +17,7 @@ crudNode = getCrudNode(model)
 <script type="text/javascript">
 
 var grid;
-
+var fakeIDCounter = 1;
 
 function delLinkFormatter (cellvalue, options, rowObject) {
   return '[<a href="javascript:deleteObj('+rowObject[0]+')" style="color: red">Del</a>]';
@@ -55,13 +55,14 @@ for c in model.listColumns:
 var popupCreateBox = function(button) {
     $(button).hide();
     $("#createBox").html("Loading...").show();
-    $.get("${url(crudNode, "create")}?presets=${presets or '' | u}&noedit=${noEdit or '' | u}", function(content) {
+    $.get("${url(crudNode, "create")}?presets=${presets or '' | u}&noedit=${noEdit or '' | u}&fakeID="+fakeIDCounter, function(content) {
       $("#createBox").html(content).find("form").warpform(popupCreateDone);
 
       // Hack
       $("#createBox").find(".warpform-date").datepicker();
 
     });
+    fakeIDCounter++;
 };
 
 var popupCreateDone = function(data) {
