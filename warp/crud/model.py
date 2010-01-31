@@ -14,6 +14,7 @@ class CrudModel(object):
         ReferenceSet: colproxy.ReferenceSetProxy,
 
         # Warp column subclasses
+        columns.NonEmptyUnicode: colproxy.NonEmptyStringProxy,
         columns.Text: colproxy.AreaProxy,
         columns.Image: colproxy.ImageProxy,
         columns.Price: colproxy.PriceProxy,

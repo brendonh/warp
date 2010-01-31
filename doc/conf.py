@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Warp'
-copyright = u'2010, Brendon Hogger'
+copyright = u'2010, Cogini'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -173,7 +173,7 @@ htmlhelp_basename = 'Warpdoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'Warp.tex', u'Warp Documentation',
-   u'Brendon Hogger', 'manual'),
+   u'Brendon Hogger for Cogini', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

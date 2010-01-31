@@ -34,15 +34,16 @@ def createNode(nodes, name):
     for i, segment in enumerate(segments[:-1]):
 
         node = root.child(segment)
-        node.makedirs()
-        node.child("__init__.py").open('w').write("")
-        node.child("%s.py" % segment).open('w').write("""
+        if not node.exists():
+            node.makedirs()
+            node.child("__init__.py").open('w').write("")
+            node.child("%s.py" % segment).open('w').write("""
 def render_index(request):
   request.redirect("%s")
   return "Redirecting..."
 """ % segments[i+1])
 
-        print "Node '%s' created" % '/'.join(segments[:i+1])
+            print "Node '%s' created" % '/'.join(segments[:i+1])
 
         root = node
 

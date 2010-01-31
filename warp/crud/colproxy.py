@@ -1,4 +1,4 @@
-import pytz, operator
+import pytz, operator, re
 from datetime import datetime
 
 from warp.runtime import internal, store, templateLookup, exposedStormClasses
@@ -25,7 +25,7 @@ class BaseProxy(object):
 
     
     def render_edit(self, request):
-        return '<input type="text" name="warpform-%s" value="%s" />' % (
+        return u'<input type="text" name="warpform-%s" value="%s" />' % (
             self.fieldName(),
             getattr(self.obj, self.col) or "")
 
@@ -54,7 +54,7 @@ class NonEmptyStringProxy(StringProxy):
 class AreaProxy(StringProxy):
     
     def render_edit(self, request):
-        return '<textarea name="warpform-%s" cols="30" rows="5">%s</textarea>' % (
+        return u'<textarea name="warpform-%s" cols="30" rows="5">%s</textarea>' % (
             self.fieldName(),
             getattr(self.obj, self.col))
 
@@ -68,7 +68,7 @@ class BooleanProxy(BaseProxy):
         else:
             checkedBit = ''
 
-        return '<input type="checkbox" name="warpform-%s" class="warpform-bool" value="%s" %s/>' % (
+        return u'<input type="checkbox" name="warpform-%s" class="warpform-bool" value="%s" %s/>' % (
             self.fieldName(), val, checkedBit)
 
 
@@ -76,7 +76,7 @@ class BooleanProxy(BaseProxy):
 class IntProxy(BaseProxy):
 
     def render_edit(self, request):
-        return '<input type="text" name="warpform-%s" value="%s" size="4" />' % (
+        return u'<input type="text" name="warpform-%s" value="%s" size="4" />' % (
             self.fieldName(),
             getattr(self.obj, self.col))
 
@@ -111,13 +111,13 @@ $(function() { $("#date-field-%s").datepicker(); });
         fieldName = self.fieldName()
         val = getattr(self.obj, self.col)
 
-        dateField = '<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
+        dateField = u'<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
             fieldName, fieldName, val.strftime(self.dateFormat) if val else "")
 
-        timeField = '<input type="text" name="warpform-%s" class="warpform-time" value="%s" size="4" />' % (
+        timeField = u'<input type="text" name="warpform-%s" class="warpform-time" value="%s" size="4" />' % (
             fieldName, val.strftime(self.timeFormat) if val else "")
 
-        return "%s %s %s" % (dateField, timeField, self.jsTemplate % fieldName)
+        return u"%s %s %s" % (dateField, timeField, self.jsTemplate % fieldName)
 
 
     def save(self, val, request):
@@ -163,7 +163,9 @@ class ImageProxy(BaseProxy):
         tf.seek(0)
         setattr(self.obj, self.col, tf.read())
         tf.close()
+
         del internal['uploadCache'][val]
+
         return
 
 
@@ -174,25 +176,27 @@ class PriceProxy(BaseProxy):
         return "$%i.%.2i" % divmod(getattr(self.obj, self.col), 100)
 
     def render_edit(self, request):
-        return '<input type="text" name="warpform-%s" value="%s" size="8" />' % (
+        return u'<input type="text" name="warpform-%s" value="%s" size="8" />' % (
             self.fieldName(),
             self.render_view(request))
 
-    def save(self, val, request):
-        val = val.lstrip('$')
-        
-        try:
-            if '.' in val:
-                dollars, cents = map(int, val.split('.', 1))
-                if cents > 100:
-                    return u"Cents must be 0 - 99"
-                val = (dollars * 100) + cents
-            else:
-                val = int(val) * 100
-        except ValueError:
-            return u"'%s' is not a price." % val
+    priceExp = re.compile(r'\$?([0-9]*)(?:\.([0-9]{2})|$)$')
 
-        setattr(self.obj, self.col, val)
+    def save(self, val, request):
+
+        m = self.priceExp.match(val)
+
+        if not m:
+            return u"'%s' is not a valid price" % val
+
+        dollars, cents = m.groups()
+
+        if not dollars: dollars = 0
+        if not cents: cents = 0
+
+        total = (int(dollars) * 100) + int(cents)
+
+        setattr(self.obj, self.col, total)
 
 
 

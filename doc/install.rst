@@ -1,5 +1,5 @@
-Installing Warp
-===============
+Installation
+============
 
 
 Debian / Ubuntu

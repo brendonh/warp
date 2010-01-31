@@ -5,6 +5,12 @@ Storm column subtypes that map to Warp's CRUD proxies.
 from storm.locals import *
 
 
+class NonEmptyUnicode(Unicode):
+    """
+    A Unicode column that cannot be empty
+    """
+
+
 class Text(Unicode):
     """
     Render edit boxes as a text area instead of a one-line input

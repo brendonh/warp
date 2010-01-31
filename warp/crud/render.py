@@ -192,9 +192,11 @@ class CrudRenderer(object):
         try:
             className, objID, attrName = request.resource.args
             objID = int(objID)
-            klass = exposedStormClasses[className]
+            klass = exposedStormClasses[className][0]
             obj = store.get(klass, objID)
-        except:
+        except Exception, e:
+            import traceback
+            traceback.print_exc()
             return NoResource().render(request)
         
         val = getattr(obj, attrName)

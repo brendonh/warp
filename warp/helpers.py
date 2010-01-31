@@ -9,9 +9,13 @@ from warp.runtime import store, templateLookup, config, exposedStormClasses
 
 
 def getNode(name):
-    return getattr(__import__("nodes.%s" % name, 
-                              fromlist=[name]), 
-                   name, None)
+
+    bits = name.split('/')
+    leaf = bits[-1]
+
+    return getattr(__import__("nodes.%s" % ".".join(bits), 
+                              fromlist=[leaf]), 
+                   leaf, None)
 
 
 def getCrudClass(cls):

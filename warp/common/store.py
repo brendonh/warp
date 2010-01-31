@@ -6,7 +6,7 @@ from warp import runtime
 
 def setupStore(config):
 
-    #import storm.database
+    import storm.database
     #storm.database.DEBUG = True
 
     store = runtime.store
