@@ -5,7 +5,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from twisted.web.resource import NoResource
+from twisted.web.error import NoResource
 from twisted.web import static
 
 from mako.template import Template
@@ -163,15 +163,8 @@ class CrudRenderer(object):
         for (k,v) in presets.iteritems():
             setattr(fakeObj, k, v)
 
-        # We do an add/rollback dance here to work around some strange Storm
-        # behaviour, where references don't get a value unless their object
-        # is added, even if it isn't committed.
-        store.add(fakeObj)
-
         rv =  helpers.renderTemplateObj(request, template, 
                                         crud=self.crudModel(fakeObj))
-
-        store.rollback()
 
         return rv
 

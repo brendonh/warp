@@ -204,37 +204,42 @@ class ReferenceProxy(BaseProxy):
 
     def render_view(self, request):
         obj = getattr(self.obj, self.col)
-        crud = getCrud(obj)
+        crud = getCrudObj(obj)
 
-        node = getCrodNode(crud)
+        node = getCrudNode(crud)
 
         return link(crud.name(request),
                     node, "view", [obj.id])
 
 
     def render_edit(self, request):
-        obj = getattr(self.obj, self.col)
-
         reference = self.obj.__class__.__dict__[self.col]
 
         idCol = reference._local_key[0].name
         noEdit = getattr(self.obj, 'noEdit', [])
 
+        # We get the _id field here rather than the reference value
+        # itself, because the reference works only on objects that
+        # have been added to the store, and we want to avoid that
+        # when creating things (since they may not satisfy constraints,
+        # and will get added when the database gets flushed on e.g. a find())
+        objID = getattr(self.obj, idCol)
+
         refClass = reference._relation.remote_cls
         crudClass = getCrudClass(refClass)
 
         if self.col in noEdit or idCol in noEdit:
+            obj = store.get(refClass, objID)
             return '<input type="hidden" name="warpform-%s" value="%s" />%s' % (
-                self.fieldName(), obj.id, crudClass(obj).name(request))
+                self.fieldName(), objID, crudClass(obj).name(request))
 
         allObjs = [(crudClass(o).name(request), o) for o in store.find(refClass)]
         allObjs.sort()
 
-        if obj is None:
+        if objID is None:
             sel = lambda o: ""
         else:
-            sel = lambda o: ' selected="selected"' if o.id == obj.id else ''
-
+            sel = lambda o: ' selected="selected"' if o.id == objID else ''
 
         options = ['<option value="%s"%s>%s</option>' % 
                    (o.id, sel(o), name)
@@ -245,6 +250,7 @@ class ReferenceProxy(BaseProxy):
 
 
     def save(self, val, request):
+
         try:
             val = int(val)
         except ValueError:

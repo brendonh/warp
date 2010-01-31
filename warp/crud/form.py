@@ -25,9 +25,12 @@ def applyForm(objects, request):
 
         if jsobj['action'] == 'create':
             obj = model()
-            store.add(obj)
             obj.fakeID = '*' + jsobj['id']
             results['created'].append(obj)
+
+            # We haven't added the object to the store, because it may not
+            # satisfy constraints yet. Down below, when we know things are
+            # okay, we go back and add it.
 
         else:
 
@@ -70,5 +73,8 @@ def applyForm(objects, request):
 
     if errors:
         return (False, errors)
+
+    for obj in results['created']:
+        store.add(obj)
 
     return (True, results)
