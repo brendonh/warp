@@ -1,6 +1,7 @@
 from warp.crud.model import CrudModel
 from warp.crud import colproxy, render
 from warp.helpers import link, getNode
+from warp.runtime import expose
 
 from models import Person
 
@@ -30,5 +31,7 @@ class CrudPerson(CrudModel):
     def name(self, request):
         return self.obj.name
 
+
+expose(Person, CrudPerson)
 
 renderer = render.CrudRenderer(Person)

@@ -2,9 +2,6 @@ import pytz
 
 from storm.locals import *
 
-from warp.runtime import expose
-
-
 class Person(Storm):
     __storm_table__ = "person"
 
@@ -15,4 +12,4 @@ class Person(Storm):
     rating = Int()
     alive = Bool()
 
-expose(Person)
+

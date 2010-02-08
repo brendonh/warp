@@ -9,6 +9,7 @@ from twisted.web.resource import IResource
 from twisted.web.error import NoResource
 from twisted.web import static
 
+from warp.common import access
 from warp.webserver import auth, comet
 from warp.runtime import config, store, templateLookup
 from warp import helpers
@@ -17,15 +18,6 @@ from warp import helpers
 if '.ico' not in static.File.contentTypes:
     static.File.contentTypes['.ico'] = 'image/vnd.microsoft.icon'
 
-
-
-def getNode(name):
-    node = helpers.getNode(name)
-        
-    if node is None:
-        return NoResource()
-
-    return NodeResource(node)
 
 
 class WarpResourceWrapper(object):
@@ -61,15 +53,21 @@ class WarpResourceWrapper(object):
                 return static.File(fp.path)
 
         session = request.getSession()
-        if session is not None:
-            request.avatar = session.avatar
+        request.avatar = session.avatar
 
         handler = self.dispatch.get(firstSegment)
 
         if handler is not None:
             return handler(request)
 
-        return getNode(firstSegment)
+        node = helpers.getNode(firstSegment)
+
+        if node is not None:
+            if not access.allowed(request.avatar, node):
+                return AccessDenied()
+            return NodeResource(node)
+
+        return NoResource()
 
 
     def buildFilePath(self, request):
@@ -122,6 +120,16 @@ class Redirect(object):
 
 
 
+class AccessDenied(object):
+    implements(IResource)
+
+    isLeaf = True
+
+    def render(self, request):
+        return "ACCESS DENIED"
+
+
+
 class NodeResource(object):
     implements(IResource)
 
@@ -160,7 +168,7 @@ class NodeResource(object):
             request.redirect(request.childLink('index'))
             return "Redirecting..."
 
-        self.args = request.postpath
+        self.args = [x for x in request.postpath if x]
 
         request.node = self.node
         request.resource = self

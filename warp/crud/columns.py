@@ -29,4 +29,3 @@ class Price(Int):
     """
     Price in dollars, stored as an integer (cents).
     """
-    pass

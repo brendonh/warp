@@ -13,9 +13,15 @@ def getNode(name):
     bits = name.split('/')
     leaf = bits[-1]
 
-    return getattr(__import__("nodes.%s" % ".".join(bits), 
-                              fromlist=[leaf]), 
-                   leaf, None)
+    try:
+        return getattr(__import__("nodes.%s" % ".".join(bits), 
+                                  fromlist=[leaf]), 
+                       leaf, None)
+    except ImportError, ie:
+        # Hrgh
+        if ie.message.startswith("No module named"):
+            return None
+        raise
 
 
 def getCrudClass(cls):
@@ -26,7 +32,7 @@ def getCrudObj(obj):
 
 
 def getCrudNode(crudClass):
-    # XXX WHAT - God, what *shoud* this do??
+    # XXX WHAT - God, what *should* this do??
     return sys.modules[crudClass.__module__]
 
     

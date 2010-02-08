@@ -42,7 +42,13 @@ def getCreationSQL(store):
                 ('warp_session', """
                 CREATE TABLE warp_session (
                     uid BYTEA NOT NULL PRIMARY KEY,
-                    avatar_id INTEGER REFERENCES warp_avatar(id))"""),
+                    avatar_id INTEGER REFERENCES warp_avatar(id) ON DELETE CASCADE)"""),
+                ('warp_avatar_role', """
+                CREATE TABLE warp_avatar_role (
+                    id SERIAL NOT NULL PRIMARY KEY,
+                    avatar_id INTEGER NOT NULL REFERENCES warp_avatar(id) ON DELETE CASCADE,
+                    role_name BYTEA NOT NULL,
+                    position SERIAL NOT NULL)"""),
                 ],
             },
         'SQLiteConnection': {
@@ -57,7 +63,13 @@ def getCreationSQL(store):
                 ('warp_session', """
                 CREATE TABLE warp_session (
                     uid BYTEA NOT NULL PRIMARY KEY,
-                    avatar_id INTEGER REFERENCES warp_avatar(id))"""),
+                    avatar_id INTEGER REFERENCES warp_avatar(id) ON DELETE CASCADE)"""),
+                ('warp_avatar_role', """
+                CREATE TABLE warp_avatar_role (
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    avatar_id INTEGER NOT NULL REFERENCES warp_avatar(id) ON DELETE CASCADE,
+                    role_name BYTEA NOT NULL,
+                    position INTEGER NOT NULL DEFAULT 0)"""),
                 ],
             },
     }[connType]
