@@ -156,7 +156,7 @@ class CrudRenderer(object):
 
         fakeObj = self.model()
 
-        fakeObj.fakeID = '*%s' % fakeID
+        fakeObj.fakeID = 'n%s' % fakeID
         fakeObj.noEdit = noEdit
 
         for (k,v) in presets.iteritems():

@@ -12,6 +12,8 @@ class CrudModel(object):
         Bool: colproxy.BooleanProxy,
         Reference: colproxy.ReferenceProxy,
         ReferenceSet: colproxy.ReferenceSetProxy,
+        RawStr: colproxy.RawStringProxy,
+        Float: colproxy.FloatProxy,
 
         # Warp column subclasses
         columns.NonEmptyUnicode: colproxy.NonEmptyStringProxy,

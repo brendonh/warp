@@ -25,7 +25,7 @@ def applyForm(objects, request):
 
         if jsobj['action'] == 'create':
             obj = model()
-            obj.fakeID = '*' + jsobj['id']
+            obj.fakeID = 'n' + jsobj['id']
             results['created'].append(obj)
 
             # We haven't added the object to the store, because it may not

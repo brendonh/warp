@@ -132,7 +132,7 @@
             var obj = objects[objKey];
             if (!obj) {
                 obj = {'model': model, 'fields': {}};
-                if (id[0] == '*') {
+                if (id[0] == 'n') {
                     obj['action'] = 'create';
                     id = id.substring(1);
                 } else {

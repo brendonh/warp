@@ -42,6 +42,29 @@ class StringProxy(BaseProxy):
     pass
 
 
+class RawStringProxy(BaseProxy):
+
+    def __init__(self, obj, col, encoding="utf8"):
+        self.obj = obj
+        self.col = col
+        self.encoding = encoding
+
+    def render_view(self, request):
+        return (getattr(self.obj, self.col) or "").decode(self.encoding)
+    
+    def render_edit(self, request):
+        return u'<input type="text" name="warpform-%s" value="%s" />' % (
+            self.fieldName(),
+            getattr(self.obj, self.col) or "")
+
+    def save(self, val, request):
+        try:
+            setattr(self.obj, self.col, val.encode(self.encoding))
+        except (TypeError, ValueError):
+            return u"Invalid value"
+
+
+
 class NonEmptyStringProxy(StringProxy):
 
     def save(self, val, request):
@@ -89,6 +112,21 @@ class IntProxy(BaseProxy):
         setattr(self.obj, self.col, val)
 
 
+class FloatProxy(BaseProxy):
+
+    def render_edit(self, request):
+        return u'<input type="text" name="warpform-%s" value="%s" size="4" />' % (
+            self.fieldName(),
+            getattr(self.obj, self.col))
+
+    def save(self, val, request):
+        try:
+            val = float(val)
+        except ValueError:
+            return u"'%s' is not a float." % val
+
+        setattr(self.obj, self.col, val)
+
 
 class DateProxy(BaseProxy):
 
@@ -121,6 +159,10 @@ $(function() { $("#date-field-%s").datepicker(); });
 
 
     def save(self, val, request):
+        if not val.strip():
+            setattr(self.obj, self.col, None)
+            return
+
         try:
             # XXX TODO - Timezone according to avatar preferences
             dt = datetime.strptime(val, self.fullFormat)
@@ -130,8 +172,12 @@ $(function() { $("#date-field-%s").datepicker(); });
         # We do this dance to avoid having to know about the
         # tzinfo of the column
         orig = getattr(self.obj, self.col)
-        for field in ("year", "month", "day", "hour", "minute", "second", "microsecond"):
-            orig = orig.replace(**{field: getattr(dt, field)})
+        if orig is not None:
+            for field in ("year", "month", "day", "hour", "minute", "second", "microsecond"):
+                orig = orig.replace(**{field: getattr(dt, field)})
+        else:
+            # Not sure what the right thing to do is here
+            orig = dt.replace(tzinfo=pytz.UTC)
                 
         setattr(self.obj, self.col, orig)
 
