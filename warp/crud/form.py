@@ -67,6 +67,7 @@ def applyForm(objects, request):
 
     for (crud, attr, val) in actions:
         error = crud.save(attr, val, request)
+
         if error is not None:
             key = crud.getProxy(attr, request).fieldName()
             errors.append((key, error))

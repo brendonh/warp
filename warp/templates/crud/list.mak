@@ -12,20 +12,54 @@ else:
 # this list gets embedded in other pages.
 crudNode = getCrudNode(model)
 
+if hasattr(request, 'gridCounter'):
+   request.gridCounter += 1
+else:
+   request.gridCounter = 1
+
+
+gc = request.gridCounter
+createButtonID = "createButton%d" % gc
+createBoxID = "createBox%d" % gc
+listID = "list%d" % gc
+pagerID = "pager%d" % gc
+
 %>
 
 <script type="text/javascript">
 
-var grid;
-var fakeIDCounter = 1;
-
-function delLinkFormatter (cellvalue, options, rowObject) {
-  return '[<a href="javascript:deleteObj('+rowObject[0]+')" style="color: red">Del</a>]';
-}
-
-
 jQuery(document).ready(function(){ 
-  grid = jQuery("#list").jqGrid({
+
+  var fakeIDCounter = 1;
+  
+  var popupCreateBox = function() {
+      $("#${createButtonID}").hide();
+      $("#${createBoxID}").html("Loading...").show();
+      $.get("${url(crudNode, "create")}?presets=${presets or '' | u}&noedit=${noEdit or '' | u}&fakeID="+fakeIDCounter, function(content) {
+        $("#${createBoxID}").html(content).find("form").warpform(popupCreateDone);
+  
+        // Hack
+        $("#${createBoxID}").find(".warpform-date").datepicker();
+  
+      });
+      fakeIDCounter++;
+  };
+  
+  var popupCreateDone = function(data) {
+      $("#${listID}").trigger("reloadGrid");
+      var form = $("#${createBoxID}").find("form");
+      form.get(0).reset();
+      form.find(":input").removeAttr("disabled");
+      $("#${createBoxID}").hide();
+      $("#${createButtonID}").show();
+  };
+
+
+  function delLinkFormatter (cellvalue, options, rowObject) {
+    return '[<a href="#" onclick="if (confirm(\'Delete?\')) { $.post(\'${url(crudNode, "delete")}/' + rowObject[0] + '\', {}, function() { $(\'#${listID}\').trigger(\'reloadGrid\'); }); }; return false" style="color: red">Del</a>]';
+  }
+
+  var grid = jQuery("#${listID}").jqGrid({
     url: '${url(crudNode, 'list_json')}',
     postData: ${postData or '{}'},
     datatype: 'json',
@@ -43,57 +77,30 @@ for c in model.listColumns:
      'align': 'center', 'width': 50,
      'formatter':delLinkFormatter},
     ],
-    pager: '#pager',
+    pager: '#${pagerID}',
 % for k, v in model.gridAttrs.iteritems():
   ${k}: ${v},
 % endfor
   dummy: false
   }); 
+
+  $("#${createButtonID}").click(popupCreateBox);
+
 }); 
-
-var popupCreateBox = function(button) {
-    $(button).hide();
-    $("#createBox").html("Loading...").show();
-    $.get("${url(crudNode, "create")}?presets=${presets or '' | u}&noedit=${noEdit or '' | u}&fakeID="+fakeIDCounter, function(content) {
-      $("#createBox").html(content).find("form").warpform(popupCreateDone);
-
-      // Hack
-      $("#createBox").find(".warpform-date").datepicker();
-
-    });
-    fakeIDCounter++;
-};
-
-var popupCreateDone = function(data) {
-    $("#list").trigger("reloadGrid");
-    var form = $("#createBox").find("form");
-    form.get(0).reset();
-    form.find(":input").removeAttr("disabled");
-    $("#createBox").hide();
-    $("#createButton").show();
-};
-
-var deleteObj = function(id) {
-    if (confirm("Delete?")) {
-        $.post("${url(crudNode, 'delete')}/" + id, {},
-               function() { $("#list").trigger("reloadGrid"); });
-    }
-}
 
 </script>
 
 <div style="margin: 10px">
 
-  <table id="list"></table>
-  <div id="pager"></div> 
+  <table id="${listID}"></table>
+  <div id="${pagerID}"></div> 
 
   <div style="margin-top: 10px">
 
     <input type="button" value="Create New" 
-           id="createButton"
-           onclick="popupCreateBox(this)" />
+           id="${createButtonID}" />
 
-    <div id="createBox" class="popupBox warpCrud"></div>
+    <div id="${createBoxID}" class="popupBox warpCrud"></div>
 
   </div>
 

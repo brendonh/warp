@@ -140,6 +140,7 @@ class NodeResource(object):
     def __init__(self, node):
         self.node = node
         self.facetName = None
+        self.response = None
         self.args = []
         
 
@@ -153,13 +154,29 @@ class NodeResource(object):
             self.facetName = segment
             self.renderFunc = renderFunc
             self.isLeaf = True
-            return self
+
+            response = self.getResponse(request)
+
+            if isinstance(response, str):
+                self.response = response
+                return self
+            else:
+                return response
 
         subNode = self.getSubNode(segment)
         if subNode is not None:
             return NodeResource(subNode)
 
         return NoResource()
+
+
+    def getResponse(self, request):
+        self.args = [x for x in request.postpath if x]
+
+        request.node = self.node
+        request.resource = self
+
+        return self.renderFunc(request)
 
             
     def render(self, request):
@@ -168,16 +185,11 @@ class NodeResource(object):
             request.redirect(request.childLink('index'))
             return "Redirecting..."
 
-        self.args = [x for x in request.postpath if x]
-
-        request.node = self.node
-        request.resource = self
-
         # Should be configurable somehow
         request.setHeader("Pragma", "no-cache")
         request.setHeader("Expires", "-1")
 
-        return self.renderFunc(request)
+        return self.response
 
 
     def getRenderFunc(self, facetName):
