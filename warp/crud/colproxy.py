@@ -98,6 +98,12 @@ class BooleanProxy(BaseProxy):
 
 class IntProxy(BaseProxy):
 
+    def render_view(self, request):
+        val = getattr(self.obj, self.col)
+        if val is None: return "[None]"
+        return str(val)
+
+
     def render_edit(self, request):
         return u'<input type="text" name="warpform-%s" value="%s" size="4" />' % (
             self.fieldName(),
