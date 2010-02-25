@@ -266,7 +266,6 @@ class ReferenceProxy(BaseProxy):
 
     def render_edit(self, request):
         reference = self.obj.__class__.__dict__[self.col]
-
         idCol = reference._local_key[0].name
         noEdit = getattr(self.obj, 'noEdit', [])
 
@@ -315,7 +314,12 @@ class ReferenceProxy(BaseProxy):
         if obj is None:
             return u"No such object (id %s)" % val
 
-        setattr(self.obj, self.col, obj)
+        # As in render_edit, set the _id col rather than the reference
+        # itself, since the latter works only if this object is
+        # already in the store
+        reference = self.obj.__class__.__dict__[self.col]
+        idCol = reference._local_key[0].name
+        setattr(self.obj, idCol, obj.id)
         
 
 
