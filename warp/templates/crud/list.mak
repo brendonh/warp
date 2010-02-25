@@ -44,11 +44,10 @@ for c in model.listColumns:
      'formatter':delLinkFormatter},
     ],
     pager: '#pager',
-    rowNum:10,
-    rowList:[10,20,30],
-    sortname: 'id',
-    sortorder: 'asc',
-    viewrecords: true
+% for k, v in model.gridAttrs.iteritems():
+  ${k}: ${v},
+% endfor
+  dummy: false
   }); 
 }); 
 

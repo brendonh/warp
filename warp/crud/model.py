@@ -27,6 +27,14 @@ class CrudModel(object):
     listTitles = None
     crudTitles = None
 
+    gridAttrs = {
+        'rowNum': "10",
+        'rowList': "[10,20,30]",
+        'sortname': "'id'",
+        'sortorder': "'asc'",
+        'viewrecords': "true",
+    }
+
 
     def __init__(self, obj):
         self.obj = obj
