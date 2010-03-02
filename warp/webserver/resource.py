@@ -157,7 +157,9 @@ class NodeResource(object):
 
             response = self.getResponse(request)
 
-            if isinstance(response, str):
+            # Int is for NOT_DONE_YET. Maybe we should
+            # check for a resource, rather than this?
+            if isinstance(response, (str, int)):
                 self.response = response
                 return self
             else:
