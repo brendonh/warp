@@ -14,12 +14,14 @@ class Avatar(Storm):
 
     def _getRoles(self):
         if self._roles is None:
+            roleLookup = runtime.config['roles']
             self._roles = tuple(
-                runtime.config['roles'][ar.role_name]
-                for ar in runtime.store.find(
-                    AvatarRole, AvatarRole.avatar == self
-                    ).order_by(AvatarRole.position)
-                ) + (runtime.config['roles']["anon"],)
+                [roleLookup[ar.role_name]
+                 for ar in runtime.store.find(
+                        AvatarRole, AvatarRole.avatar == self
+                        ).order_by(AvatarRole.position)
+                 ] + [roleLookup[r] for r in 
+                      runtime.config['defaultRoles']])
 
         return self._roles
     roles = property(_getRoles)   
