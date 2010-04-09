@@ -19,7 +19,7 @@ class Avatar(Storm):
                 for ar in runtime.store.find(
                     AvatarRole, AvatarRole.avatar == self
                     ).order_by(AvatarRole.position)
-                ) + ("default",)
+                ) + (runtime.config['roles']["anon"],)
 
         return self._roles
     roles = property(_getRoles)   
