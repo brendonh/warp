@@ -18,6 +18,14 @@ class Text(Unicode):
     pass
 
 
+class HTML(Unicode):
+    """
+    Render edit boxes as a big HTML text area instead of a one-line input
+    """
+    pass
+
+
+
 class Image(RawStr):
     """
     Do magic file upload stuff, and display result in an <img> tag

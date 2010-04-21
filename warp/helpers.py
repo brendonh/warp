@@ -1,4 +1,4 @@
-import sys
+import sys, urllib2
 
 from twisted.python import util, filepath
 

@@ -6,6 +6,13 @@
     <script type="text/javascript" src="/_warp/jquery.comet.js"></script>
     <script type="text/javascript" src="/_warp/jquery.warpform.js"></script>
 
+    <script type="text/javascript" src="/_warp/markitup/jquery.markitup.js"></script>
+    <script type="text/javascript" src="/_warp/markitup/sets/default/set.js"></script>
+    <link rel="stylesheet" type="text/css" href="/_warp/markitup/skins/markitup/style.css" />
+    <link rel="stylesheet" type="text/css" href="/_warp/markitup/sets/default/style.css" />
+
+
+
     <style type="text/css">
 /* Fixes because jqGrid doesn't expect reset.css */
 
@@ -24,3 +31,9 @@
 }
 
     </style>
+
+<script type="text/javascript">
+  $(document).ready(function() { 
+    $("textarea.markItUp").markItUp(mySettings); 
+  });
+</script>
