@@ -45,6 +45,10 @@ class CrudModel(object):
         return self.obj.id
 
 
+    def parent(self, request):
+        return None
+
+
     def getProxy(self, colName, request):
         funcName = "render_proxy_%s" % colName
         if hasattr(self, funcName):

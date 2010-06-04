@@ -77,7 +77,7 @@ class NonEmptyStringProxy(StringProxy):
 class AreaProxy(StringProxy):
     
     def render_edit(self, request):
-        return u'<textarea name="warpform-%s" cols="30" rows="5">%s</textarea>' % (
+        return u'<textarea name="warpform-%s" cols="80" rows="6">%s</textarea>' % (
             self.fieldName(),
             getattr(self.obj, self.col))
 
@@ -117,9 +117,11 @@ class IntProxy(BaseProxy):
 
 
     def render_edit(self, request):
+        val = getattr(self.obj, self.col)
+        if val is None:
+            val = ""
         return u'<input type="text" name="warpform-%s" value="%s" size="4" />' % (
-            self.fieldName(),
-            getattr(self.obj, self.col))
+            self.fieldName(), val)
 
     def save(self, val, request):
         try:
@@ -237,7 +239,10 @@ class ImageProxy(BaseProxy):
 class PriceProxy(BaseProxy):
 
     def render_view(self, request):
-        return "$%i.%.2i" % divmod(getattr(self.obj, self.col), 100)
+        val = getattr(self.obj, self.col)
+        if val is None:
+            return "$0"
+        return "$%i.%.2i" % divmod(val, 100)
 
     def render_edit(self, request):
         return u'<input type="text" name="warpform-%s" value="%s" size="8" />' % (
