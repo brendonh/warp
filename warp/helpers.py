@@ -1,4 +1,4 @@
-import sys, urllib2
+import sys, urllib, urllib2
 
 from twisted.python import util, filepath
 
@@ -59,16 +59,19 @@ def renderLocalTemplate(request, filename, **kw):
     return renderTemplate(request, templatePath, **kw)
 
 
-def url(node, facet="index", args=[]):
+def url(node, facet="index", args=(), query=()):
     nodeDir = filepath.FilePath(node.__file__).parent()
     segments = nodeDir.segmentsFrom(config['siteDir'].child("nodes"))
     segments.append(facet)
     segments.extend(args)
-    return "/%s" % ("/".join(map(str, segments)))
+    u = "/%s" % ("/".join(map(str, segments)))
+    if query:
+        u = "%s?%s" % (u, urllib.urlencode(query))
+    return u
         
 
-def link(label, node, facet="index", args=[], **attrs):
-    attrs['href'] = url(node, facet, args)
+def link(label, node, facet="index", args=(), query=(), **attrs):
+    attrs['href'] = url(node, facet, args, query)
     bits = " ".join('%s="%s"' % (k.rstrip('_'), v) for (k,v) in attrs.iteritems())
     return '<a %s>%s</a>' % (bits, label)
 

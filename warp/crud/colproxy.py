@@ -347,7 +347,9 @@ class ReferenceSetProxy(BaseProxy):
 
     def render_view(self, request):
 
-        relation = self.obj.__class__.__dict__[self.col]._relation1
+        refset = self.obj.__class__.__dict__[self.col]
+
+        relation = refset._relation1
         refClass = relation.remote_cls
         remoteColName = relation.remote_key[0].name
 

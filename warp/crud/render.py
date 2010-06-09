@@ -66,7 +66,9 @@ class CrudRenderer(object):
                                for colName in row.listColumns
                                if colName not in exclude]
 
-        rows = [{'id': row.id, 
+        rows = [{'id': '.'.join(str(getattr(row, k)) for k in row.__storm_primary__) 
+                       if hasattr(row, '__storm_primary__')
+                       else row.id, 
                  'cell': makeRow(self.crudModel(row))}
                 for row in results]
 

@@ -37,6 +37,8 @@ class DBSession(Storm):
     avatar_id = Int()
     avatar = Reference(avatar_id, Avatar.id)
 
+    language = u"en"
+
     def setAvatar(self, avatar):
         self.avatar = avatar
         runtime.store.commit()
