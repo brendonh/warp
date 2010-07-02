@@ -1,20 +1,22 @@
 <%! from warp.helpers import link, button, url, getCrudObj, getCrudNode %>
+<%! from warp.crud.model import CrudModel %>
 
 <% 
 crumbs = []
-parent = crud.obj
+parent = crud
 while parent is not None:
-  parentCrud = getCrudObj(parent)
-  crumbs.append(parentCrud)
-  parent = parentCrud.parent(request)
+  crumbs.append(parent)
+  parent = parent.parentCrumb(request)
 crumbs.reverse()
 %>
 
 
 <div class="warp-breadcrumbs">
-% for crumb in crumbs:
-  &gt;
-  ${link(crumb.name(request), getCrudNode(crumb), "view", [crumb.obj.id])} 
+% for i, crumb in enumerate(crumbs):
+  % if i:
+    &gt;
+  % endif
+  ${crumb.linkAsParent(request)}
 % endfor
 </div>
 
@@ -23,7 +25,7 @@ crumbs.reverse()
 
   <div class="tabs">
 
-% if not crud.parent(request):
+% if crud.showListLink and not crud.parent(request):
     ${link("List", node)}
 % endif
 

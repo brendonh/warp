@@ -1,14 +1,15 @@
 from storm.locals import *
 
 from warp.crud import colproxy, columns
-
+from warp import helpers
 
 class CrudModel(object):
 
     editRenderers = {
         Int: colproxy.IntProxy,
         Unicode: colproxy.StringProxy,
-        DateTime: colproxy.DateProxy,
+        DateTime: colproxy.DateTimeProxy,
+        Date: colproxy.DateProxy,
         Bool: colproxy.BooleanProxy,
         Reference: colproxy.ReferenceProxy,
         ReferenceSet: colproxy.ReferenceSetProxy,
@@ -28,6 +29,8 @@ class CrudModel(object):
     listTitles = None
     crudTitles = None
 
+    showListLink = True
+
     gridAttrs = {
         'rowNum': "10",
         'rowList': "[10,20,30]",
@@ -45,8 +48,25 @@ class CrudModel(object):
         return self.obj.id
 
 
+    def parentCrumb(self, request):
+        parent = self.parent(request)
+        if parent is not None:
+            return helpers.getCrudObj(parent)
+
+
     def parent(self, request):
         return None
+
+
+    def linkAsParent(self, request):
+        return helpers.link(self.name(request), 
+                            helpers.getCrudNode(self), 
+                            "view", 
+                            [self.obj.id])
+
+
+    def saveRedirect(self, request):
+        return helpers.url(request.node, 'view', request.resource.args)
 
 
     def getProxy(self, colName, request):

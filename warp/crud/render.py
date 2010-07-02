@@ -95,7 +95,7 @@ class CrudRenderer(object):
         return internal['crudListTemplate']
             
 
-    def _getCrudTemplate(self):
+    def _getViewTemplate(self):
         if 'crudTemplate' not in internal:
             internal['crudTemplate'] = Template(
                 '<%inherit file="/site.mak" /><%include file="/crud/crud.mak" />',
@@ -103,13 +103,15 @@ class CrudRenderer(object):
                 output_encoding="utf-8")
         return internal['crudTemplate']
 
+    _getEditTemplate = _getViewTemplate
+
 
     def render_view(self, request):   
         objID = int(request.resource.args[0])
         obj = store.get(self.model, objID)
         
         return helpers.renderTemplateObj(request,
-                                         self._getCrudTemplate(),
+                                         self._getViewTemplate(),
                                          crud=self.crudModel(obj))
 
 
@@ -117,11 +119,12 @@ class CrudRenderer(object):
     def render_edit(self, request):
         objID = int(request.resource.args[0])
         obj = store.get(self.model, objID)
+        crud = self.crudModel(obj)
 
         return helpers.renderTemplateObj(request,
-                                         self._getCrudTemplate(),
-                                         crud=self.crudModel(obj),
-                                         redirect=helpers.url(request.node, 'view', request.resource.args))
+                                         self._getEditTemplate(),
+                                         crud=crud,
+                                         redirect=crud.saveRedirect(request))
 
 
     def render_save(self, request):

@@ -8,9 +8,9 @@
 
     <script type="text/javascript" src="/_warp/markitup/jquery.markitup.js"></script>
     <script type="text/javascript" src="/_warp/markitup/sets/default/set.js"></script>
+
     <link rel="stylesheet" type="text/css" href="/_warp/markitup/skins/markitup/style.css" />
     <link rel="stylesheet" type="text/css" href="/_warp/markitup/sets/default/style.css" />
-
 
 
     <style type="text/css">

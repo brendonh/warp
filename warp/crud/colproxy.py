@@ -152,13 +152,45 @@ class DateProxy(BaseProxy):
 
     jsTemplate = """
 <script type="text/javascript">
-$(function() { $("#date-field-%s").datepicker(); });
+jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
 </script>
 """
 
     dateFormat = "%m/%d/%Y"
+
+    def render_edit(self, request):
+        fieldName = self.fieldName()
+        val = getattr(self.obj, self.col)
+
+        dateField = u'<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
+            fieldName, fieldName, val.strftime(self.dateFormat) if val else "")
+
+        return u"%s %s" % (dateField, self.jsTemplate % fieldName)
+
+
+    def save(self, val, request):
+
+        try:
+            [val,_] = val
+        except Exception:
+            return u"Value wasn't a [date, 0] list"
+
+        if not val.strip():
+            setattr(self.obj, self.col, None)
+            return
+
+        try:
+            date = datetime.strptime(val, self.dateFormat).date()
+        except ValueError:
+            return u"Value '%s' didn't match format '%s'" % (val, self.dateFormat)
+                
+        setattr(self.obj, self.col, date)
+
+
+class DateTimeProxy(DateProxy):
+
     timeFormat = "%H:%M"
-    fullFormat = "%s %s" % (dateFormat, timeFormat)
+    fullFormat = "%s %s" % (DateProxy.dateFormat, timeFormat)
 
 
     def render_view(self, request):
@@ -169,13 +201,10 @@ $(function() { $("#date-field-%s").datepicker(); });
         fieldName = self.fieldName()
         val = getattr(self.obj, self.col)
 
-        dateField = u'<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
-            fieldName, fieldName, val.strftime(self.dateFormat) if val else "")
-
         timeField = u'<input type="text" name="warpform-%s" class="warpform-time" value="%s" size="4" />' % (
             fieldName, val.strftime(self.timeFormat) if val else "")
 
-        return u"%s %s %s" % (dateField, timeField, self.jsTemplate % fieldName)
+        return u"%s %s" % (super(DateTimeProxy, self).render_edit(request), timeField)
 
 
     def save(self, val, request):
@@ -271,8 +300,19 @@ class PriceProxy(BaseProxy):
 
 class ReferenceProxy(BaseProxy):
 
+    def __init__(self, obj, col, allowNone=False, conditions=()):
+        self.obj = obj
+        self.col = col
+        self.allowNone = allowNone
+        self.conditions = conditions
+
+
     def render_view(self, request):
         obj = getattr(self.obj, self.col)
+
+        if obj is None:
+            return ""
+
         crud = getCrudObj(obj)
 
         node = getCrudNode(crud)
@@ -282,6 +322,10 @@ class ReferenceProxy(BaseProxy):
 
 
     def render_edit(self, request):
+
+        # Make sure it's loaded
+        getattr(self.obj, self.col)
+
         reference = self.obj.__class__.__dict__[self.col]
         idCol = reference._local_key[0].name
         noEdit = getattr(self.obj, 'noEdit', [])
@@ -301,7 +345,7 @@ class ReferenceProxy(BaseProxy):
             return '<input type="hidden" name="warpform-%s" value="%s" />%s' % (
                 self.fieldName(), objID, crudClass(obj).name(request))
 
-        allObjs = [(crudClass(o).name(request), o) for o in store.find(refClass)]
+        allObjs = [(crudClass(o).name(request), o) for o in store.find(refClass, *self.conditions)]
         allObjs.sort()
 
         if objID is None:
@@ -309,9 +353,14 @@ class ReferenceProxy(BaseProxy):
         else:
             sel = lambda o: ' selected="selected"' if o.id == objID else ''
 
-        options = ['<option value="%s"%s>%s</option>' % 
-                   (o.id, sel(o), name)
-                   for (name, o) in allObjs]
+        options = []
+
+        if self.allowNone:
+            options.append('<option value="">[None]</option>')
+        
+        options.extend('<option value="%s"%s>%s</option>' % 
+                       (o.id, sel(o), name)
+                       for (name, o) in allObjs)
 
         return '<select name="warpform-%s">\n%s\n</select>' % (
             self.fieldName(), "\n".join(options))
@@ -320,24 +369,27 @@ class ReferenceProxy(BaseProxy):
     def save(self, val, request):
 
         try:
-            val = int(val)
+            if self.allowNone and val == "":
+                val = None
+            else:
+                val = int(val)
         except ValueError:
             return u"Invalid value"
             
         refClass = self.obj.__class__.__dict__[self.col]._relation.remote_cls
 
-        obj = store.get(refClass, val)
-
-        if obj is None:
-            return u"No such object (id %s)" % val
+        if val is not None:
+            obj = store.get(refClass, val)
+            if obj is None:
+                return u"No such object (id %s)" % val
+            val = obj.id
 
         # As in render_edit, set the _id col rather than the reference
         # itself, since the latter works only if this object is
         # already in the store
         reference = self.obj.__class__.__dict__[self.col]
         idCol = reference._local_key[0].name
-        setattr(self.obj, idCol, obj.id)
-        
+        setattr(self.obj, idCol, val)
 
 
 class ReferenceSetProxy(BaseProxy):
@@ -372,3 +424,46 @@ class ReferenceSetProxy(BaseProxy):
     def render_edit(self, request):
         return None
         
+
+
+class EnumProxy(BaseProxy):
+
+    def __init__(self, obj, col, choices, convertIn=int):
+        self.obj = obj
+        self.col = col
+        self.choices = choices
+        self.convertIn = convertIn
+
+    def render_view(self, request):
+        val = getattr(self.obj, self.col)
+        if val is None:
+            return "None"
+        for (k, v) in self.choices:
+            if k == val:
+                return v
+        return "Invalid (%s)" % val
+    
+    def render_edit(self, request):
+        val = getattr(self.obj, self.col)
+        options = []
+        for (k, v) in self.choices:
+            if k == val: sel = ' selected="selected"'
+            else: sel = ''
+            options.append('<option value="%s"%s>%s</option>' % (k, sel, v))
+
+        return '<select name="warpform-%s">%s</select>' % (
+            self.fieldName(), "".join(options))
+
+    def save(self, val, request):
+        try:
+            val = self.convertIn(val)
+        except (TypeError, ValueError):
+            return u"Invalid value"
+
+        if val not in (k for (k,v) in self.choices):
+            return u"Invalid value"
+
+        try:
+            setattr(self.obj, self.col, val)
+        except (TypeError, ValueError):
+            return u"Invalid value"

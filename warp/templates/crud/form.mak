@@ -16,7 +16,9 @@ else:
 
 %>
 
+% if editing:
 <form class="warp" action="${url(node, 'save', args)}"${redirectBit}>
+% endif
 
   <table>
 
@@ -58,4 +60,6 @@ if renderVal is None:
 
   </table>
 
+% if editing:
 </form>
+% endif
