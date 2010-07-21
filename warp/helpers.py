@@ -38,13 +38,15 @@ def getCrudNode(crudClass):
     
 
 def renderTemplateObj(request, template, **kw):
-    return template.render(node=request.node,
-                           request=request,
-                           store=store,
-                           facet=request.resource.facetName,
-                           args=request.resource.args,
-                           **kw)
+    if kw.pop("return_unicode", False): renderFunc = template.render_unicode
+    else: renderFunc = template.render
 
+    return renderFunc(node=request.node,
+                      request=request,
+                      store=store,
+                      facet=request.resource.facetName,
+                      args=request.resource.args,
+                      **kw)
 
 def renderTemplate(request, templatePath, **kw):
     template = Template(filename=templatePath,

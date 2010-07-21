@@ -22,7 +22,6 @@ class BaseProxy(object):
 
     def render_view(self, request):
         return unicode(getattr(self.obj, self.col) or "")
-
     
     def render_edit(self, request):
         return u'<input type="text" name="warpform-%s" value="%s" />' % (
@@ -75,6 +74,9 @@ class NonEmptyStringProxy(StringProxy):
 
 
 class AreaProxy(StringProxy):
+
+    def render_view(self, request):
+        return u'<div style="white-space: pre">%s</div>' % unicode(getattr(self.obj, self.col) or "")
     
     def render_edit(self, request):
         return u'<textarea name="warpform-%s" cols="80" rows="6">%s</textarea>' % (
