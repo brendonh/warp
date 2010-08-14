@@ -48,11 +48,14 @@ def renderTemplateObj(request, template, **kw):
                       args=request.resource.args,
                       **kw)
 
+def getTemplate(templatePath):
+    return Template(filename=templatePath,
+                    lookup=templateLookup,
+                    format_exceptions=True,
+                    output_encoding="utf-8")
+
 def renderTemplate(request, templatePath, **kw):
-    template = Template(filename=templatePath,
-                        lookup=templateLookup,
-                        format_exceptions=True,
-                        output_encoding="utf-8")
+    template = getTemplate(templatePath)
     return renderTemplateObj(request, template, **kw)
 
 

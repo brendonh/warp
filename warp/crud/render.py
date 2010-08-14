@@ -151,13 +151,14 @@ class CrudRenderer(object):
                     })
 
 
-    def render_create(self, request):
+    def render_create(self, request, template=None):
 
         presets = json.loads(request.args.get('presets', [''])[0] or '{}')
         noEdit = json.loads(request.args.get('noedit', [''])[0] or '[]')
         fakeID = request.args.get('fakeID', [''])[0] or 1
 
-        template = templateLookup.get_template("/crud/form.mak")
+        if template is None:
+            template = templateLookup.get_template("/crud/form.mak")
 
         fakeObj = self.model()
 
@@ -167,10 +168,8 @@ class CrudRenderer(object):
         for (k,v) in presets.iteritems():
             setattr(fakeObj, k, v)
 
-        rv =  helpers.renderTemplateObj(request, template, 
-                                        crud=self.crudModel(fakeObj))
-
-        return rv
+        return helpers.renderTemplateObj(request, template, 
+                                         crud=self.crudModel(fakeObj))
 
 
     def render_delete(self, request):

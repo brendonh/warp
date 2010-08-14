@@ -75,12 +75,15 @@ class NonEmptyStringProxy(StringProxy):
 
 class AreaProxy(StringProxy):
 
+    cols = 80
+    rows = 6
+
     def render_view(self, request):
         return u'<div style="white-space: pre">%s</div>' % unicode(getattr(self.obj, self.col) or "")
     
     def render_edit(self, request):
-        return u'<textarea name="warpform-%s" cols="80" rows="6">%s</textarea>' % (
-            self.fieldName(),
+        return u'<textarea name="warpform-%s" cols="%s" rows="%s">%s</textarea>' % (
+            self.fieldName(), self.cols, self.rows,
             getattr(self.obj, self.col))
 
 
@@ -159,6 +162,7 @@ jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
 """
 
     dateFormat = "%m/%d/%Y"
+    timezone = pytz.UTC
 
     def render_edit(self, request):
         fieldName = self.fieldName()
@@ -182,7 +186,10 @@ jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
             return
 
         try:
-            date = datetime.strptime(val, self.dateFormat).date()
+            date = (datetime.strptime(val, self.dateFormat)
+                    # .replace(tzinfo=self.timezone)
+                    # .astimezone(pytz.UTC)
+                    .date())
         except ValueError:
             return u"Value '%s' didn't match format '%s'" % (val, self.dateFormat)
                 
@@ -196,12 +203,12 @@ class DateTimeProxy(DateProxy):
 
 
     def render_view(self, request):
-        return getattr(self.obj, self.col).strftime(self.fullFormat)
+        return getattr(self.obj, self.col).astimezone(self.timezone).strftime(self.fullFormat)
 
 
     def render_edit(self, request):
         fieldName = self.fieldName()
-        val = getattr(self.obj, self.col)
+        val = getattr(self.obj, self.col).astimezone(self.timezone)
 
         timeField = u'<input type="text" name="warpform-%s" class="warpform-time" value="%s" size="4" />' % (
             fieldName, val.strftime(self.timeFormat) if val else "")
@@ -215,22 +222,23 @@ class DateTimeProxy(DateProxy):
             return
 
         try:
-            # XXX TODO - Timezone according to avatar preferences
-            dt = datetime.strptime(val, self.fullFormat)
+            dt = (datetime.strptime(val, self.fullFormat)
+                  .replace(tzinfo=self.timezone)
+                  .astimezone(pytz.UTC))
         except ValueError:
             return u"Value '%s' didn't match format '%s'" % (val, self.fullFormat)
 
-        # We do this dance to avoid having to know about the
-        # tzinfo of the column
-        orig = getattr(self.obj, self.col)
-        if orig is not None:
-            for field in ("year", "month", "day", "hour", "minute", "second", "microsecond"):
-                orig = orig.replace(**{field: getattr(dt, field)})
-        else:
-            # Not sure what the right thing to do is here
-            orig = dt.replace(tzinfo=pytz.UTC)
+        # # We do this dance to avoid having to know about the
+        # # tzinfo of the column
+        # orig = getattr(self.obj, self.col)
+        # if orig is not None:
+        #     for field in ("year", "month", "day", "hour", "minute", "second", "microsecond"):
+        #         orig = orig.replace(**{field: getattr(dt, field)})
+        # else:
+        #     # Not sure what the right thing to do is here
+        #     orig = dt.replace(tzinfo=pytz.UTC)
                 
-        setattr(self.obj, self.col, orig)
+        setattr(self.obj, self.col, dt)
 
 
 
@@ -430,16 +438,17 @@ class ReferenceSetProxy(BaseProxy):
 
 class EnumProxy(BaseProxy):
 
-    def __init__(self, obj, col, choices, convertIn=int):
+    def __init__(self, obj, col, choices, convertIn=int, noneLabel="None"):
         self.obj = obj
         self.col = col
         self.choices = choices
         self.convertIn = convertIn
+        self.noneLabel = noneLabel
 
     def render_view(self, request):
         val = getattr(self.obj, self.col)
         if val is None:
-            return "None"
+            return self.noneLabel
         for (k, v) in self.choices:
             if k == val:
                 return v
