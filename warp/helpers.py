@@ -81,8 +81,9 @@ def link(label, node, facet="index", args=(), query=(), **attrs):
     return '<a %s>%s</a>' % (bits, label)
 
 
-def button(label, node, facet="index", args=[], confirm=None):
+def button(label, node, facet="index", args=[], confirm=None, **attrs):
     action = "javascript:document.location.href='%s';" % url(node, facet, args)
     if confirm is not None:
         action = "if (confirm('%s')) { %s }" % (confirm, action)
-    return '<input type="button" value="%s" onclick="%s">' % (label, action)
+    bits = " ".join('%s="%s"' % (k.rstrip('_'), v) for (k,v) in attrs.iteritems())
+    return '<input type="button" value="%s" onclick="%s" %s>' % (label, action, bits)

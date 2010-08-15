@@ -129,7 +129,6 @@ class CrudRenderer(object):
 
     def render_save(self, request):
         objects = json.load(request.content)
-
         (success, info) = form.applyForm(objects, request)
     
         if not success:

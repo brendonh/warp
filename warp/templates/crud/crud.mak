@@ -6,17 +6,21 @@ crumbs = []
 parent = crud
 while parent is not None:
   crumbs.append(parent)
-  parent = parent.parentCrumb(request)
+  pc = getattr(parent, 'parentCrumb', None)
+  if pc is None: break
+  parent = pc(request)
 crumbs.reverse()
 %>
 
 
 <div class="warp-breadcrumbs">
 % for i, crumb in enumerate(crumbs):
+  <% linker = getattr(crumb, 'linkAsParent', None) %>
+  <% if linker is None: continue %>
   % if i:
     &gt;
   % endif
-  ${crumb.linkAsParent(request)}
+  ${linker(request)}
 % endfor
 </div>
 

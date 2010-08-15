@@ -57,7 +57,6 @@ class CrudModel(object):
     def parent(self, request):
         return None
 
-
     def linkAsParent(self, request):
         return helpers.link(self.name(request), 
                             helpers.getCrudNode(self), 
@@ -109,3 +108,4 @@ class CrudModel(object):
         if hasattr(self, funcName):
             return getattr(self, funcName)(val, request)
         return self.getProxy(colName, request).save(val, request)
+
