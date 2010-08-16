@@ -15,14 +15,29 @@ def defaultLoader():
     messages.clear()
     loadMessageDir(config['warpDir'].child('messages'))
     loadMessageDir(config['siteDir'].child('messages'))
-
+    
 def getTranslator(language):
     langDict = messages.get(language, {})
-    def t(term, langDict=langDict):
+    def t(term, *args, **kwargs):
         try:
-            return reduce(operator.getitem, term.split(":"), langDict)
+            translation = reduce(operator.getitem, term.split(":"), langDict)
         except KeyError:
-            return "MISSING TERM: %s" % term
+            return u"MISSING TERM: %s" % term
+
+        if args:
+            try: 
+                return translation % args
+            except TypeError:
+                return u"COULDN'T INTERPOLATE: %s // %s" % (translation, args)
+            
+        if kwargs:
+            try: 
+                return translation % kwargs
+            except KeyError:
+                return u"COULDN'T INTERPOLATE: %s // %s" % (translation, kwargs)
+            
+        return translation
+
     return t
 
 # --------------------------------------- #
