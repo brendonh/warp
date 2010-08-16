@@ -30,6 +30,8 @@ class LoginHandler(LoginBase):
         [password] = request.args.get('password', [None])
 
         if not (email and password):
+            request.session.addFlashMessage(
+                "warp:login:incompleteCredentials")
             return
 
         avatar = store.find(Avatar,
@@ -37,8 +39,12 @@ class LoginHandler(LoginBase):
                             Avatar.password == password.decode("utf-8")
                             ).one()
 
-        if avatar is not None:
-            request.session.setAvatar(avatar)
+        if avatar is None:
+            request.session.addFlashMessage(
+                "warp:login:incorrectCredentials")
+            return
+
+        request.session.setAvatar(avatar)
 
 
 class LogoutHandler(LoginBase):

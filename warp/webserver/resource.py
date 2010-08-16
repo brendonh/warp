@@ -9,7 +9,7 @@ from twisted.web.resource import IResource
 from twisted.web.error import NoResource
 from twisted.web import static
 
-from warp.common import access
+from warp.common import access, translate
 from warp.webserver import auth, comet
 from warp.runtime import config, store, templateLookup
 from warp import helpers
@@ -26,7 +26,7 @@ class WarpResourceWrapper(object):
     isLeaf = False
 
     def __init__(self):
-        self.warpBasePath = FilePath(__file__).parent().parent()
+        self.warpBasePath = config['warpDir']
         self.warpStaticPath = self.warpBasePath.child('static')
         self.warpTemplatePath = self.warpBasePath.child("templates")
 
@@ -52,8 +52,15 @@ class WarpResourceWrapper(object):
                 del request.postpath[:]
                 return static.File(fp.path)
 
+        # Init for everything except static files
         session = request.getSession()
         request.avatar = session.avatar
+
+        if config.get('reloadMessages'):
+            translate.loadMessages()
+        
+        request.translateTerm = translate.getTranslator(session.language)
+
 
         handler = self.dispatch.get(firstSegment)
 

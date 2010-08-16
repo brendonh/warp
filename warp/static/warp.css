@@ -94,3 +94,14 @@
 .del-link {
   color: red;
 }
+
+/* Messages */
+
+.warp-message {
+  margin: 10px;
+  padding: 10px;
+  background-color: #faa;
+  border: 1px dotted #900;
+  font-size: 14px;
+  text-align: center;
+}

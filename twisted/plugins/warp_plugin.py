@@ -10,7 +10,7 @@ from twisted.web.server import Site
 from twisted.python.filepath import FilePath
 
 from warp.webserver import resource, site
-from warp.common import store
+from warp.common import store, translate
 from warp.iwarp import IWarpService
 from warp import runtime
 
@@ -69,7 +69,9 @@ class WarpServiceMaker(object):
         config = configModule.config
         runtime.config.update(config)
         runtime.config['siteDir'] = siteDir
+        runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
         store.setupStore(config)
+        translate.loadMessages()
 
         if hasattr(configModule, 'startup'):
             configModule.startup()

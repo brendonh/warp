@@ -46,6 +46,7 @@ def renderTemplateObj(request, template, **kw):
                       store=store,
                       facet=request.resource.facetName,
                       args=request.resource.args,
+                      t=request.translateTerm,
                       **kw)
 
 def getTemplate(templatePath):

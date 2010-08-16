@@ -21,6 +21,8 @@ internal = {
 
 exposedStormClasses = {}
 
+messages = {}
+
 def expose(modelClass, crudClass):
     exposedStormClasses[unicode(modelClass.__name__)] = (modelClass, crudClass)
 

@@ -47,6 +47,12 @@
 
   </div>
 
+% for message in request.session.getFlashMessages():
+  <div class="warp-message">
+    ${message | t}
+  </div>
+% endfor
+  
   <div class="content">
     ${self.body()}
   </div>

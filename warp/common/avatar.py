@@ -37,7 +37,26 @@ class DBSession(Storm):
     avatar_id = Int()
     avatar = Reference(avatar_id, Avatar.id)
 
-    language = u"en"
+    language = None
+    messages = None
+
+    def __storm_loaded__(self):
+        if self.language is None:
+            self.language = u"en"
+
+        if self.messages is None:
+            self.messages = []
+
+
+    def addFlashMessage(self, msg):
+        self.messages.append(msg)
+
+    def getFlashMessages(self, clear=True):
+        messages = self.messages[:]
+        if clear:
+            self.messages[:] = []
+        return messages
+
 
     def setAvatar(self, avatar):
         self.avatar = avatar

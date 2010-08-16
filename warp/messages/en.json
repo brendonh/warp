@@ -1,0 +1,8 @@
+{
+  "warp": {
+    "login": {
+      "incompleteCredentials": "Email or password not given",
+      "incorrectCredentials": "Invalid username or password"
+    }
+  }
+}
