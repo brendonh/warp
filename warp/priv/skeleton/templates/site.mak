@@ -47,9 +47,10 @@
 
   </div>
 
-% for message in request.session.getFlashMessages():
+
+% for message, args, kwargs in request.session.getFlashMessages(): 
   <div class="warp-message">
-    ${message | t}
+    ${t(message, *args, **kwargs)}
   </div>
 % endfor
   

@@ -48,8 +48,8 @@ class DBSession(Storm):
             self.messages = []
 
 
-    def addFlashMessage(self, msg):
-        self.messages.append(msg)
+    def addFlashMessage(self, msg, *args, **kwargs):
+        self.messages.append((msg, args, kwargs))
 
     def getFlashMessages(self, clear=True):
         messages = self.messages[:]
