@@ -19,10 +19,16 @@ def defaultLoader():
 def getTranslator(language):
     langDict = messages.get(language, {})
     def t(term, *args, **kwargs):
-        try:
-            translation = reduce(operator.getitem, term.split(":"), langDict)
-        except KeyError:
-            return u"MISSING TERM: %s" % term
+        namespace = langDict
+
+        domain = kwargs.pop("_domain", None)
+        if domain is not None:
+            try:
+                namespace = reduce(operator.getitem, domain.split(":"), namespace)
+            except KeyError:
+                return u"MISSING DOMAIN: %s" % domain
+
+        translation = namespace.get(term, term)
 
         if args:
             try: 
