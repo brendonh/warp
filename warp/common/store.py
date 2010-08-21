@@ -7,7 +7,7 @@ from warp import runtime
 def setupStore(config):
 
     import storm.database
-    #storm.database.DEBUG = True
+    storm.database.DEBUG = config.get('databaseDebug', False)
 
     store = runtime.store
     store.__init__(create_database(config['db']))
@@ -21,8 +21,9 @@ def setupStore(config):
 
             # Unlike log.message, this works during startup
             print "~~~ Creating Warp table '%s'" % table
-
-            store.execute(creationSQL)
+            
+            if not isinstance(creationSQL, tuple): creationSQL = [creationSQL]
+            for sql in creationSQL: store.execute(sql)
             store.commit()
 
 
@@ -49,6 +50,13 @@ def getCreationSQL(store):
                     avatar_id INTEGER NOT NULL REFERENCES warp_avatar(id) ON DELETE CASCADE,
                     role_name BYTEA NOT NULL,
                     position SERIAL NOT NULL)"""),
+                ('warp_fulltext', (
+                """CREATE TABLE warp_fulltext (
+                    model VARCHAR(128) NOT NULL,
+                    doc_id INTEGER NOT NULL,
+                    fulltext tsvector,
+                    PRIMARY KEY (model, doc_id))""",
+                 """CREATE INDEX fulltext_idx ON warp_fulltext USING gin(fulltext)""")),
                 ],
             },
         'SQLiteConnection': {
