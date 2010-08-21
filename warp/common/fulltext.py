@@ -68,7 +68,7 @@ def reindex():
     storm.database.DEBUG = orig
 
 
-def search(language, term):
+def search(term, language='english'):
     for modelName, doc_id in store.execute(SEARCH_SQL, (language, term.encode("utf-8"))):
         model = searchModels[modelName]
         yield store.get(model, doc_id)
