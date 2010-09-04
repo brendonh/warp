@@ -75,8 +75,10 @@ class NonEmptyStringProxy(StringProxy):
 
 class AreaProxy(StringProxy):
 
-    cols = 80
-    rows = 6
+    def __init__(self, obj, col, rows=6, cols=80):
+        super(AreaProxy, self).__init__(obj, col)
+        self.rows = rows
+        self.cols = cols
 
     def render_view(self, request):
         return u'<div style="white-space: pre">%s</div>' % unicode(getattr(self.obj, self.col) or "")

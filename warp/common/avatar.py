@@ -40,6 +40,10 @@ class DBSession(Storm):
     language = None
     messages = None
 
+    def __init__(self):
+        if self.messages is None:
+            self.messages = []
+
     def __storm_loaded__(self):
         if self.language is None:
             self.language = u"en"
@@ -50,6 +54,7 @@ class DBSession(Storm):
 
     def addFlashMessage(self, msg, *args, **kwargs):
         self.messages.append((msg, args, kwargs))
+
 
     def getFlashMessages(self, clear=True):
         messages = self.messages[:]

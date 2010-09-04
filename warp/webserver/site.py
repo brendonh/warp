@@ -12,7 +12,11 @@ class WarpRequest(Request):
         rv = Request.processingFailed(self, reason)
         store.rollback()
         return rv
-        
+
+    def finish(self):
+        rv = Request.finish(self)
+        store.commit()
+        return rv
 
 
 class WarpSite(Site):

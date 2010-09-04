@@ -90,7 +90,7 @@ for c in model.listColumns:
 
 </script>
 
-<div style="margin: 10px">
+<div class="warpCrud-list-container">
 
   <table id="${listID}"></table>
   <div id="${pagerID}"></div> 
