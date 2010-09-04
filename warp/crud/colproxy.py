@@ -443,7 +443,7 @@ class EnumProxy(BaseProxy):
     def __init__(self, obj, col, choices, convertIn=int, noneLabel="None"):
         self.obj = obj
         self.col = col
-        self.choices = choices
+        self.choices = list(choices)
         self.convertIn = convertIn
         self.noneLabel = noneLabel
 
@@ -468,10 +468,11 @@ class EnumProxy(BaseProxy):
             self.fieldName(), "".join(options))
 
     def save(self, val, request):
-        try:
-            val = self.convertIn(val)
-        except (TypeError, ValueError):
-            return u"Invalid value"
+        if self.convertIn is not None:
+            try:
+                val = self.convertIn(val)
+            except (TypeError, ValueError):
+                return u"Invalid value"
 
         if val not in (k for (k,v) in self.choices):
             return u"Invalid value"
@@ -480,3 +481,46 @@ class EnumProxy(BaseProxy):
             setattr(self.obj, self.col, val)
         except (TypeError, ValueError):
             return u"Invalid value"
+
+
+
+class StormEnumProxy(BaseProxy):
+
+    def __init__(self, obj, col, noneLabel="None"):
+        try:
+            get_map = obj.__class__.__dict__[col]._variable_kwargs['get_map']
+        except KeyError:
+            raise ValueError("No choices provided for Enum")
+                
+        choices = sorted(get_map.iteritems())
+
+        self.obj = obj
+        self.col = col
+        self.choices = choices
+        self.noneLabel = noneLabel
+
+
+    def render_view(self, request):
+        val = getattr(self.obj, self.col)
+        if val is None:
+            return self.noneLabel
+        return val
+
+    
+    def render_edit(self, request):
+        val = getattr(self.obj, self.col)
+        options = []
+        for (k, v) in self.choices:
+            if v == val: sel = ' selected="selected"'
+            else: sel = ''
+            options.append('<option value="%s"%s>%s</option>' % (v, sel, v))
+
+        return '<select name="warpform-%s">%s</select>' % (
+            self.fieldName(), "".join(options))
+
+
+    def save(self, val, request):
+        try:
+            setattr(self.obj, self.col, val.encode("utf-8"))
+        except (TypeError, ValueError):
+            return u"Invalid value (%s)" % repr(val)
