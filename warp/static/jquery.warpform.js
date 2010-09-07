@@ -43,7 +43,6 @@
     };
 
     $.fn.warpform.submit = function(form, callback) {
-
         var subCount = $.fn.warpform.submissionCounter++;
         $.fn.warpform.uploadCallbacks[subCount] = {
             "_ids": []

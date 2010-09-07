@@ -11,10 +11,12 @@ class WarpRequest(Request):
     def processingFailed(self, reason):
         rv = Request.processingFailed(self, reason)
         store.rollback()
+        store.commit()
         return rv
 
     def finish(self):
         rv = Request.finish(self)
+        store.rollback()
         store.commit()
         return rv
 

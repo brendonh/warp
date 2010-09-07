@@ -30,6 +30,8 @@ class Avatar(Storm):
         return "<Avatar '%s'>" % self.email.encode("utf-8")
 
 
+_MESSAGES = {}
+
 class DBSession(Storm):
     __storm_table__ = "warp_session"
 
@@ -40,26 +42,21 @@ class DBSession(Storm):
     language = None
     messages = None
 
-    def __init__(self):
-        if self.messages is None:
-            self.messages = []
-
     def __storm_loaded__(self):
         if self.language is None:
             self.language = u"en"
 
-        if self.messages is None:
-            self.messages = []
-
-
     def addFlashMessage(self, msg, *args, **kwargs):
-        self.messages.append((msg, args, kwargs))
-
+        if self.uid not in _MESSAGES:
+            _MESSAGES[self.uid] = []
+        _MESSAGES[self.uid].append((msg, args, kwargs))
 
     def getFlashMessages(self, clear=True):
-        messages = self.messages[:]
+        if self.uid not in _MESSAGES:
+            return []
+        messages = _MESSAGES[self.uid][:]
         if clear:
-            self.messages[:] = []
+            del _MESSAGES[self.uid]
         return messages
 
 

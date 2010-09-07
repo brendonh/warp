@@ -117,6 +117,11 @@ class BooleanProxy(BaseProxy):
 
 class IntProxy(BaseProxy):
 
+    def __init__(self, obj, col, allowNone=False):
+        self.allowNone = allowNone
+        super(IntProxy, self).__init__(obj, col)
+
+
     def render_view(self, request):
         val = getattr(self.obj, self.col)
         if val is None: return "[None]"
@@ -131,10 +136,14 @@ class IntProxy(BaseProxy):
             self.fieldName(), val)
 
     def save(self, val, request):
-        try:
-            val = int(val)
-        except ValueError:
-            return u"'%s' is not an integer." % val
+        val = val.strip()
+        if self.allowNone and not val:
+            val = None
+        else:
+            try:
+                val = int(val)
+            except ValueError:
+                return u"'%s' is not an integer." % val
 
         setattr(self.obj, self.col, val)
 
