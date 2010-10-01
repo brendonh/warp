@@ -39,7 +39,7 @@ class DBSession(Storm):
     avatar_id = Int()
     avatar = Reference(avatar_id, Avatar.id)
 
-    language = None
+    language = u"en"
     messages = None
 
     def __storm_loaded__(self):
