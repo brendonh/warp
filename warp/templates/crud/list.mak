@@ -97,7 +97,7 @@ for c in model.listColumns:
 
   <div style="margin-top: 10px">
 
-    <input type="button" value="Create New" 
+    <input type="button" value="Create New ${crudNode.renderer.model.__name__}"
            id="${createButtonID}" />
 
     <div id="${createBoxID}" class="popupBox warpCrud"></div>
