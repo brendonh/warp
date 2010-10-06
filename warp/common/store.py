@@ -6,11 +6,13 @@ from warp import runtime
 
 def setupStore(config):
 
-    import storm.database
-    storm.database.DEBUG = config.get('databaseDebug', False)
-
     store = runtime.store
     store.__init__(create_database(config['db']))
+
+    if config.get('trace'):
+        import sys
+        from storm.tracer import debug
+        debug(True, stream=sys.stdout)
 
     sqlBundle = getCreationSQL(store)
     tableExists = runtime.sql['tableExists'] = sqlBundle['tableExists']
