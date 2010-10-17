@@ -39,12 +39,12 @@ class DBSession(Storm):
     avatar_id = Int()
     avatar = Reference(avatar_id, Avatar.id)
 
-    language = u"en"
+    language = u"en_US"
     messages = None
 
     def __storm_loaded__(self):
         if self.language is None:
-            self.language = u"en"
+            self.language = u"en_US"
 
     def addFlashMessage(self, msg, *args, **kwargs):
         if self.uid not in _MESSAGES:
