@@ -264,6 +264,10 @@
         "time": _collectTime,
         "bool": function(k, el, f, obj) { obj[f] = el.attr("checked") ? true : false; },
         "upload": _uploadFile,
+        "stringset": function(k, el, f, obj) {
+          if(!obj[f]) obj[f] = [];
+          obj[f].push(el.val());
+        },
         "checkset": function(k, el, f, obj) { 
           if (!obj[f]) obj[f] = []; 
           obj[f].push([el.val(), el.attr("checked") ? true : false]);

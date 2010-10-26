@@ -30,31 +30,6 @@ pagerID = "pager%d" % gc
 
 jQuery(document).ready(function(){ 
 
-  var fakeIDCounter = 1;
-  
-  var popupCreateBox = function() {
-      $("#${createButtonID}").hide();
-      $("#${createBoxID}").html("Loading...").show();
-      $.get("${url(crudNode, "create")}?presets=${presets or '' | u}&noedit=${noEdit or '' | u}&fakeID="+fakeIDCounter, function(content) {
-        $("#${createBoxID}").html(content).find("form").warpform(popupCreateDone);
-  
-        // Hack
-        $("#${createBoxID}").find(".warpform-date").datepicker();
-  
-      });
-      fakeIDCounter++;
-  };
-  
-  var popupCreateDone = function(data) {
-      $("#${listID}").trigger("reloadGrid");
-      var form = $("#${createBoxID}").find("form");
-      form.get(0).reset();
-      form.find(":input").removeAttr("disabled");
-      $("#${createBoxID}").hide();
-      $("#${createButtonID}").show();
-  };
-
-
   function delLinkFormatter (cellvalue, options, rowObject) {
     return '[<a href="#" onclick="if (confirm(\'Delete?\')) { $.post(\'${url(crudNode, "delete")}/' + rowObject[0] + '\', {}, function() { $(\'#${listID}\').trigger(\'reloadGrid\'); }); }; return false" style="color: red">Del</a>]';
   }
@@ -84,8 +59,6 @@ for c in model.listColumns:
   dummy: false
   }); 
 
-  $("#${createButtonID}").click(popupCreateBox);
-
 }); 
 
 </script>
@@ -95,13 +68,46 @@ for c in model.listColumns:
   <table id="${listID}"></table>
   <div id="${pagerID}"></div> 
 
+  % if allowCreate:
   <div style="margin-top: 10px">
 
     <input type="button" value="Create New ${crudNode.renderer.model.__name__}"
            id="${createButtonID}" />
 
     <div id="${createBoxID}" class="popupBox warpCrud"></div>
+    
+    <script type="text/javascript">
+      jQuery(document).ready(function(){ 
+
+        var fakeIDCounter = 1;
+  
+        var popupCreateBox = function() {
+          $("#${createButtonID}").hide();
+          $("#${createBoxID}").html("Loading...").show();
+          $.get("${url(crudNode, "create")}?presets=${presets or '' | u}&noedit=${noEdit or '' | u}&fakeID="+fakeIDCounter, function(content) {
+            $("#${createBoxID}").html(content).find("form").warpform(popupCreateDone);
+  
+          // Hack
+          $("#${createBoxID}").find(".warpform-date").datepicker();
+  
+          });
+          fakeIDCounter++;
+        };
+  
+        var popupCreateDone = function(data) {
+          $("#${listID}").trigger("reloadGrid");
+          var form = $("#${createBoxID}").find("form");
+          form.get(0).reset();
+          form.find(":input").removeAttr("disabled");
+          $("#${createBoxID}").hide();
+          $("#${createButtonID}").show();
+        };
+
+        $("#${createButtonID}").click(popupCreateBox);
+      });
+    </script>
 
   </div>
+  % endif
 
 </div>

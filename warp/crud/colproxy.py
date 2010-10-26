@@ -1,5 +1,5 @@
 import pytz, operator, re
-from datetime import datetime
+from datetime import datetime, date
 
 from warp.runtime import internal, store, templateLookup, exposedStormClasses
 from warp.helpers import url, link, getNode, renderTemplateObj, getCrudClass, getCrudObj, getCrudNode
@@ -164,6 +164,59 @@ class FloatProxy(BaseProxy):
         setattr(self.obj, self.col, val)
 
 
+class YearDateProxy(BaseProxy):
+
+    months = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+              "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+    defaultDate = date(1970, 1, 1)
+
+    def render_view(self, request):
+        val = getattr(self.obj, self.col)
+        if val is None:
+            return "[None]"
+        return u"%s %s %s" % (val.day, self.months[val.month], val.year)
+
+    def render_edit(self, request):
+        fieldName = self.fieldName()
+        val = getattr(self.obj, self.col)
+
+        if val is None:
+            val = self.defaultDate
+
+        def _sel(a, b):
+            if a == b: return ' selected="selected"'
+            else: return ''
+                
+        dayField = u'<select name="warpform-%s" class="warpform-stringset">%s</select>' % (
+            fieldName, "".join('<option value="%s"%s>%s</option>' % (d, _sel(d, val.day), d)
+                               for d in range(1, 32)))
+
+        monthField = u'<select name="warpform-%s" class="warpform-stringset">%s</select>' % (
+            fieldName, "".join('<option value="%s"%s>%s</option>' % (i, _sel(i, val.month), self.months[i-1])
+                               for i in range(1, 13)))
+
+        yearField = u'<select name="warpform-%s" class="warpform-stringset">%s</select>' % (
+            fieldName, "".join('<option value="%s"%s>%s</option>' % (y, _sel(y, val.year), y)
+                               for y in range(1950, 2010)))
+
+        return "%s %s %s" % (dayField, monthField, yearField)
+
+    def save(self, val, request):
+
+        try:
+            d, m, y = map(int, val)
+        except Exception:
+            return u"Value wasn't a [day, month, year] list"
+
+        try:
+            dt = date(y, m, d)
+        except ValueError:
+            return u"Value '%s-%s-%s' is not a valid date" % (d, m, y)
+                
+        setattr(self.obj, self.col, dt)
+
+
 class DateProxy(BaseProxy):
 
     jsTemplate = """
@@ -239,16 +292,6 @@ class DateTimeProxy(DateProxy):
         except ValueError:
             return u"Value '%s' didn't match format '%s'" % (val, self.fullFormat)
 
-        # # We do this dance to avoid having to know about the
-        # # tzinfo of the column
-        # orig = getattr(self.obj, self.col)
-        # if orig is not None:
-        #     for field in ("year", "month", "day", "hour", "minute", "second", "microsecond"):
-        #         orig = orig.replace(**{field: getattr(dt, field)})
-        # else:
-        #     # Not sure what the right thing to do is here
-        #     orig = dt.replace(tzinfo=pytz.UTC)
-                
         setattr(self.obj, self.col, dt)
 
 
@@ -418,6 +461,8 @@ class ReferenceSetProxy(BaseProxy):
     Currently supports only one-to-many
     """
 
+    allowCreate = True
+
     def render_view(self, request):
 
         refset = self.obj.__class__.__dict__[self.col]
@@ -439,7 +484,8 @@ class ReferenceSetProxy(BaseProxy):
                                  presets=presets,
                                  postData=postData,
                                  noEdit=noEdit,
-                                 exclude=[remoteColName.rstrip("_id")])
+                                 exclude=[remoteColName.rstrip("_id")],
+                                 allowCreate=self.allowCreate)
 
 
     def render_edit(self, request):

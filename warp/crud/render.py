@@ -27,7 +27,8 @@ class CrudRenderer(object):
     def render_index(self, request):
         return helpers.renderTemplateObj(request, 
                                          self._getListTemplate(),
-                                         model=self.crudModel)
+                                         model=self.crudModel,
+                                         allowCreate=True)
 
 
     def render_list_json(self, request):
