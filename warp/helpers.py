@@ -65,9 +65,13 @@ def renderLocalTemplate(request, filename, **kw):
     return renderTemplate(request, templatePath, **kw)
 
 
-def url(node, facet="index", args=(), query=()):
+def nodeSegments(node):
     nodeDir = filepath.FilePath(node.__file__).parent()
-    segments = nodeDir.segmentsFrom(config['siteDir'].child("nodes"))
+    return nodeDir.segmentsFrom(config['siteDir'].child("nodes"))
+
+
+def url(node, facet="index", args=(), query=()):
+    segments = nodeSegments(node)
     segments.append(facet)
     segments.extend(args)
     u = "/%s" % ("/".join(map(str, segments)))
