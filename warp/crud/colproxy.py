@@ -364,11 +364,12 @@ class PriceProxy(BaseProxy):
 
 class ReferenceProxy(BaseProxy):
 
-    def __init__(self, obj, col, allowNone=False, conditions=()):
+    def __init__(self, obj, col, allowNone=False, conditions=(), default=None):
         self.obj = obj
         self.col = col
         self.allowNone = allowNone
         self.conditions = conditions
+        self.default = default
 
 
     def render_view(self, request):
@@ -413,7 +414,10 @@ class ReferenceProxy(BaseProxy):
         allObjs.sort()
 
         if objID is None:
-            sel = lambda o: ""
+            if self.default is not None:
+                sel = lambda o: ' selected="selected"' if o.id == self.default.id else ''
+            else:
+                sel = lambda o: ""
         else:
             sel = lambda o: ' selected="selected"' if o.id == objID else ''
 

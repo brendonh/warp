@@ -271,7 +271,8 @@
         "checkset": function(k, el, f, obj) { 
           if (!obj[f]) obj[f] = []; 
           obj[f].push([el.val(), el.attr("checked") ? true : false]);
-        }
+        },
+        "radio": function(k, el, f, obj) { if (el.attr("checked")) obj[f] = el.val(); },
     };
 
 
