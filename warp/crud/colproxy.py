@@ -214,7 +214,11 @@ class DateTimeProxy(DateProxy):
 
 
     def render_view(self, request):
-        return getattr(self.obj, self.col).astimezone(self.timezone).strftime(self.fullFormat)
+        dt = getattr(self.obj, self.col)
+        if dt.tzinfo is not None:
+            return dt.astimezone(self.timezone).strftime(self.fullFormat)
+        else:
+            return dt.strftime(self.fullFormat)
 
 
     def render_edit(self, request):
