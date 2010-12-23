@@ -175,7 +175,7 @@ class YearDateProxy(BaseProxy):
         val = getattr(self.obj, self.col)
         if val is None:
             return "[None]"
-        return u"%s %s %s" % (val.day, self.months[val.month-1], val.year)
+        return u"%s %s %s" % (val.day, self.months[val.month - 1], val.year)
 
     def render_edit(self, request):
         fieldName = self.fieldName()

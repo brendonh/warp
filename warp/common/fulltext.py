@@ -4,13 +4,13 @@ from storm.info import get_obj_info
 
 from warp.runtime import store
 
-DELETE_SQL = "DELETE FROM warp_fulltext WHERE model = ? AND doc_id = ?"
-INSERT_SQL = "INSERT INTO warp_fulltext (model, doc_id, fulltext) VALUES (?, ?, to_tsvector(?, ?))"
+DELETE_SQL = "DELETE FROM warp_fulltext WHERE model = ?::text AND doc_id = ?"
+INSERT_SQL = "INSERT INTO warp_fulltext (model, doc_id, fulltext) VALUES (?::text, ?, to_tsvector(?::text::regconfig, ?::text))"
 
 SEARCH_SQL = """
 SELECT model, doc_id
 FROM warp_fulltext, 
-     plainto_tsquery(?, ?) AS query
+     plainto_tsquery(?::text::regconfig, ?::text) AS query
 WHERE fulltext @@ query
 ORDER BY ts_rank_cd(fulltext, query) DESC
 """
@@ -59,13 +59,10 @@ class Searchable(Storm):
 
 def reindex():
     import storm.database
-    orig = storm.database.DEBUG
-    storm.database.DEBUG = True
     store.execute("DELETE FROM warp_fulltext")
     for klass in searchModels.itervalues():
         for obj in store.find(klass):
             obj.__storm_flushed__()
-    storm.database.DEBUG = orig
 
 
 def search(term, language='english'):
