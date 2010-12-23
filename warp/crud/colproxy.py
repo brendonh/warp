@@ -175,7 +175,7 @@ class YearDateProxy(BaseProxy):
         val = getattr(self.obj, self.col)
         if val is None:
             return "[None]"
-        return u"%s %s %s" % (val.day, self.months[val.month], val.year)
+        return u"%s %s %s" % (val.day, self.months[val.month-1], val.year)
 
     def render_edit(self, request):
         fieldName = self.fieldName()
@@ -198,7 +198,7 @@ class YearDateProxy(BaseProxy):
 
         yearField = u'<select name="warpform-%s" class="warpform-stringset">%s</select>' % (
             fieldName, "".join('<option value="%s"%s>%s</option>' % (y, _sel(y, val.year), y)
-                               for y in range(1950, 2010)))
+                               for y in range(1950, 2020)))
 
         return "%s %s %s" % (dayField, monthField, yearField)
 
@@ -227,7 +227,6 @@ jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
 
     dateFormat = "%m/%d/%Y"
     timezone = pytz.UTC
-
 
     def render_view(self, request):
         val = getattr(self.obj, self.col)
