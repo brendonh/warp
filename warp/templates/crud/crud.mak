@@ -33,7 +33,7 @@ crumbs.reverse()
     ${link("List", node)}
 % endif
 
-% for f in ('view', 'edit'):
+% for f in ('view', 'edit') + crud.extraFacets:
 
   % if f == facet:
     ${link(f.title(), node, f, args, class_="active")}
@@ -47,7 +47,7 @@ crumbs.reverse()
     ${button("Delete", node, "delete", args, "Delete this item?")}
     <div style="clear: both"> </div>
   </div>
-      
-<%include file="form.mak" />
+
+<%include file="${subTemplate}" />
 
 </div>

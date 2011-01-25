@@ -1,4 +1,5 @@
 import tempfile
+import os.path
 
 try:
     import json
@@ -22,6 +23,25 @@ class CrudRenderer(object):
     def __init__(self, model):
         self.model = model
         self.crudModel = helpers.getCrudClass(model)
+
+        
+    def renderLocalTemplate(self, request, filename):
+
+        # Get a path to the local template relative to
+        # something in Mako's templateLookup dirs.
+        localNode = helpers.getCrudNode(self.crudModel).__file__
+        relPath = os.path.relpath(
+            os.path.dirname(localNode), 
+            os.path.abspath("templates"))
+        templatePath = "/%s/%s" % (relPath, filename)
+
+        objID = int(request.resource.args[0])
+        obj = store.get(self.model, objID)
+
+        return helpers.renderTemplateObj(request,
+                                         self._getViewTemplate(),
+                                         crud=self.crudModel(obj),
+                                         subTemplate=templatePath)
 
 
     def render_index(self, request):
@@ -113,7 +133,8 @@ class CrudRenderer(object):
         
         return helpers.renderTemplateObj(request,
                                          self._getViewTemplate(),
-                                         crud=self.crudModel(obj))
+                                         crud=self.crudModel(obj),
+                                         subTemplate="form.mak")
 
 
 
@@ -125,7 +146,8 @@ class CrudRenderer(object):
         return helpers.renderTemplateObj(request,
                                          self._getEditTemplate(),
                                          crud=crud,
-                                         redirect=crud.saveRedirect(request))
+                                         redirect=crud.saveRedirect(request),
+                                         subTemplate="form.mak")
 
 
     def render_save(self, request):

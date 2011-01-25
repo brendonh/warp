@@ -79,7 +79,7 @@
                 return;
             } else {
                 var redirect = form.attr("warp:redirect");
-                if (redirect) document.location.href = redirect;
+                if (redirect) location.href = redirect;
                 return;
             }
 

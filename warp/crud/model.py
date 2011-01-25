@@ -40,6 +40,7 @@ class CrudModel(object):
         'viewrecords': "true",
     }
 
+    extraFacets = ()
 
     def __init__(self, obj):
         self.obj = obj

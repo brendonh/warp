@@ -60,9 +60,14 @@ def renderTemplate(request, templatePath, **kw):
     return renderTemplateObj(request, template, **kw)
 
 
+def getLocalTemplatePath(request, filename):
+    return util.sibpath(request.node.__file__, filename)
+
+
 def renderLocalTemplate(request, filename, **kw):
-    templatePath = util.sibpath(request.node.__file__, filename)
-    return renderTemplate(request, templatePath, **kw)
+    return renderTemplate(request, 
+                          getLocalTemplatePath(request, filename),
+                          **kw)
 
 
 def nodeSegments(node):

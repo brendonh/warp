@@ -2,6 +2,7 @@ from warp import runtime
 
 
 def allowed(avatar, obj):
+
     if avatar is None:
         roles = (runtime.config['roles'][x]
                  for x in runtime.config.get('defaultRoles', []))
