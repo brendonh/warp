@@ -86,7 +86,13 @@ class WarpServiceMaker(object):
 
 
         factory = site.WarpSite(resource.WarpResourceWrapper())
-        service = internet.TCPServer(config["port"], factory)
+
+        if config.get('ssl'):
+            from warp.webserver import sslcontext
+            service = internet.SSLServer(config['port'], factory,
+                                         sslcontext.ServerContextFactory())
+        else:
+            service = internet.TCPServer(config["port"], factory)
 
         if hasattr(configModule, 'mungeService'):
             service = configModule.mungeService(service)
