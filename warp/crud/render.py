@@ -25,6 +25,16 @@ class CrudRenderer(object):
         self.crudModel = helpers.getCrudClass(model)
 
         
+
+    def renderTemplate(self, request, templatePath):
+        objID = int(request.resource.args[0])
+        obj = store.get(self.model, objID)
+
+        return helpers.renderTemplateObj(request,
+                                         self._getViewTemplate(),
+                                         crud=self.crudModel(obj),
+                                         subTemplate=templatePath)
+
     def renderLocalTemplate(self, request, filename):
 
         # Get a path to the local template relative to
@@ -35,13 +45,8 @@ class CrudRenderer(object):
             os.path.abspath("templates"))
         templatePath = "/%s/%s" % (relPath, filename)
 
-        objID = int(request.resource.args[0])
-        obj = store.get(self.model, objID)
+        return self.renderTemplate(templatePath)
 
-        return helpers.renderTemplateObj(request,
-                                         self._getViewTemplate(),
-                                         crud=self.crudModel(obj),
-                                         subTemplate=templatePath)
 
 
     def render_index(self, request):
