@@ -77,6 +77,10 @@ class WarpResourceWrapper(object):
         return NoResource()
 
 
+    def putChild(self, path, child):
+        self.dispatch[path] = lambda r: child
+
+
     def buildFilePath(self, request):
         filePath = config['siteDir'].child('static')
         for segment in request.path.split('/'):

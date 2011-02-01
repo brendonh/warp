@@ -73,9 +73,11 @@ class WarpServiceMaker(object):
         store.setupStore(config)
         translate.loadMessages()
 
+        factory = site.WarpSite(resource.WarpResourceWrapper())
+        config['warpSite'] = factory
+
         if hasattr(configModule, 'startup'):
             configModule.startup()
-
 
         if options.subCommand == "console":
             import code
@@ -83,9 +85,6 @@ class WarpServiceMaker(object):
             c = code.InteractiveConsole(locals)
             c.interact()
             raise SystemExit
-
-
-        factory = site.WarpSite(resource.WarpResourceWrapper())
 
         if config.get('ssl'):
             from warp.webserver import sslcontext
