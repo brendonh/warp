@@ -166,16 +166,23 @@ class CrudRenderer(object):
                     'errors': info
                     })
 
-        else:
+
+        try:
             store.commit()
-
-            results = dict((k, [o.id for o in v])
-                           for (k,v) in info.iteritems())
-
+        except Exception, e:
+            store.rollback()
             return json.dumps({
-                    "success": True,
-                    "results": results,
-                    })
+                    'success': False,
+                    'errors': [(None, "Database error: %s" % e.message)]})
+            
+
+        results = dict((k, [o.id for o in v])
+                       for (k,v) in info.iteritems())
+
+        return json.dumps({
+                "success": True,
+                "results": results,
+                })
 
 
     def render_create(self, request, template=None):
