@@ -33,6 +33,7 @@ class Options(usage.Options):
     subCommands = (
         ("skeleton", None, SkeletonOptions, "Copy Warp site skeleton into current directory"),
         ("node", None, NodeOptions, "Create a new node"),
+        ("adduser", None, usage.Options, "Add a user (interactive)"),
         ("console", None, usage.Options, "Python console with Warp runtime available"),
     )
 
@@ -72,6 +73,12 @@ class WarpServiceMaker(object):
         runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
         store.setupStore(config)
         translate.loadMessages()
+
+        if options.subCommand == 'adduser':
+            from warp.tools import adduser
+            adduser.addUser()
+            raise SystemExit
+
 
         factory = site.WarpSite(resource.WarpResourceWrapper())
         config['warpSite'] = factory
