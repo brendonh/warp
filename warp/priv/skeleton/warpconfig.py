@@ -15,5 +15,4 @@ config = {
             }),
         "admin": a.Role({}, default=(a.Allow(),)),
     },
-
 }

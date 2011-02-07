@@ -26,9 +26,9 @@ def createSkeleton(siteDir):
     print "Done! Run with 'twistd -n warp'"
 
 
-def createNode(nodes, name):
+def createNode(nodes, name, createIndex=True, nodeContent=""):
 
-    segments = name.split('/')    
+    segments = name.split('/')
     root = nodes
     
     for i, segment in enumerate(segments[:-1]):
@@ -52,8 +52,10 @@ def render_index(request):
     node = root.child(nodeName)
     node.makedirs()
     node.child("__init__.py").open('w').write("")
-    node.child("%s.py" % nodeName).open('w').write("")
-    node.child("index.mak").open('w').write("""
+    node.child("%s.py" % nodeName).open('w').write(nodeContent)
+
+    if createIndex:
+        node.child("index.mak").open('w').write("""
 <%%inherit file="/site.mak"/>
 
 This is the index page for node '%s'.

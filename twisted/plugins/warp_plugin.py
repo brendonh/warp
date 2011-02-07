@@ -24,6 +24,11 @@ class NodeOptions(usage.Options):
     def parseArgs(self, name):
         self['name'] = name
 
+class CrudOptions(usage.Options):
+    def parseArgs(self, name, model):
+        self['name'] = name
+        self['model'] = model
+
 
 class Options(usage.Options):
     optParameters = (
@@ -33,6 +38,7 @@ class Options(usage.Options):
     subCommands = (
         ("skeleton", None, SkeletonOptions, "Copy Warp site skeleton into current directory"),
         ("node", None, NodeOptions, "Create a new node"),
+        ("crud", None, CrudOptions, "Create a new CRUD node"),
         ("adduser", None, usage.Options, "Add a user (interactive)"),
         ("console", None, usage.Options, "Python console with Warp runtime available"),
     )
@@ -63,6 +69,17 @@ class WarpServiceMaker(object):
             from warp.tools import skeleton
             skeleton.createNode(nodes, options.subOptions['name'])
             raise SystemExit
+
+        elif options.subCommand == 'crud':
+            nodes = siteDir.child("nodes")
+            if not nodes.exists():
+                print "Please run this from a Warp site directory"
+                raise SystemExit
+
+            from warp.tools import autocrud
+            autocrud.autocrud(nodes, options.subOptions['name'], options.subOptions['model'])
+            raise SystemExit
+
 
         sys.path.insert(0, siteDir.path)
 
