@@ -53,7 +53,8 @@ class CrudRenderer(object):
         return helpers.renderTemplateObj(request, 
                                          self._getListTemplate(),
                                          model=self.crudModel,
-                                         allowCreate=True)
+                                         allowCreate=True,
+                                         subTemplate="list.mak")
 
 
     def render_list_json(self, request):
@@ -114,19 +115,21 @@ class CrudRenderer(object):
 
     def _getListTemplate(self):
         if 'crudListTemplate' not in internal:
-            internal['crudListTemplate'] = Template(
-                '<%inherit file="/site.mak" /><%include file="/crud/list.mak" />',
-                lookup=templateLookup,
-                output_encoding="utf-8")
+            internal['crudListTemplate'] = templateLookup.get_template('/crud/wrapper.mak')
+            # internal['crudListTemplate'] = Template(
+            #     '<%inherit file="/site.mak" /><%include file="/crud/list.mak" />',
+            #     lookup=templateLookup,
+            #     output_encoding="utf-8")
         return internal['crudListTemplate']
             
 
     def _getViewTemplate(self):
         if 'crudTemplate' not in internal:
-            internal['crudTemplate'] = Template(
-                '<%inherit file="/site.mak" /><%include file="/crud/crud.mak" />',
-                lookup=templateLookup,
-                output_encoding="utf-8")
+            internal['crudTemplate'] = templateLookup.get_template('/crud/wrapper.mak')
+            # internal['crudTemplate'] = Template(
+            #     '<%inherit file="/site.mak" /><%include file="/crud/crud.mak" />',
+            #     lookup=templateLookup,
+            #     output_encoding="utf-8")
         return internal['crudTemplate']
 
     _getEditTemplate = _getViewTemplate

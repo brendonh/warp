@@ -108,3 +108,20 @@
   font-size: 14px;
   text-align: center;
 }
+
+
+/* Fixes because jqGrid doesn't expect reset.css */
+
+.ui-jqgrid-htable, .ui-jqgrid-btable {
+  border-collapse: separate;
+}
+
+.ui-jqgrid-sortable, .ui-widget-content td {
+  line-height: normal;
+  padding-top: 3px;
+  vertical-align: middle;
+}
+
+.ui-jqgrid-titlebar {
+  line-height: normal;
+}

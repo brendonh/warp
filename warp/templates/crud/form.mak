@@ -16,6 +16,8 @@ else:
 
 %>
 
+<div class="warpCrud">
+
 % if editing:
 <form class="warp" action="${url(node, 'save', args)}"${redirectBit}>
 % endif
@@ -43,7 +45,11 @@ if renderVal is None:
 %>
 
     <tr>
-      <th>${colTitle}:</th>
+      <th>
+        % if colTitle:
+          ${colTitle}:
+        % endif
+      </th>
       <td>${renderVal}</td>
       % if editing:
       <td class="warp-error"></td>
@@ -63,3 +69,5 @@ if renderVal is None:
 % if editing:
 </form>
 % endif
+
+</div>
