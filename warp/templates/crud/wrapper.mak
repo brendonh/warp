@@ -5,7 +5,7 @@
   % if context.get('crud'):
     <h1>${crud.obj.__class__.__name__}: ${crud.name(request)}</h1>
   % else:
-    <h1>${model.__name__}</h1>
+    <h1>${model.__warp_model__.__name__} List</h1>
   % endif
 
   % if context.get('crud'):
