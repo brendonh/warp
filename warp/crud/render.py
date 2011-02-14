@@ -45,7 +45,7 @@ class CrudRenderer(object):
             os.path.abspath("templates"))
         templatePath = "/%s/%s" % (relPath, filename)
 
-        return self.renderTemplate(templatePath)
+        return self.renderTemplate(request, templatePath)
 
 
 
