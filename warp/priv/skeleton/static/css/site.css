@@ -20,8 +20,6 @@ form { display: inline; }
 
 .header .logo {
   padding: 20px 30px 10px 30px;
-  background-image: url('/images/header_fade.png');
-  background-repeat: repeat-x;
   background-color: #ddd;
 }
 
@@ -102,8 +100,6 @@ form { display: inline; }
 
 
 .content-wrapper {
-  background-image: url('/images/content_fade.png');
-  background-repeat: repeat-x;
   background-color: #004d85;
   padding: 20px;
 }
@@ -115,9 +111,6 @@ form { display: inline; }
 }
 
 .content .content-header {
-  background-image: url('/images/content_header_fade.png');
-  background-repeat: repeat-x;
-  background-position: left bottom;
   padding: 10px 10px 5px 10px;
   height: 25px;
   border-bottom: 1px solid #999;
@@ -146,7 +139,7 @@ form { display: inline; }
 
 
 .content .inner {
-  padding: 15px;
+  padding: 0 15px 15px 15px;
 }
 
 .content h2 {
@@ -161,13 +154,12 @@ form { display: inline; }
 }
 
 .footer {
-  background-image: url('/images/footer_fade.png');
-  background-repeat: repeat-x;
   padding-top: 20px;
   color: #ccc;
   font-size: smaller;
   text-align: center;
 }
+
 
 /* ---------------------------- */
 

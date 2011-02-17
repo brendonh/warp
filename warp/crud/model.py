@@ -23,6 +23,7 @@ class CrudModel(object):
         columns.HTML: colproxy.HTMLAreaProxy,
         columns.Image: colproxy.ImageProxy,
         columns.Price: colproxy.PriceProxy,
+        columns.UTCDateTime: colproxy.DateTimeProxy,
     }
 
     listAttrs = {}

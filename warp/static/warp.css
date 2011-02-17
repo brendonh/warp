@@ -1,7 +1,4 @@
 .warpCrud {
-  border: 1px solid #F6A828;
-  margin: 10px;
-  float: left;
 }
 
 .warpCrud h1 {
@@ -22,10 +19,11 @@
 .warp-breadcrumbs {
   font-size: 12px;
   margin-bottom: 10px;
+  color: #bbb;
 }
 
 .warp-breadcrumbs a, .warp-breadcrumbs a:visited {
-  color: #339;
+  color: #eee;
 }
 
 .warpCrud .tabs {

@@ -2,7 +2,19 @@
 Storm column subtypes that map to Warp's CRUD proxies.
 """
 
+import pytz
+from datetime import datetime
+
 from storm.locals import *
+
+def utcnow():
+    return datetime.utcnow().replace(tzinfo=pytz.UTC)
+
+class UTCDateTime(DateTime):
+    def __init__(self):
+        super(UTCDateTime, self).__init__(
+            tzinfo=pytz.UTC, 
+            default_factory = utcnow)
 
 
 class NonEmptyUnicode(Unicode):
