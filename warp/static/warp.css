@@ -60,7 +60,7 @@
 /* Fields */
 
 .warpCrud form > table, .warpCrud > table {
-  margin: 10px;
+  margin: 0 10px;
   border-collapse: separate;
   border-spacing: 10px 10px;
 }
