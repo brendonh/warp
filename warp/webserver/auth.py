@@ -3,7 +3,7 @@ from zope.interface import implements
 from twisted.web.resource import IResource
 
 from warp.common.avatar import Avatar
-from warp.runtime import store
+from warp.runtime import store, config
 
 
 
@@ -17,6 +17,9 @@ class LoginBase(object):
         request.redirect(url)
         return "Redirecting..."
 
+
+def defaultCheckPassword(avatar, password):
+    return avatar.password == password.decode("utf-8")
 
 
 class LoginHandler(LoginBase):
@@ -35,11 +38,12 @@ class LoginHandler(LoginBase):
             return
 
         avatar = store.find(Avatar,
-                            Avatar.email == email.decode("utf-8"),
-                            Avatar.password == password.decode("utf-8")
+                            Avatar.email == email.decode("utf-8")
                             ).one()
 
-        if avatar is None:
+        checker = config.get('checkPassword', defaultCheckPassword)
+        
+        if avatar is None or not checker(avatar, password):
             request.session.addFlashMessage("Login failed: Email or password incorrect",
                                             _domain="_warp:login")
             return

@@ -2,7 +2,7 @@ from zope.interface import implements
 
 import sys
 
-from twisted.python import usage
+from twisted.python import usage, reflect
 from twisted.plugin import IPlugin
 from twisted.application.service import IServiceMaker
 from twisted.application import internet
@@ -30,6 +30,10 @@ class CrudOptions(usage.Options):
         self['model'] = model
 
 
+class CommandOptions(usage.Options):
+    def parseArgs(self, fqn):
+        self['fqn'] = fqn
+
 class Options(usage.Options):
     optParameters = (
         ("siteDir", "d", ".", "Base directory of the warp site"),
@@ -41,6 +45,7 @@ class Options(usage.Options):
         ("crud", None, CrudOptions, "Create a new CRUD node"),
         ("adduser", None, usage.Options, "Add a user (interactive)"),
         ("console", None, usage.Options, "Python console with Warp runtime available"),
+        ("command", "c", CommandOptions, "Run a site-specific command"),
     )
 
 
@@ -109,6 +114,12 @@ class WarpServiceMaker(object):
             c = code.InteractiveConsole(locals)
             c.interact()
             raise SystemExit
+        
+        if options.subCommand == 'command':
+            obj = reflect.namedObject(options.subOptions['fqn'])
+            obj()
+            raise SystemExit
+            
 
         if config.get('ssl'):
             from warp.webserver import sslcontext
