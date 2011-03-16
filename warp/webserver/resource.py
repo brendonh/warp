@@ -32,7 +32,7 @@ class WarpResourceWrapper(object):
 
         siteTemplateDir = config['siteDir'].child("templates").path
         warpTemplateDir = self.warpTemplatePath.path
-        templateLookup.__init__(directories=[siteTemplateDir, warpTemplateDir])
+        templateLookup.__init__(directories=[siteTemplateDir, warpTemplateDir], output_encoding="utf-8")
 
 
         self.dispatch =  {
