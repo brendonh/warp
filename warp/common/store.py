@@ -34,7 +34,7 @@ def getCreationSQL(store):
     connType = store._connection.__class__.__name__
     return {
         'PostgresConnection': {
-            'tableExists': lambda s, t: bool(s.execute("SELECT count(*) FROM pg_class where relname = ?::text", (t,)).get_one()[0]),
+            'tableExists': lambda s, t: bool(s.execute("SELECT count(*) FROM pg_class where relname = ?::text", (unicode(t),)).get_one()[0]),
             'creations': [
                 ('warp_avatar', """
                 CREATE TABLE warp_avatar (
