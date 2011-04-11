@@ -93,7 +93,7 @@ class WarpServiceMaker(object):
         runtime.config.update(config)
         runtime.config['siteDir'] = siteDir
         runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
-        store.setupStore(config)
+        store.setupStore()
         translate.loadMessages()
 
         if options.subCommand == 'adduser':
