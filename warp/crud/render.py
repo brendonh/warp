@@ -53,7 +53,7 @@ class CrudRenderer(object):
         return helpers.renderTemplateObj(request, 
                                          self._getListTemplate(),
                                          model=self.crudModel,
-                                         allowCreate=True,
+                                         allowCreate=self.crudModel.allowCreate,
                                          subTemplate="list.mak")
 
 
@@ -204,6 +204,10 @@ class CrudRenderer(object):
 
         for (k,v) in presets.iteritems():
             setattr(fakeObj, k, v)
+
+        defaulter = getattr(fakeObj, "__warp_setdefaults__", None)
+        if defaulter is not None:
+            defaulter()
 
         return helpers.renderTemplateObj(request, template, 
                                          crud=self.crudModel(fakeObj))

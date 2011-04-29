@@ -32,6 +32,7 @@ class CrudModel(object):
     crudTitles = None
 
     showListLink = True
+    allowCreate = True
 
     gridAttrs = {
         'rowNum': "10",
