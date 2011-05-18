@@ -10,7 +10,7 @@ def allowed(avatar, obj, **kwargs):
         roles = avatar.roles
 
     for role in roles:
-        opinion = role.allows(obj)
+        opinion = role.allows(obj, kwargs)
         if opinion is not None:
             return opinion
 
@@ -30,9 +30,9 @@ class Role(object):
             rules = self.ruleMap[obj]
         else:
             rules = self.default
-            
+
         for rule in rules:
-            opinion = rule.allows(obj)
+            opinion = rule.allows(obj, kwargs)
             if opinion is not None:
                 return opinion
 
@@ -46,8 +46,8 @@ class Combine(object):
         self.checkers = checkers
 
     def allows(self, other, **kwargs):
-        return self.combiner(c.allows(other) for c in self.checkers)
-    
+        return self.combiner(c.allows(other, kwargs) for c in self.checkers)
+
 
 class All(Combine):
     combiner = all
@@ -62,7 +62,7 @@ class Equals(object):
 
     def __init__(self, key):
         self.key = key
-    
+
     def allows(self, other, **kwargs):
         return self.key == other
 
@@ -80,7 +80,7 @@ class Callback(object):
 # ---------------------------
 
 
-class Allow(object):    
+class Allow(object):
     def allows(self, other, **kwargs):
         return True
 
