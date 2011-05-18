@@ -1,7 +1,7 @@
 from warp import runtime
 
 
-def allowed(avatar, obj):
+def allowed(avatar, obj, **kwargs):
 
     if avatar is None:
         roles = (runtime.config['roles'][x]
@@ -25,7 +25,7 @@ class Role(object):
         self.ruleMap = ruleMap
         self.default = default
 
-    def allows(self, obj):
+    def allows(self, obj, **kwargs):
         if obj in self.ruleMap:
             rules = self.ruleMap[obj]
         else:
@@ -45,7 +45,7 @@ class Combine(object):
     def __init__(self, *checkers):
         self.checkers = checkers
 
-    def allows(self, other):
+    def allows(self, other, **kwargs):
         return self.combiner(c.allows(other) for c in self.checkers)
     
 
@@ -63,7 +63,7 @@ class Equals(object):
     def __init__(self, key):
         self.key = key
     
-    def allows(self, other):
+    def allows(self, other, **kwargs):
         return self.key == other
 
 
@@ -72,7 +72,7 @@ class Callback(object):
     def __init__(self, callback):
         self.callback = callback
 
-    def allows(self, other):
+    def allows(self, other, **kwargs):
         return self.callback(other)
 
 
@@ -81,10 +81,10 @@ class Callback(object):
 
 
 class Allow(object):    
-    def allows(self, other):
+    def allows(self, other, **kwargs):
         return True
 
 
 class Deny(object):
-    def allows(self, other):
+    def allows(self, other, **kwargs):
         return False
