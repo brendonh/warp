@@ -99,8 +99,4 @@ class AllowFacets(object):
         if not facetName:
             # Always give permissions on the node
             return True
-        if facetName in self.facets:
-            # Allow facets declared
-            return True
-        # Deny everything else
-        return False
+        return facetName in self.facets
