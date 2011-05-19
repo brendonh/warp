@@ -1,7 +1,7 @@
 from warp import runtime
 
 
-def allowed(avatar, obj):
+def allowed(avatar, obj, **kwargs):
 
     if avatar is None:
         roles = (runtime.config['roles'][x]
@@ -10,7 +10,7 @@ def allowed(avatar, obj):
         roles = avatar.roles
 
     for role in roles:
-        opinion = role.allows(obj)
+        opinion = role.allows(obj, **kwargs)
         if opinion is not None:
             return opinion
 
@@ -25,14 +25,14 @@ class Role(object):
         self.ruleMap = ruleMap
         self.default = default
 
-    def allows(self, obj):
+    def allows(self, obj, **kwargs):
         if obj in self.ruleMap:
             rules = self.ruleMap[obj]
         else:
             rules = self.default
-            
+
         for rule in rules:
-            opinion = rule.allows(obj)
+            opinion = rule.allows(obj, **kwargs)
             if opinion is not None:
                 return opinion
 
@@ -45,9 +45,9 @@ class Combine(object):
     def __init__(self, *checkers):
         self.checkers = checkers
 
-    def allows(self, other):
-        return self.combiner(c.allows(other) for c in self.checkers)
-    
+    def allows(self, other, **kwargs):
+        return self.combiner(c.allows(other, **kwargs) for c in self.checkers)
+
 
 class All(Combine):
     combiner = all
@@ -62,8 +62,8 @@ class Equals(object):
 
     def __init__(self, key):
         self.key = key
-    
-    def allows(self, other):
+
+    def allows(self, other, **kwargs):
         return self.key == other
 
 
@@ -72,7 +72,7 @@ class Callback(object):
     def __init__(self, callback):
         self.callback = callback
 
-    def allows(self, other):
+    def allows(self, other, **kwargs):
         return self.callback(other)
 
 
@@ -80,11 +80,27 @@ class Callback(object):
 # ---------------------------
 
 
-class Allow(object):    
-    def allows(self, other):
+class Allow(object):
+    def allows(self, other, **kwargs):
         return True
 
 
 class Deny(object):
-    def allows(self, other):
+    def allows(self, other, **kwargs):
+        return False
+
+
+class AllowFacets(object):
+
+    def __init__(self, facets):
+        self.facets = facets
+
+    def allows(self, other, facetName=None, **kwargs):
+        if not facetName:
+            # Always give permissions on the node
+            return True
+        if facetName in self.facets:
+            # Allow facets declared
+            return True
+        # Deny everything else
         return False
