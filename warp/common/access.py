@@ -21,9 +21,10 @@ def allowed(avatar, obj, **kwargs):
 
 
 class Role(object):
-    def __init__(self, ruleMap, default=[]):
+    def __init__(self, ruleMap, default=[], name=''):
         self.ruleMap = ruleMap
         self.default = default
+        self.name = name
 
     def allows(self, obj, **kwargs):
         if obj in self.ruleMap:
@@ -99,8 +100,4 @@ class AllowFacets(object):
         if not facetName:
             # Always give permissions on the node
             return True
-        if facetName in self.facets:
-            # Allow facets declared
-            return True
-        # Deny everything else
-        return False
+        return facetName in self.facets
