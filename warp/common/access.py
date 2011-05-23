@@ -21,9 +21,10 @@ def allowed(avatar, obj, **kwargs):
 
 
 class Role(object):
-    def __init__(self, ruleMap, default=[]):
+    def __init__(self, ruleMap, default=[], name=''):
         self.ruleMap = ruleMap
         self.default = default
+        self.name = name
 
     def allows(self, obj, **kwargs):
         if obj in self.ruleMap:
