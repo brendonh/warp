@@ -15,17 +15,20 @@ class Avatar(Storm):
     def _getRoles(self):
         if self._roles is None:
             roleLookup = runtime.config['roles']
+            avatar_roles = runtime.store.find(
+                AvatarRole,
+                AvatarRole.avatar == self
+            ).order_by(AvatarRole.position)
             self._roles = tuple(
                 [roleLookup[ar.role_name]
-                 for ar in runtime.store.find(
-                        AvatarRole, AvatarRole.avatar == self
-                        ).order_by(AvatarRole.position)
-                 ] + [roleLookup[r] for r in 
-                      runtime.config['defaultRoles']])
+                    for ar in avatar_roles if ar.role_name in roleLookup] +
+                [roleLookup[r] for r in
+                    runtime.config['defaultRoles']]
+            )
 
         return self._roles
-    roles = property(_getRoles)   
-    
+    roles = property(_getRoles)
+
     def __repr__(self):
         return "<Avatar '%s'>" % self.email.encode("utf-8")
 
@@ -83,7 +86,7 @@ class AvatarRole(Storm):
 
     avatar_id = Int()
     avatar = Reference(avatar_id, "Avatar.id")
-    
+
     role_name = RawStr()
 
     position = Int()
