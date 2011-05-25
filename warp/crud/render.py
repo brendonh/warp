@@ -9,11 +9,10 @@ except ImportError:
 from twisted.web.error import NoResource
 from twisted.web import static
 
-from mako.template import Template
-
 from storm.locals import Desc, Reference
 
-from warp.runtime import store, templateLookup, internal, exposedStormClasses
+from warp.runtime import (store, templateLookup, internal,
+        exposedStormClasses, config)
 from warp import helpers
 from warp.crud import form
 
@@ -23,8 +22,21 @@ class CrudRenderer(object):
     def __init__(self, model):
         self.model = model
         self.crudModel = helpers.getCrudClass(model)
+        self.tinyTemplate = None
 
-        
+    def getTinyTemplate(self):
+        if not self.tinyTemplate:
+            self.tinyTemplate = """
+<html>
+  <head>
+    <link rel="stylesheet" href="%s/_warp/reset.css" type="text/css"></link>
+  </head>
+  <body>
+    %%s
+  </body>
+</html>
+""" % config.get("baseURL", '')
+        return self.tinyTemplate
 
     def renderTemplate(self, request, templatePath):
         objID = int(request.resource.args[0])
@@ -41,7 +53,7 @@ class CrudRenderer(object):
         # something in Mako's templateLookup dirs.
         localNode = helpers.getCrudNode(self.crudModel).__file__
         relPath = os.path.relpath(
-            os.path.dirname(localNode), 
+            os.path.dirname(localNode),
             os.path.abspath("templates"))
         templatePath = "/%s/%s" % (relPath, filename)
 
@@ -50,7 +62,7 @@ class CrudRenderer(object):
 
 
     def render_index(self, request):
-        return helpers.renderTemplateObj(request, 
+        return helpers.renderTemplateObj(request,
                                          self._getListTemplate(),
                                          model=self.crudModel,
                                          allowCreate=self.crudModel.allowCreate,
@@ -65,7 +77,7 @@ class CrudRenderer(object):
         # XXX Todo -- Search
 
         sortCol = getattr(self.model, params['sidx'])
-        
+
         if isinstance(sortCol, Reference):
             sortCol = sortCol._local_key[0]
 
@@ -84,32 +96,32 @@ class CrudRenderer(object):
                 conditions.append(getattr(self.model, k) == v)
 
         totalResults = store.find(self.model, *conditions).count()
-    
+
         results = list(store.find(self.model, *conditions).order_by(sortCol)[start:end])
-        
+
         exclude = json.loads(request.args.get('exclude', ['[]'])[0])
 
         makeRow = lambda row: [row.renderListView(colName, request)
                                for colName in row.listColumns
                                if colName not in exclude]
 
-        rows = [{'id': '.'.join(str(getattr(row, k)) for k in row.__storm_primary__) 
+        rows = [{'id': '.'.join(str(getattr(row, k)) for k in row.__storm_primary__)
                        if hasattr(row, '__storm_primary__')
-                       else row.id, 
+                       else row.id,
                  'cell': makeRow(self.crudModel(row))}
                 for row in results]
 
         (totalPages, addOne) = divmod(totalResults, rowsPerPage)
         if addOne: totalPages += 1
-        
-    
+
+
         obj = {
             'total': totalPages,
             'page': params['page'],
             'records': len(results),
             'rows': rows,
             }
-        
+
         return json.dumps(obj)
 
 
@@ -121,7 +133,7 @@ class CrudRenderer(object):
             #     lookup=templateLookup,
             #     output_encoding="utf-8")
         return internal['crudListTemplate']
-            
+
 
     def _getViewTemplate(self):
         if 'crudTemplate' not in internal:
@@ -135,10 +147,10 @@ class CrudRenderer(object):
     _getEditTemplate = _getViewTemplate
 
 
-    def render_view(self, request):   
+    def render_view(self, request):
         objID = int(request.resource.args[0])
         obj = store.get(self.model, objID)
-        
+
         return helpers.renderTemplateObj(request,
                                          self._getViewTemplate(),
                                          crud=self.crudModel(obj),
@@ -161,7 +173,7 @@ class CrudRenderer(object):
     def render_save(self, request):
         objects = json.load(request.content)
         (success, info) = form.applyForm(objects, request)
-    
+
         if not success:
             store.rollback()
             return json.dumps({
@@ -177,7 +189,7 @@ class CrudRenderer(object):
             return json.dumps({
                     'success': False,
                     'errors': [(None, "Database error: %s" % e.message)]})
-            
+
 
         results = dict((k, [o.id for o in v])
                        for (k,v) in info.iteritems())
@@ -209,7 +221,7 @@ class CrudRenderer(object):
         if defaulter is not None:
             defaulter()
 
-        return helpers.renderTemplateObj(request, template, 
+        return helpers.renderTemplateObj(request, template,
                                          crud=self.crudModel(fakeObj))
 
 
@@ -235,9 +247,9 @@ class CrudRenderer(object):
             import traceback
             traceback.print_exc()
             return NoResource().render(request)
-        
+
         val = getattr(obj, attrName)
-        
+
         if val is None:
             return NoResource().render(request)
         else:
@@ -252,7 +264,7 @@ class CrudRenderer(object):
       <input type="hidden" name="submitID" value="" />
       <input type="hidden" name="callbackID" value="" />
     </form>""" % helpers.url(request.node, "uploadfile")
-        return tinyTemplate % form
+        return self.getTinyTemplate() % form
 
 
     def render_uploadfile(self, request):
@@ -269,20 +281,8 @@ class CrudRenderer(object):
         submitID = request.args['submitID'][0]
         callbackID = request.args['callbackID'][0]
 
-        return tinyTemplate % """
+        return self.getTinyTemplate() % """
 <em style="line-height: 1.5em; color: #090; font-weight: normal;">[Uploaded OK]</em>
 <script type="text/javascript">
   parent.jQuery.fn.warpform.submissionCallbacks[%s](%s, "%s");
 </script>""" % (submitID, callbackID, tfName)
-
-
-tinyTemplate = """
-<html>
-  <head>
-    <link rel="stylesheet" href="/_warp/reset.css" type="text/css"></link>
-  </head>
-  <body>
-    %s
-  </body>
-</html>
-"""
