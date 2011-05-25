@@ -35,6 +35,7 @@ class CrudRenderer(object):
     %%s
   </body>
 </html>
+<<<<<<< HEAD
 """ % config.get("baseURL", '')
         return self.tinyTemplate
 
