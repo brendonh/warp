@@ -314,7 +314,7 @@ class ImageProxy(BaseProxy):
     def render_edit(self, request):
         fieldName = self.fieldName()
         field = '<input type="hidden" name="warpform-%s" class="warpform-upload" />' % fieldName
-        iframe = '<iframe name="%s" src="%s" width="300" height="30" id="iframe-%s"></iframe>' % (
+        iframe = '<iframe name="%s" src="%s" width="300" height="50" id="iframe-%s"></iframe>' % (
             fieldName,
             url(request.node, "uploadframe"),
             fieldName)
