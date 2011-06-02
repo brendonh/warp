@@ -44,6 +44,7 @@ class DBSession(Storm):
 
     language = u"en_US"
     messages = None
+    afterLogin = None
 
     def __storm_loaded__(self):
         if self.language is None:

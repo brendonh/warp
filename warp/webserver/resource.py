@@ -135,9 +135,14 @@ class AccessDenied(object):
     implements(IResource)
 
     isLeaf = True
+    facetName = "view"
+    args = ()
 
     def render(self, request):
-        return "ACCESS DENIED"
+        request.node = None
+        request.resource = self
+        template = templateLookup.get_template("/accessdenied.mak")
+        return helpers.renderTemplateObj(request, template)
 
 
 
