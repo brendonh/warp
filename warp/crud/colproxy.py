@@ -81,7 +81,7 @@ class AreaProxy(StringProxy):
         self.cols = cols
 
     def render_view(self, request):
-        return u'<div style="white-space: pre">%s</div>' % unicode(getattr(self.obj, self.col) or "")
+        return u'<div style="">%s</div>' % unicode(getattr(self.obj, self.col) or "")
     
     def render_edit(self, request):
         return u'<textarea name="warpform-%s" cols="%s" rows="%s">%s</textarea>' % (
