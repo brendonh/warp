@@ -34,6 +34,7 @@ def setupStore():
     try:
         store.find(DBSession)[0]
     except DatabaseError, e:
+        store.rollback()        
         message = e.args[0]
         if 'touched' in message:
             print "Adding 'touched' column to warp_session..."

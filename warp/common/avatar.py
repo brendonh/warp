@@ -58,6 +58,9 @@ class DBSession(Storm):
     def __storm_loaded__(self):
         if self.language is None:
             self.language = u"en_US"
+        if self.touched is None:
+            self.touched = nowstamp()
+            runtime.store.commit()
 
     def addFlashMessage(self, msg, *args, **kwargs):
         if self.uid not in _MESSAGES:
