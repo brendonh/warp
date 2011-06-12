@@ -186,8 +186,6 @@ class NodeResource(object):
 
         subNode = self.getSubNode(segment)
         if subNode is not None:
-            print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-            print "Checking", request.avatar, subNode
             if not access.allowed(request.avatar, subNode):
                 return AccessDenied()
             return NodeResource(subNode)
