@@ -41,7 +41,7 @@ class WarpResourceWrapper(object):
             '_comet': self.handle_comet,
             '_warp': self.handle_warpstatic,
             '': self.handle_default,
-        }     
+        }
 
 
     def getChildWithDefault(self, firstSegment, request):
@@ -58,7 +58,7 @@ class WarpResourceWrapper(object):
 
         if config.get('reloadMessages'):
             translate.loadMessages()
-        
+
         request.translateTerm = translate.getTranslator(session.language)
 
 
@@ -135,9 +135,14 @@ class AccessDenied(object):
     implements(IResource)
 
     isLeaf = True
+    facetName = "view"
+    args = ()
 
     def render(self, request):
-        return "ACCESS DENIED"
+        request.node = None
+        request.resource = self
+        template = templateLookup.get_template("/accessdenied.mak")
+        return helpers.renderTemplateObj(request, template)
 
 
 
@@ -153,7 +158,7 @@ class NodeResource(object):
         self.facetName = None
         self.response = None
         self.args = []
-        
+
 
     def getChildWithDefault(self, segment, request):
 
@@ -166,6 +171,9 @@ class NodeResource(object):
             self.renderFunc = renderFunc
             self.isLeaf = True
 
+            # Perform an additional check before rendering the response
+            if not access.allowed(request.avatar, self.node, facetName=segment):
+                return AccessDenied()
             response = self.getResponse(request)
 
             # Int is for NOT_DONE_YET. Maybe we should
@@ -195,7 +203,7 @@ class NodeResource(object):
 
         return self.renderFunc(request)
 
-            
+
     def render(self, request):
 
         if not self.facetName:
@@ -240,8 +248,8 @@ class NodeResource(object):
     def getSubNode(self, nodeName):
         currentPackage = self.node.__name__.rsplit('.', 1)[0]
         try:
-            return getattr(__import__("%s.%s" % (currentPackage, nodeName), 
-                                      fromlist=[nodeName]), 
+            return getattr(__import__("%s.%s" % (currentPackage, nodeName),
+                                      fromlist=[nodeName]),
                            nodeName, None)
         except ImportError:
             return None

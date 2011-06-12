@@ -8,6 +8,7 @@ from warp.tools import skeleton
 
 
 def autocrud(nodes, name, modelFQN):
+
     model = reflect.namedObject(modelFQN)
 
     schema = [a for a in dir(model) if isinstance(getattr(model, a), PropertyColumn)]

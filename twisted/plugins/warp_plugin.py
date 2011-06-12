@@ -59,6 +59,16 @@ class WarpServiceMaker(object):
 
         siteDir = FilePath(options['siteDir'])
 
+        sys.path.insert(0, siteDir.path)
+
+        configModule = __import__('warpconfig')
+        config = configModule.config
+        runtime.config.update(config)
+        runtime.config['siteDir'] = siteDir
+        runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
+        store.setupStore()
+        translate.loadMessages()
+
         if options.subCommand == "skeleton":
             print "Creating skeleton..."
             from warp.tools import skeleton
@@ -85,18 +95,7 @@ class WarpServiceMaker(object):
             autocrud.autocrud(nodes, options.subOptions['name'], options.subOptions['model'])
             raise SystemExit
 
-
-        sys.path.insert(0, siteDir.path)
-
-        configModule = __import__('warpconfig')
-        config = configModule.config
-        runtime.config.update(config)
-        runtime.config['siteDir'] = siteDir
-        runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
-        store.setupStore()
-        translate.loadMessages()
-
-        if options.subCommand == 'adduser':
+        elif options.subCommand == 'adduser':
             from warp.tools import adduser
             adduser.addUser()
             raise SystemExit

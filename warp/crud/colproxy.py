@@ -81,7 +81,7 @@ class AreaProxy(StringProxy):
         self.cols = cols
 
     def render_view(self, request):
-        return u'<div style="white-space: pre">%s</div>' % unicode(getattr(self.obj, self.col) or "")
+        return u'<div style="">%s</div>' % unicode(getattr(self.obj, self.col) or "")
     
     def render_edit(self, request):
         return u'<textarea name="warpform-%s" cols="%s" rows="%s">%s</textarea>' % (
@@ -314,7 +314,7 @@ class ImageProxy(BaseProxy):
     def render_edit(self, request):
         fieldName = self.fieldName()
         field = '<input type="hidden" name="warpform-%s" class="warpform-upload" />' % fieldName
-        iframe = '<iframe name="%s" src="%s" width="300" height="30" id="iframe-%s"></iframe>' % (
+        iframe = '<iframe name="%s" src="%s" width="300" height="50" id="iframe-%s"></iframe>' % (
             fieldName,
             url(request.node, "uploadframe"),
             fieldName)

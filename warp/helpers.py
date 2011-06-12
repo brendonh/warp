@@ -79,7 +79,7 @@ def url(node, facet="index", args=(), query=()):
     segments = nodeSegments(node)
     segments.append(facet)
     segments.extend(args)
-    u = "/%s" % ("/".join(map(str, segments)))
+    u = "%s/%s" % (config.get('baseURL', ''), "/".join(map(str, segments)))
     if query:
         u = "%s?%s" % (u, urllib.urlencode(query))
     return u
