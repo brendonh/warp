@@ -3,7 +3,7 @@ from storm.locals import *
 from twisted.web.server import Session, Site, Request
 
 from warp.common.avatar import Avatar
-from warp.runtime import store
+from warp.runtime import store, config
 from warp.common.avatar import DBSession
 
 
@@ -37,6 +37,12 @@ class WarpSite(Site):
         session = store.get(DBSession, uid)
 
         if session is None:
+            raise KeyError(uid)
+
+        maxAge = config.get("sessionMaxAge")
+        if maxAge is not None and session.age() > maxAge:
+            store.remove(session)
+            store.commit()
             raise KeyError(uid)
 
         return session

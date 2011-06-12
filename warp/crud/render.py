@@ -83,6 +83,9 @@ class CrudRenderer(object):
             for (k, v) in where.iteritems():
                 conditions.append(getattr(self.model, k) == v)
 
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        print conditions
+
         totalResults = store.find(self.model, *conditions).count()
     
         results = list(store.find(self.model, *conditions).order_by(sortCol)[start:end])
