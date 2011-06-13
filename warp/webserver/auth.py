@@ -20,8 +20,6 @@ class LoginBase(object):
         else:
             url = "/%s" % "/".join(request.postpath)
 
-        print repr(request.session.afterLogin)
-
         request.redirect(url)
         return "Redirecting..."
 

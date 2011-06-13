@@ -39,11 +39,12 @@ class WarpSite(Site):
         if session is None:
             raise KeyError(uid)
 
-        maxAge = config.get("sessionMaxAge")
-        if maxAge is not None and session.age() > maxAge:
-            store.remove(session)
-            store.commit()
-            raise KeyError(uid)
+        if session.avatar_id is not None:
+            maxAge = config.get("sessionMaxAge")
+            if maxAge is not None and session.age() > maxAge:
+                session.addFlashMessage("You were logged out due to inactivity", _domain="_warp:login")
+                session.avatar_id = None
+                store.commit()
 
         return session
 
