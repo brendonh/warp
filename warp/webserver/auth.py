@@ -13,7 +13,13 @@ class LoginBase(object):
 
     def render(self, request):
         self.doIt(request)
-        url = "/%s" % "/".join(request.postpath)
+        
+        if request.session.avatar is not None and request.session.afterLogin is not None:
+            url = request.session.afterLogin
+            request.session.afterLogin = None
+        else:
+            url = "/%s" % "/".join(request.postpath)
+
         request.redirect(url)
         return "Redirecting..."
 

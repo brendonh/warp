@@ -2,6 +2,7 @@ from twisted.python import log
 
 from storm.locals import *
 from storm.uri import URI
+from storm.exceptions import DatabaseError
 
 from warp.runtime import store, config, sql
 
@@ -28,6 +29,18 @@ def setupStore():
             for sqlCmd in creationSQL: store.execute(sqlCmd)
             store.commit()
 
+
+    from warp.common.avatar import DBSession
+    try:
+        store.find(DBSession)[0]
+    except DatabaseError, e:
+        store.rollback()        
+        message = e.args[0]
+        if 'touched' in message:
+            print "Adding 'touched' column to warp_session..."
+            store.execute("ALTER TABLE warp_session ADD touched INTEGER")
+            store.commit()
+        
 
 
 def getCreationSQL(store):

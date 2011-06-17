@@ -81,7 +81,7 @@ class AreaProxy(StringProxy):
         self.cols = cols
 
     def render_view(self, request):
-        return u'<div style="white-space: pre">%s</div>' % unicode(getattr(self.obj, self.col) or "")
+        return u'<div style="">%s</div>' % unicode(getattr(self.obj, self.col) or "")
     
     def render_edit(self, request):
         return u'<textarea name="warpform-%s" cols="%s" rows="%s">%s</textarea>' % (
@@ -238,7 +238,7 @@ jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
         val = getattr(self.obj, self.col)
 
         dateField = u'<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
-            fieldName, fieldName, val.astimezone(self.timezone).strftime("%m/%d/%Y") if val else "")
+            fieldName, fieldName, val.strftime("%m/%d/%Y") if val else "")
 
         return u"%s %s" % (dateField, self.jsTemplate % fieldName)
 

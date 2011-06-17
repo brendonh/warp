@@ -1,3 +1,6 @@
+import time
+from datetime import datetime
+
 from storm.locals import *
 from warp import runtime
 from warp.common import access
@@ -35,19 +38,29 @@ class Avatar(Storm):
 
 _MESSAGES = {}
 
+def nowstamp():
+    return int(time.mktime(datetime.utcnow().timetuple()))
+
 class DBSession(Storm):
     __storm_table__ = "warp_session"
 
     uid = RawStr(primary=True)
     avatar_id = Int()
     avatar = Reference(avatar_id, Avatar.id)
+    touched = Int(default_factory=nowstamp)
 
     language = u"en_US"
     messages = None
+    afterLogin = None
+
+    _touch_granularity = 10
 
     def __storm_loaded__(self):
         if self.language is None:
             self.language = u"en_US"
+        if self.touched is None:
+            self.touched = nowstamp()
+            runtime.store.commit()
 
     def addFlashMessage(self, msg, *args, **kwargs):
         if self.uid not in _MESSAGES:
@@ -67,10 +80,14 @@ class DBSession(Storm):
         self.avatar = avatar
         runtime.store.commit()
 
+
+    def age(self):
+        return nowstamp() - self.touched
+
     def touch(self):
-        # Warp sessions don't expire (yet),
-        # so they don't do anything when poked
-        pass
+        if self.age() > self._touch_granularity:
+            self.touched = nowstamp()
+            runtime.store.commit()
 
     def __repr__(self):
         return "<Session '%s'>" % self.uid
