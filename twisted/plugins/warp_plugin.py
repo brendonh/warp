@@ -102,7 +102,7 @@ class WarpServiceMaker(object):
 
 
         factory = site.WarpSite(resource.WarpResourceWrapper())
-        config['warpSite'] = factory
+        runtime.config['warpSite'] = factory
 
         if hasattr(configModule, 'startup'):
             configModule.startup()
