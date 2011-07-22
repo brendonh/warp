@@ -204,6 +204,7 @@
 
     function _getCollectorName(el) {
         var collector = "string";
+        if (!el.attr("class")) return collector;
         var classes = el.attr("class").split(/\s+/);
         for (var i in classes) {
             var m = /^warpform-(.+)$/.exec(classes[i]);
