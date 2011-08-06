@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(name="warp",
-      version="0.2",
+      version="0.2.1",
       zip_safe = False,
       include_package_data=True,
 
@@ -11,7 +11,7 @@ setup(name="warp",
       url="http://wiki.github.com/brendonh/warp",
       long_description=open('README').read(),
 
-      download_url="https://github.com/brendonh/warp/tarball/v0.2",
+      download_url="https://github.com/brendonh/warp/tarball/v0.2.1",
 
       packages = find_packages('.') + ["twisted.plugins"],
 

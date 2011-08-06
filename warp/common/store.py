@@ -40,6 +40,8 @@ def setupStore():
             print "Adding 'touched' column to warp_session..."
             store.execute("ALTER TABLE warp_session ADD touched INTEGER")
             store.commit()
+    except IndexError:
+        pass
         
 
 

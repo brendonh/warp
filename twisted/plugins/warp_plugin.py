@@ -61,6 +61,12 @@ class WarpServiceMaker(object):
 
         sys.path.insert(0, siteDir.path)
 
+        if options.subCommand == "skeleton":
+            print "Creating skeleton..."
+            from warp.tools import skeleton
+            skeleton.createSkeleton(siteDir)
+            raise SystemExit
+
         configModule = __import__('warpconfig')
         config = configModule.config
         runtime.config.update(config)
@@ -69,13 +75,7 @@ class WarpServiceMaker(object):
         store.setupStore()
         translate.loadMessages()
 
-        if options.subCommand == "skeleton":
-            print "Creating skeleton..."
-            from warp.tools import skeleton
-            skeleton.createSkeleton(siteDir)
-            raise SystemExit
-
-        elif options.subCommand == "node":
+        if options.subCommand == "node":
             nodes = siteDir.child("nodes")
             if not nodes.exists():
                 print "Please run this from a Warp site directory"
