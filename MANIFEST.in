@@ -3,4 +3,4 @@ recursive-include warp/priv *
 recursive-include warp/static *
 recursive-include warp/templates *
 recursive-include warp/messages *
-graft twisted
+recursive-include twisted/plugins *.py
