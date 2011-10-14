@@ -28,20 +28,6 @@ def setupStore():
             if not isinstance(creationSQL, tuple): creationSQL = [creationSQL]
             for sqlCmd in creationSQL: store.execute(sqlCmd)
             store.commit()
-
-
-    from warp.common.avatar import DBSession
-    try:
-        store.find(DBSession)[0]
-    except DatabaseError, e:
-        store.rollback()        
-        message = e.args[0]
-        if 'touched' in message:
-            print "Adding 'touched' column to warp_session..."
-            store.execute("ALTER TABLE warp_session ADD touched INTEGER")
-            store.commit()
-    except IndexError:
-        pass
         
 
 
