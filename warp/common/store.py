@@ -24,11 +24,10 @@ def setupStore():
 
             # Unlike log.message, this works during startup
             print "~~~ Creating Warp table '%s'" % table
-            
+
             if not isinstance(creationSQL, tuple): creationSQL = [creationSQL]
             for sqlCmd in creationSQL: store.execute(sqlCmd)
             store.commit()
-        
 
 
 def getCreationSQL(store):
@@ -39,8 +38,8 @@ def getCreationSQL(store):
             'creations': [
                 ('warp_avatar', """
                 CREATE TABLE warp_avatar (
-                    id SERIAL NOT NULL PRIMARY KEY, 
-                    email VARCHAR, 
+                    id SERIAL NOT NULL PRIMARY KEY,
+                    email VARCHAR,
                     password VARCHAR,
                     UNIQUE(email))"""),
                 ('warp_session', """
@@ -67,8 +66,8 @@ def getCreationSQL(store):
             'creations': [
                 ('warp_avatar', """
                 CREATE TABLE warp_avatar (
-                    id INTEGER NOT NULL PRIMARY KEY, 
-                    email VARCHAR, 
+                    id INTEGER NOT NULL PRIMARY KEY,
+                    email VARCHAR,
                     password VARCHAR,
                     UNIQUE(email))"""),
                 ('warp_session', """
@@ -85,14 +84,14 @@ def getCreationSQL(store):
             },
         'MySQLConnection': {
             'tableExists': lambda s, t: bool(s.execute("""
-                   SELECT count(*) FROM information_schema.tables 
-                   WHERE table_schema = ? AND table_name=?""", 
+                   SELECT count(*) FROM information_schema.tables
+                   WHERE table_schema = ? AND table_name=?""",
                (URI(config['db']).database, t)).get_one()[0]),
             'creations': [
                 ('warp_avatar', """
                 CREATE TABLE warp_avatar (
-                    id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, 
-                    email VARCHAR(64), 
+                    id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                    email VARCHAR(64),
                     password VARCHAR(32),
                     UNIQUE(email)
                   ) engine=InnoDB, charset=utf8"""),
