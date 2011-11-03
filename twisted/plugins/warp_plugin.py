@@ -108,17 +108,33 @@ class WarpServiceMaker(object):
             configModule.startup()
 
         if options.subCommand == "console":
-            import code
             locals = {'store': runtime.store}
-            c = code.InteractiveConsole(locals)
-            c.interact()
+            console = config.get("console", "python")
+            if console == "python":
+                import code
+                c = code.InteractiveConsole(locals)
+                c.interact()
+            elif console == "bpython":
+                try:
+                    from bpython import cli
+                    cli.main(["-i", "-q"], locals_ = locals, banner = "Available: %s" % locals)
+                except ImportError:
+                    print "bpython module not found!"
+            elif console == "ipython":
+                try:
+                    from IPython.Shell import IPShellEmbed
+                    IPShellEmbed()(local_ns = locals, header = "Available: %s" % locals)
+                except ImportError:
+                    print "ipython module not found!"
+            else:
+                print "Unsupported console"
             raise SystemExit
-        
+
         if options.subCommand == 'command':
             obj = reflect.namedObject(options.subOptions['fqn'])
             obj()
             raise SystemExit
-            
+
 
         if config.get('ssl'):
             from warp.webserver import sslcontext
