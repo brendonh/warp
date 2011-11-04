@@ -34,6 +34,11 @@ class CommandOptions(usage.Options):
     def parseArgs(self, fqn):
         self['fqn'] = fqn
 
+class ConsoleOptions(usage.Options):
+    def parseArgs(self, interpreter=None):
+        if interpreter:
+            self["interpreter"] = interpreter
+
 class Options(usage.Options):
     optParameters = (
         ("siteDir", "d", ".", "Base directory of the warp site"),
@@ -44,7 +49,7 @@ class Options(usage.Options):
         ("node", None, NodeOptions, "Create a new node"),
         ("crud", None, CrudOptions, "Create a new CRUD node"),
         ("adduser", None, usage.Options, "Add a user (interactive)"),
-        ("console", None, usage.Options, "Python console with Warp runtime available"),
+        ("console", None, ConsoleOptions, "Python console with Warp runtime available"),
         ("command", "c", CommandOptions, "Run a site-specific command"),
     )
 
@@ -109,25 +114,26 @@ class WarpServiceMaker(object):
 
         if options.subCommand == "console":
             locals = {'store': runtime.store}
-            console = config.get("console", "python")
-            if console == "python":
+            interpreter = options.subOptions.get("interpreter",
+                                                 config.get("console", {}).get("interpreter", "python"))
+            if interpreter == "python":
                 import code
                 c = code.InteractiveConsole(locals)
                 c.interact()
-            elif console == "bpython":
+            elif interpreter == "bpython":
                 try:
                     from bpython import cli
                     cli.main(["-i", "-q"], locals_ = locals, banner = "Available: %s" % locals)
                 except ImportError:
                     print "bpython module not found!"
-            elif console == "ipython":
+            elif interpreter == "ipython":
                 try:
                     from IPython.Shell import IPShellEmbed
                     IPShellEmbed()(local_ns = locals, header = "Available: %s" % locals)
                 except ImportError:
                     print "ipython module not found!"
             else:
-                print "Unsupported console"
+                print "Unsupported interpreter"
             raise SystemExit
 
         if options.subCommand == 'command':
