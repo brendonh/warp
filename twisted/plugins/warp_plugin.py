@@ -112,6 +112,7 @@ class WarpServiceMaker(object):
         if hasattr(configModule, 'startup'):
             configModule.startup()
 
+        # Start a console instead of the site
         if options.subCommand == "console":
             locals = {'store': runtime.store}
             interpreter = options.subOptions.get("interpreter",
@@ -152,7 +153,24 @@ class WarpServiceMaker(object):
         if hasattr(configModule, 'mungeService'):
             service = configModule.mungeService(service)
 
-        return service
+        # Start a remote console if console:port and
+        # console:passwd_file are specified
+        passwd = config.get("console", {}).get("passwd_file")
+        if passwd:
+            from twisted.conch import manhole_tap
+            from twisted.application.service import MultiService
+            manhole = manhole_tap.makeService({
+                "namespace": {"store": runtime.store},
+                "sshPort": "tcp:%s:interface=127.0.0.1" % config["console"]["sshPort"],
+                "telnetPort": "tcp:%s:interface=127.0.0.1" % config["console"]["telnetPort"],
+                "passwd": passwd,
+            })
 
+            ms = MultiService()
+            manhole.setServiceParent(ms)
+            service.setServiceParent(ms)
+            return ms
+
+        return service
 
 serviceMaker = WarpServiceMaker()
