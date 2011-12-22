@@ -59,8 +59,6 @@ class CrudRenderer(object):
 
         return self.renderTemplate(request, templatePath)
 
-
-
     def render_index(self, request):
         return helpers.renderTemplateObj(request,
                                          self._getListTemplate(),
