@@ -4,8 +4,9 @@
 <%def name="contentHeader()">
   % if context.get('crud'):
     <h1>${crud.obj.__class__.__name__}: ${crud.name(request)}</h1>
-  % else:
+  % elif model:
     <h1>${model.__warp_model__.__name__} List</h1>
+  	% else:    #NPK: in case that there is no crud data or model in the content then print out nothing
   % endif
 
   % if context.get('crud'):
@@ -40,7 +41,7 @@
   <% crumbs = [] %>
 
   % if context.get('crud'):
-    <% 
+    <%
     parent = crud
     while parent is not None:
       crumbs.append(parent)
