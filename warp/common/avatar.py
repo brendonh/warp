@@ -13,8 +13,8 @@ class Avatar(Storm):
     email = Unicode()
     password = Unicode()
 
-    _roles = None
 
+    _roles = None
     def _getRoles(self):
         if self._roles is None:
             roleLookup = runtime.config['roles']
@@ -31,6 +31,19 @@ class Avatar(Storm):
 
         return self._roles
     roles = property(_getRoles)
+
+
+    _user = None
+    def _getAppUser(self):
+        if self._user is None:
+            getUser = runtime.config.get('getAppUser')
+            if getUser is None:
+                raise NotImplementedError("No getAppUser callback configured")
+
+            self._user = getUser(self)
+        return self._user
+    user = property(_getAppUser)
+
 
     def __repr__(self):
         return "<Avatar '%s'>" % self.email.encode("utf-8")

@@ -10,7 +10,7 @@ def allowed(avatar, obj, **kwargs):
         roles = avatar.roles
 
     for role in roles:
-        opinion = role.allows(obj, **kwargs)
+        opinion = role.allows(obj, avatar=avatar, **kwargs)
         if opinion is not None:
             return opinion
 
@@ -29,6 +29,8 @@ class Role(object):
     def allows(self, obj, **kwargs):
         if obj in self.ruleMap:
             rules = self.ruleMap[obj]
+        elif obj.__class__ in self.ruleMap:
+            rules = self.ruleMap[obj.__class__]
         else:
             rules = self.default
 
@@ -40,21 +42,61 @@ class Role(object):
 
 # ---------------------------
 
-class Combine(object):
-    combiner = None
 
+class All(object):
     def __init__(self, *checkers):
         self.checkers = checkers
 
     def allows(self, other, **kwargs):
-        return self.combiner(c.allows(other, **kwargs) for c in self.checkers)
+        for checker in self.checkers:
+            if not checker.allows(other, **kwargs):
+                return False
+        return True
 
 
-class All(Combine):
-    combiner = all
+class Any(object):
+    def __init__(self, *checkers):
+        self.checkers = checkers
 
-class Any(Combine):
-    combiner = any
+    def allows(self, other, **kwargs):
+        for checker in self.checkers:
+            if checker.allows(other, **kwargs):
+                return True
+        return False
+
+
+class Each(object):
+    def __init__(self, *checkers):
+        self.checkers = checkers
+
+    def allows(self, other, **kwargs):
+        for checker in self.checkers:
+            opinion = checker.allows(other, **kwargs)
+            if opinion is False:
+                return False
+
+        return True
+
+
+class Not(object):
+    def __init__(self, checker):
+        self.checker = checker
+
+    def allows(self, other, **kwargs):
+        return not self.checker.allows(other, **kwargs)
+
+
+class If(object):
+    def __init__(self, conditionChecker, bodyChecker):
+        self.conditionChecker = conditionChecker
+        self.bodyChecker = bodyChecker
+
+    def allows(self, other, **kwargs):
+        if not self.conditionChecker.allows(other, **kwargs):
+            return None
+        return self.bodyChecker.allows(other, **kwargs)
+
+
 
 # ---------------------------
 
