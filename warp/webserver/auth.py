@@ -55,7 +55,7 @@ class LoginHandler(LoginBase):
             return
 
         request.session.setAvatar(avatar)
-
+        request.avatar = request.session.avatar
 
 class LogoutHandler(LoginBase):
 
