@@ -40,7 +40,11 @@ def applyForm(objects, request):
                 errors.append((None, u"Invalid id: %s" % jsobj['id']))
                 continue
 
-            obj = store.get(model, objID)
+            if hasattr(model, '__warp_get__'):
+                obj = model.__warp_get__(objID)
+            else:
+                obj = store.get(model, objID)
+
             if obj is None:
                 errors.append((None, u"Missing ID '%s' for model '%s'" % (jsobj['id'], jsobj['model'])))
                 continue
