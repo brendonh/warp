@@ -86,7 +86,7 @@ class AreaProxy(StringProxy):
     def render_edit(self, request):
         return u'<textarea name="warpform-%s" cols="%s" rows="%s">%s</textarea>' % (
             self.fieldName(), self.cols, self.rows,
-            getattr(self.obj, self.col))
+            getattr(self.obj, self.col) or '')
 
 
 class HTMLAreaProxy(StringProxy):
@@ -94,7 +94,7 @@ class HTMLAreaProxy(StringProxy):
     def render_edit(self, request):
         return u'<textarea name="warpform-%s" cols="80" rows="20" class="markItUp">%s</textarea>' % (
             self.fieldName(),
-            getattr(self.obj, self.col))
+            getattr(self.obj, self.col) or '')
 
 
 
