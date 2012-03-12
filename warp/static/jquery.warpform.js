@@ -13,7 +13,7 @@
     $.fn.warpform = function(successCallback) {
         var form = $(this);
         form.bind("submit",  function(e) { 
-            return $.fn.warpform.submit(form, successCallback) });
+            return $.fn.warpform.submit(form, successCallback); });
         form.find(":input").removeAttr("disabled");
     };
 
@@ -52,7 +52,7 @@
 
             // The bug here is that it doesn't check whether fields are already disabled,
             // and remember that fact if so.
-            form.find(":input").attr("disabled", "disabled").removeClass("warp-error-highlight")
+            form.find(":input").attr("disabled", "disabled").removeClass("warp-error-highlight");
             form.find(".warp-error").empty();
 
             var objects = _collectForm(form, subCount);
@@ -79,7 +79,7 @@
                 return;
             } else {
                 var redirect = form.attr("warp:redirect");
-                if (redirect) location.href = redirect;
+                if (redirect) document.location.href = redirect;
                 return;
             }
 
@@ -142,7 +142,8 @@
             }
 
             var collectorName = _getCollectorName(el);
-            $.fn.warpform.collectors[collectorName](key, el, field, obj['fields'], subCount);
+            $.fn.warpform.collectors[collectorName](
+              key, el, field, obj['fields'], subCount);
         });
         
         var objList = [];
@@ -198,7 +199,7 @@
 
     function _getElementBits(el) {
         var m = /^warpform-(.+)$/.exec(el.attr("name"));
-        if (!m) return;
+        if (!m) return null;
         return m[1];
     };
 
@@ -240,10 +241,10 @@
 
     function _uploadFile(k, el, f, obj, subCount) {
         var frame = window.frames[k];
-        var uploadForm = frame.document.forms[0];
+        var uploadForm = frame.contentWindow.document.forms[0];            
 
         if (!(uploadForm && uploadForm["uploaded-file"].value)) {
-            return null;
+            return;
         }
 
         var callbackID = $.fn.warpform.callbackCounter++;
@@ -273,7 +274,7 @@
           if (!obj[f]) obj[f] = []; 
           obj[f].push([el.val(), el.attr("checked") ? true : false]);
         },
-        "radio": function(k, el, f, obj) { if (el.attr("checked")) obj[f] = el.val(); },
+        "radio": function(k, el, f, obj) { if (el.attr("checked")) obj[f] = el.val(); }
     };
 
 
