@@ -241,7 +241,14 @@
 
     function _uploadFile(k, el, f, obj, subCount) {
         var frame = window.frames[k];
-        var uploadForm = frame.contentWindow.document.forms[0];            
+
+        var document;
+        if (frame.contentWindow) document = frame.contentWindow.document;
+        else document = frame.document;
+
+        if (!document) document = frame.contentWindow.document;
+
+        var uploadForm = document.forms[0];            
 
         if (!(uploadForm && uploadForm["uploaded-file"].value)) {
             return;
