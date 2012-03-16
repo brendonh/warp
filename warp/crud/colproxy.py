@@ -228,17 +228,23 @@ jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
     dateFormat = "%m/%d/%Y"
     timezone = pytz.UTC
 
+    def to_db(self, val):
+        return val
+
+    def from_db(self, val):
+        return val
+
     def render_view(self, request):
         val = getattr(self.obj, self.col)
         if val is None: return u"[None]"
-        return val.strftime(self.dateFormat)
+        return self.from_db(val).strftime(self.dateFormat)
 
     def render_edit(self, request):
         fieldName = self.fieldName()
         val = getattr(self.obj, self.col)
 
         dateField = u'<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
-            fieldName, fieldName, val.strftime("%m/%d/%Y") if val else "")
+            fieldName, fieldName, self.from_db(val).strftime("%m/%d/%Y") if val else "")
 
         return u"%s %s" % (dateField, self.jsTemplate % fieldName)
 
@@ -260,9 +266,9 @@ jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
                     # .astimezone(pytz.UTC)
                     .date())
         except ValueError:
-            return u"Value '%s' didn't match format '%m/%d/%Y'" % (val, self.dateFormat)
+            return u"Value '%s' didn't match format '%s'" % (val, self.dateFormat)
                 
-        setattr(self.obj, self.col, date)
+        setattr(self.obj, self.col, self.to_db(date))
 
 
 class DateTimeProxy(DateProxy):
