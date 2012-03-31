@@ -88,12 +88,7 @@ class CrudRenderer(object):
         start = (int(params['page']) - 1) * rowsPerPage
         end = start + rowsPerPage
 
-        conditions = []
-        whereJSON = request.args.get('where', [None])[0]
-        if whereJSON is not None:
-            where = json.loads(whereJSON)
-            for (k, v) in where.iteritems():
-                conditions.append(getattr(self.model, k) == v)
+        conditions = self.crudModel(self.model).listConditions(request)
 
         totalResults = store.find(self.model, *conditions).count()
 

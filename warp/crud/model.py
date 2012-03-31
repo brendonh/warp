@@ -71,6 +71,14 @@ class CrudModel(object):
     def saveRedirect(self, request):
         return helpers.url(request.node, 'view', request.resource.args)
 
+    def listConditions(self, request):
+        conditions = []
+        whereJSON = request.args.get('where', [None])[0]
+        if whereJSON is not None:
+            where = json.loads(whereJSON)
+            for (k, v) in where.iteritems():
+                conditions.append(getattr(self.model, k) == v)
+        return conditions
 
     def getProxy(self, colName, request):
         funcName = "render_proxy_%s" % colName
