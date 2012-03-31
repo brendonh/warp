@@ -19,9 +19,9 @@ from warp.crud import form
 
 class CrudRenderer(object):
 
-    def __init__(self, model):
+    def __init__(self, model, crudModel=None):
         self.model = model
-        self.crudModel = helpers.getCrudClass(model)
+        self.crudModel = crudModel or helpers.getCrudClass(model)
         self.tinyTemplate = None
 
     def getTinyTemplate(self):
