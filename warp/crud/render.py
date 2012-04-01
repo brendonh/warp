@@ -88,7 +88,7 @@ class CrudRenderer(object):
         start = (int(params['page']) - 1) * rowsPerPage
         end = start + rowsPerPage
 
-        conditions = self.crudModel(self.model).listConditions(request)
+        conditions = self.crudModel.listConditions(self.model, request)
 
         totalResults = store.find(self.model, *conditions).count()
 

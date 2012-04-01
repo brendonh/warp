@@ -7,6 +7,9 @@ if model.listTitles:
 else:
    listTitles = [c.title() for c in model.listColumns if c not in (exclude or [])]
 
+colNames = list(listTitles)
+if not model.hideListActions:
+  colNames.append('Actions')
 
 # This might not be the same as the request node, because
 # this list gets embedded in other pages.
@@ -39,7 +42,7 @@ jQuery(document).ready(function(){
     postData: ${postData or '{}'},
     datatype: 'json',
     mtype: 'GET',
-    colNames:${list(listTitles) + ['Actions']},
+    colNames:${colNames},
     colModel :[ 
 <%
 for c in model.listColumns:
@@ -48,9 +51,11 @@ for c in model.listColumns:
   d.update(model.listAttrs.get(c, {}))
   context.write("%s," % repr(d))
 %>
+% if not model.hideListActions:
     {'name': 'Actions', 'id': '_actions',
      'align': 'center', 'width': 50,
-     'formatter':delLinkFormatter},
+     'formatter':delLinkFormatter}
+% endif
     ],
     pager: '#${pagerID}',
 % for k, v in model.gridAttrs.iteritems():
