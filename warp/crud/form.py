@@ -1,4 +1,4 @@
-from warp.runtime import store, exposedStormClasses
+from warp.runtime import exposedStormClasses
 from warp.helpers import getCrudClass
 
 def applyForm(objects, request):
@@ -43,7 +43,7 @@ def applyForm(objects, request):
             if hasattr(model, '__warp_get__'):
                 obj = model.__warp_get__(objID)
             else:
-                obj = store.get(model, objID)
+                obj = request.store.get(model, objID)
 
             if obj is None:
                 errors.append((None, u"Missing ID '%s' for model '%s'" % (jsobj['id'], jsobj['model'])))
@@ -80,6 +80,6 @@ def applyForm(objects, request):
         return (False, errors)
 
     for obj in results['created']:
-        store.add(obj)
+        request.store.add(obj)
 
     return (True, results)

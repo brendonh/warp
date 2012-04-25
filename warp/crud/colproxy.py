@@ -1,7 +1,7 @@
 import pytz, operator, re
 from datetime import datetime, date
 
-from warp.runtime import internal, store, templateLookup, exposedStormClasses
+from warp.runtime import internal, templateLookup, exposedStormClasses
 from warp.helpers import url, link, getNode, renderTemplateObj, getCrudClass, getCrudObj, getCrudNode
 
 
@@ -419,11 +419,12 @@ class ReferenceProxy(BaseProxy):
         crudClass = getCrudClass(refClass)
 
         if self.col in noEdit or idCol in noEdit:
-            obj = store.get(refClass, objID)
+            obj = request.store.get(refClass, objID)
             return '<input type="hidden" name="warpform-%s" value="%s" />%s' % (
                 self.fieldName(), objID, crudClass(obj).name(request))
 
-        allObjs = [(crudClass(o).name(request), o) for o in store.find(refClass, *self.conditions)]
+        allObjs = [(crudClass(o).name(request), o) 
+                   for o in request.store.find(refClass, *self.conditions)]
         allObjs.sort()
 
         if objID is None:
@@ -460,7 +461,7 @@ class ReferenceProxy(BaseProxy):
         refClass = self.obj.__class__.__dict__[self.col]._relation.remote_cls
 
         if val is not None:
-            obj = store.get(refClass, val)
+            obj = request.store.get(refClass, val)
             if obj is None:
                 return u"No such object (id %s)" % val
             val = obj.id

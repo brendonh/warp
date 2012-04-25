@@ -13,12 +13,11 @@ class Avatar(Storm):
     email = Unicode()
     password = Unicode()
 
-
     _roles = None
     def _getRoles(self):
         if self._roles is None:
             roleLookup = runtime.config['roles']
-            avatar_roles = runtime.store.find(
+            avatar_roles = runtime.avatar_store.find(
                 AvatarRole,
                 AvatarRole.avatar == self
             ).order_by(AvatarRole.position)
@@ -54,6 +53,24 @@ _MESSAGES = {}
 def nowstamp():
     return int(time.mktime(datetime.utcnow().timetuple()))
 
+
+class SessionManager(object):
+    """
+    Default DB-backed session handling
+    """
+
+    def createSession(self):
+        uid = self._mkuid()
+        session = DBSession()
+        session.uid = uid
+        runtime.avatar_store.add(session)
+        runtime.avatar_store.commit()
+        return session
+
+    def getSession(self, uid):
+        return runtime.avatar_store.get(DBSession, uid)
+
+
 class DBSession(Storm):
     __storm_table__ = "warp_session"
 
@@ -73,7 +90,7 @@ class DBSession(Storm):
             self.language = u"en_US"
         if self.touched is None:
             self.touched = nowstamp()
-            runtime.store.commit()
+            runtime.avatar_store.commit()
 
     def addFlashMessage(self, msg, *args, **kwargs):
         if self.uid not in _MESSAGES:
@@ -89,10 +106,12 @@ class DBSession(Storm):
         return messages
 
 
-    def setAvatar(self, avatar):
-        self.avatar = avatar
-        runtime.store.commit()
+    def hasAvatar(self):
+        return self.avatar_id is not None
 
+    def setAvatarID(self, avatarID):
+        self.avatar_id = avatarID
+        runtime.avatar_store.commit()
 
     def age(self):
         return nowstamp() - self.touched
@@ -100,7 +119,7 @@ class DBSession(Storm):
     def touch(self):
         if self.age() > self._touch_granularity:
             self.touched = nowstamp()
-            runtime.store.commit()
+            runtime.avatar_store.commit()
 
     def __repr__(self):
         return "<Session '%s'>" % self.uid

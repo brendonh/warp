@@ -4,30 +4,29 @@ from storm.locals import *
 from storm.uri import URI
 from storm.exceptions import DatabaseError
 
-from warp.runtime import store, config, sql
+from warp.runtime import avatar_store, config, sql
 
 def setupStore():
-
-    store.__init__(create_database(config['db']))
+    avatar_store.__init__(create_database(config['db']))
 
     if config.get('trace'):
         import sys
         from storm.tracer import debug
         debug(True, stream=sys.stdout)
 
-    sqlBundle = getCreationSQL(store)
+    sqlBundle = getCreationSQL(avatar_store)
     tableExists = sql['tableExists'] = sqlBundle['tableExists']
 
     for (table, creationSQL) in sqlBundle['creations']:
 
-        if not tableExists(store, table):
+        if not tableExists(avatar_store, table):
 
             # Unlike log.message, this works during startup
             print "~~~ Creating Warp table '%s'" % table
 
             if not isinstance(creationSQL, tuple): creationSQL = [creationSQL]
-            for sqlCmd in creationSQL: store.execute(sqlCmd)
-            store.commit()
+            for sqlCmd in creationSQL: avatar_store.execute(sqlCmd)
+            avatar_store.commit()
 
 
 def getCreationSQL(store):

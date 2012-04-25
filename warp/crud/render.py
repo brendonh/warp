@@ -11,8 +11,8 @@ from twisted.web import static
 
 from storm.locals import Desc, Reference
 
-from warp.runtime import (store, templateLookup, internal,
-        exposedStormClasses, config)
+from warp.runtime import (templateLookup, internal,
+                          exposedStormClasses, config)
 from warp import helpers
 from warp.crud import form
 
@@ -40,7 +40,7 @@ class CrudRenderer(object):
 
     def renderTemplate(self, request, templatePath):
         objID = int(request.resource.args[0])
-        obj = store.get(self.model, objID)
+        obj = request.store.get(self.model, objID)
 
         return helpers.renderTemplateObj(request,
                                          self._getViewTemplate(),
@@ -90,9 +90,9 @@ class CrudRenderer(object):
 
         conditions = self.crudModel.listConditions(self.model, request)
 
-        totalResults = store.find(self.model, *conditions).count()
+        totalResults = request.store.find(self.model, *conditions).count()
 
-        results = list(store.find(self.model, *conditions).order_by(sortCol)[start:end])
+        results = list(request.store.find(self.model, *conditions).order_by(sortCol)[start:end])
 
         exclude = json.loads(request.args.get('exclude', ['[]'])[0])
 
@@ -144,7 +144,7 @@ class CrudRenderer(object):
 
     def render_view(self, request):
         objID = int(request.resource.args[0])
-        obj = store.get(self.model, objID)
+        obj = request.store.get(self.model, objID)
 
         return helpers.renderTemplateObj(request,
                                          self._getViewTemplate(),
@@ -155,7 +155,7 @@ class CrudRenderer(object):
 
     def render_edit(self, request):
         objID = int(request.resource.args[0])
-        obj = store.get(self.model, objID)
+        obj = request.store.get(self.model, objID)
         crud = self.crudModel(obj)
 
         return helpers.renderTemplateObj(request,
@@ -170,7 +170,7 @@ class CrudRenderer(object):
         (success, info) = form.applyForm(objects, request)
 
         if not success:
-            store.rollback()
+            request.store.rollback()
             return json.dumps({
                     'success': False,
                     'errors': info
@@ -178,9 +178,9 @@ class CrudRenderer(object):
 
 
         try:
-            store.commit()
+            request.store.commit()
         except Exception, e:
-            store.rollback()
+            request.store.rollback()
             return json.dumps({
                     'success': False,
                     'errors': [(None, "Database error: %s" % e.message)]})
@@ -222,11 +222,11 @@ class CrudRenderer(object):
 
     def render_delete(self, request):
         objID = int(request.resource.args[0])
-        obj = store.get(self.model, objID)
+        obj = request.store.get(self.model, objID)
 
         if obj is not None:
-            store.remove(obj)
-            store.commit()
+            request.store.remove(obj)
+            request.store.commit()
 
         request.redirect(helpers.url(request.node))
         return "Redirecting..."
@@ -237,7 +237,7 @@ class CrudRenderer(object):
             className, objID, attrName = request.resource.args
             objID = int(objID)
             klass = exposedStormClasses[className][0]
-            obj = store.get(klass, objID)
+            obj = request.store.get(klass, objID)
         except Exception, e:
             import traceback
             traceback.print_exc()

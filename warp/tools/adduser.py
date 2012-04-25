@@ -1,7 +1,7 @@
 import getpass
 
 from warp.common import avatar
-from warp.runtime import config, store
+from warp.runtime import config, avatar_store
 
 def _getPassword():
     password = getpass.getpass().strip()
@@ -27,22 +27,26 @@ def addUser():
 
     password = _getPassword().decode("utf-8")
 
+    hasher = config.get('hashPassword')
+    if hasher is not None:
+        password = hasher(password)
+
     roleNames = raw_input("Roles (space-separated):").split()
 
     av = avatar.Avatar()
     av.email = email
     av.password = password
 
-    store.add(av)
+    avatar_store.add(av)
 
     for (position, roleName) in enumerate(roleNames):
         role = avatar.AvatarRole()
         role.avatar = av
         role.role_name = roleName
         role.position = position
-        store.add(role)
+        avatar_store.add(role)
 
-    store.commit()
+    avatar_store.commit()
 
     
     

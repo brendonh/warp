@@ -4,8 +4,7 @@ from twisted.python import util, filepath
 
 from mako.template import Template
 
-from warp.runtime import store, templateLookup, config, exposedStormClasses
-
+from warp.runtime import templateLookup, config, exposedStormClasses
 
 
 def getNode(name):
@@ -43,7 +42,7 @@ def renderTemplateObj(request, template, **kw):
 
     return renderFunc(node=request.node,
                       request=request,
-                      store=store,
+                      store=request.store,
                       facet=request.resource.facetName,
                       args=request.resource.args,
                       t=request.translateTerm,

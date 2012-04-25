@@ -1,8 +1,13 @@
+"""
+XXX BGH: This possibly obsolete module uses the avatar store directly, which is bad.
+It should be refactored to use request stores.
+"""
+
 from storm.locals import Storm
 from storm.properties import PropertyPublisherMeta
 from storm.info import get_obj_info
 
-from warp.runtime import store
+from warp.runtime import avatar_store
 
 DELETE_SQL = "DELETE FROM warp_fulltext WHERE model = ?::text AND doc_id = ?"
 INSERT_SQL = "INSERT INTO warp_fulltext (model, doc_id, fulltext) VALUES (?::text, ?, to_tsvector(?::text::regconfig, ?::text))"
@@ -40,7 +45,7 @@ class Searchable(Storm):
         return 'english'
 
     def __storm_flushed__(self):
-        store.execute(DELETE_SQL, (self.__class__.__name__, self.id))
+        avatar_store.execute(DELETE_SQL, (self.__class__.__name__, self.id))
 
         if get_obj_info(self).get("store") is not None:
             
@@ -49,23 +54,23 @@ class Searchable(Storm):
             if vals:
                 text = self._searchSeparator.join(vals).encode("utf-8")
 
-                store.execute(INSERT_SQL,
-                              (self.__class__.__name__,
-                               self.id,
-                               self.getSearchLanguage(),
-                               text))
-        store.commit()
+                avatar_store.execute(INSERT_SQL,
+                                     (self.__class__.__name__,
+                                      self.id,
+                                      self.getSearchLanguage(),
+                                      text))
+        avatar_store.commit()
 
 
 def reindex():
     import storm.database
-    store.execute("DELETE FROM warp_fulltext")
+    avatar_store.execute("DELETE FROM warp_fulltext")
     for klass in searchModels.itervalues():
-        for obj in store.find(klass):
+        for obj in avatar_store.find(klass):
             obj.__storm_flushed__()
 
 
 def search(term, language='english'):
-    for modelName, doc_id in store.execute(SEARCH_SQL, (language, term.encode("utf-8"))):
+    for modelName, doc_id in avatar_store.execute(SEARCH_SQL, (language, term.encode("utf-8"))):
         model = searchModels[modelName]
-        yield store.get(model, doc_id)
+        yield avatar_store.get(model, doc_id)

@@ -7,7 +7,11 @@ from storm.locals import Store
 from mako.lookup import TemplateLookup
 
 # Thanks to _habnabit for this clever trick!
-store = Store.__new__(Store)
+avatar_store = Store.__new__(Store)
+
+# Default for app code only.
+# Warp never uses this name, so it can be safely changed or removed.
+store = avatar_store
 
 templateLookup = TemplateLookup.__new__(TemplateLookup)
 

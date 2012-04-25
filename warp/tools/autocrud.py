@@ -47,7 +47,7 @@ crudTemplate = """
 from warp.crud.model import CrudModel
 from warp.crud import colproxy, render
 from warp.helpers import link, getNode, renderLocalTemplate, url
-from warp.runtime import expose, store
+from warp.runtime import expose
 
 from models import %(model)s
 

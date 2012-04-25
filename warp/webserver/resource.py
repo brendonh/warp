@@ -11,7 +11,7 @@ from twisted.web import static
 
 from warp.common import access, translate
 from warp.webserver import auth, comet
-from warp.runtime import config, store, templateLookup
+from warp.runtime import avatar_store, config, templateLookup
 from warp import helpers
 
 
@@ -55,6 +55,12 @@ class WarpResourceWrapper(object):
         # Init for everything except static files
         session = request.getSession()
         request.avatar = session.avatar
+
+        getRequestStore = config.get('getRequestStore')
+        if getRequestStore is not None:
+            request.store = getRequestStore(request)
+        else:
+            request.store = avatar_store
 
         if config.get('reloadMessages'):
             translate.loadMessages()

@@ -3,7 +3,7 @@ from zope.interface import implements
 from twisted.web.resource import IResource
 
 from warp.common.avatar import Avatar
-from warp.runtime import store, config
+from warp.runtime import avatar_store, config
 
 
 
@@ -43,9 +43,9 @@ class LoginHandler(LoginBase):
                                             _domain="_warp:login")
             return
 
-        avatar = store.find(Avatar,
-                            Avatar.email == email.decode("utf-8")
-                            ).one()
+        avatar = avatar_store.find(Avatar,
+                                   Avatar.email == email.decode("utf-8")
+                                   ).one()
 
         checker = config.get('checkPassword', defaultCheckPassword)
         
@@ -54,11 +54,11 @@ class LoginHandler(LoginBase):
                                             _domain="_warp:login")
             return
 
-        request.session.setAvatar(avatar)
+        request.session.setAvatarID(avatar.id)
         request.avatar = request.session.avatar
+
 
 class LogoutHandler(LoginBase):
 
     def doIt(self, request):
-        request.session.setAvatar(None)
-
+        request.session.setAvatarID(None)
