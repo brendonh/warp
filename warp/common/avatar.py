@@ -32,18 +32,6 @@ class Avatar(Storm):
     roles = property(_getRoles)
 
 
-    _user = None
-    def _getAppUser(self):
-        if self._user is None:
-            getUser = runtime.config.get('getAppUser')
-            if getUser is None:
-                raise NotImplementedError("No getAppUser callback configured")
-
-            self._user = getUser(self)
-        return self._user
-    user = property(_getAppUser)
-
-
     def __repr__(self):
         return "<Avatar '%s'>" % self.email.encode("utf-8")
 

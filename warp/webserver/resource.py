@@ -1,4 +1,5 @@
 import os.path
+import warnings
 
 from zope.interface import implements
 
@@ -61,6 +62,18 @@ class WarpResourceWrapper(object):
             request.store = getRequestStore(request)
         else:
             request.store = avatar_store
+
+        if request.avatar is not None:
+            getUser = config.get('getRequestUser')
+            if getUser is not None:
+                request.avatar.user = getUser(request)
+            else:
+                # Backward compatibility
+                getUser = config.get('getAppUser')
+                if getUser is not None:
+                    warnings.warn("getAppUser is deprecated, use getRequestUser instead",
+                                  DeprecationWarning)
+                    request.avatar.user = getUser(request.avatar)
 
         if config.get('reloadMessages'):
             translate.loadMessages()

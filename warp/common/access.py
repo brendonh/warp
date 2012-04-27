@@ -116,7 +116,7 @@ class Callback(object):
         self.callback = callback
 
     def allows(self, other, **kwargs):
-        return self.callback(other)
+        return self.callback(other, **kwargs)
 
 
 
