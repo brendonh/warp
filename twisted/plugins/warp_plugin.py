@@ -115,8 +115,6 @@ class WarpServiceMaker(object):
             raise SystemExit
         
         if options.subCommand == 'command':
-            obj = reflect.namedObject(options.subOptions['fqn'])
-            obj()
             raise SystemExit
             
 

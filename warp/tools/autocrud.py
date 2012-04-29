@@ -1,10 +1,25 @@
 import textwrap
 
 from twisted.python import reflect
+from twisted.python import usage
 
 from storm.properties import PropertyColumn
 
 from warp.tools import skeleton
+
+
+class Options(usage.Options):
+    """
+    Create a new node with a simple CRUD model and renderer
+    """
+
+    def parseArgs(self, name, model):
+        self['name'] = name
+        self['model'] = model
+
+    def getSynopsis(self):
+        return " autocrud <name> <model>"
+
 
 
 def autocrud(nodes, name, modelFQN):

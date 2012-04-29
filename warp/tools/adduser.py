@@ -1,22 +1,17 @@
 import getpass
 
+from twisted.python import usage
+
 from warp.common import avatar
 from warp.runtime import config, avatar_store
 
-def _getPassword():
-    password = getpass.getpass().strip()
 
-    if not password:
-        print "You must give a password."
-        return _getPassword()
+class Options(usage.Options):
+    """
+    Add a Warp user
+    """
+    pass
 
-    password2 = getpass.getpass("Password again: ").strip()
-
-    if password != password2:
-        print "Password's didn't match"
-        return _getPassword()
-
-    return password
 
 
 def addUser():
@@ -49,5 +44,18 @@ def addUser():
     avatar_store.commit()
 
     
-    
-    
+        
+def _getPassword():
+    password = getpass.getpass().strip()
+
+    if not password:
+        print "You must give a password."
+        return _getPassword()
+
+    password2 = getpass.getpass("Password again: ").strip()
+
+    if password != password2:
+        print "Password's didn't match"
+        return _getPassword()
+
+    return password
