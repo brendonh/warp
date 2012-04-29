@@ -143,3 +143,15 @@ class AllowFacets(object):
             # Always give permissions on the node
             return True
         return facetName in self.facets
+
+
+class DenyFacets(object):
+
+    def __init__(self, facets):
+        self.facets = facets
+
+    def allows(self, other, facetName=None, **kwargs):
+        if not facetName:
+            # Always give permissions on the node
+            return True
+        return facetName not in self.facets
