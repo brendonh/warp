@@ -47,6 +47,8 @@ class SessionManager(object):
     Default DB-backed session handling
     """
 
+    counter = 0
+
     def createSession(self):
         uid = self._mkuid()
         session = DBSession()
@@ -57,6 +59,12 @@ class SessionManager(object):
 
     def getSession(self, uid):
         return runtime.avatar_store.get(DBSession, uid)
+
+    def _mkuid(self):
+        from twisted.python.hashlib import md5
+        import random
+        self.counter = self.counter + 1
+        return md5("%s_%s" % (str(random.random()) , str(self.counter))).hexdigest()
 
 
 class DBSession(Storm):
