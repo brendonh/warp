@@ -11,15 +11,18 @@ class WarpRequest(Request):
     def finish(self):
         rv = Request.finish(self)
 
-        # Roll back and then commit, so that no transaction
-        # is left open between requests.
-        self.store.rollback()
-        self.store.commit()
-        
-        # Some use cases involve setting store.request in
-        # getRequestStore, so remove request.store here to
-        # avoid a circular reference GC.
-        del self.store
+        # Some requests, like those for static files, don't have store
+        store = getattr(self, 'store', None)
+        if store:
+            # Roll back and then commit, so that no transaction
+            # is left open between requests.
+            store.rollback()
+            store.commit()
+
+            # Some use cases involve setting store.request in
+            # getRequestStore, so remove request.store here to
+            # avoid a circular reference GC.
+            del self.store
 
         return rv
 
