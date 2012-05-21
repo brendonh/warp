@@ -13,12 +13,13 @@ def getNode(name):
     leaf = bits[-1]
 
     try:
-        return getattr(__import__("nodes.%s" % ".".join(bits), 
-                                  fromlist=[leaf]), 
+        return getattr(__import__("nodes.%s" % ".".join(bits),
+                                  fromlist=[leaf]),
                        leaf, None)
     except ImportError, ie:
         # Hrgh
-        if ie.message.startswith("No module named"):
+        #if ie.message.startswith("No module named"):
+        if ie.args[0].startswith("No module named"):
             return None
         raise
 
@@ -34,7 +35,7 @@ def getCrudNode(crudClass):
     # XXX WHAT - God, what *should* this do??
     return sys.modules[crudClass.__module__]
 
-    
+
 
 def renderTemplateObj(request, template, **kw):
     if kw.pop("return_unicode", False): renderFunc = template.render_unicode
@@ -64,7 +65,7 @@ def getLocalTemplatePath(request, filename):
 
 
 def renderLocalTemplate(request, filename, **kw):
-    return renderTemplate(request, 
+    return renderTemplate(request,
                           getLocalTemplatePath(request, filename),
                           **kw)
 
@@ -82,7 +83,7 @@ def url(node, facet="index", args=(), query=()):
     if query:
         u = "%s?%s" % (u, urllib.urlencode(query))
     return u
-        
+
 
 def link(label, node, facet="index", args=(), query=(), **attrs):
     attrs['href'] = url(node, facet, args, query)
