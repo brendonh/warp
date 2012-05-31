@@ -1,16 +1,23 @@
 import pytz, operator, re
 from datetime import datetime, date
-
-from warp.runtime import internal, templateLookup, exposedStormClasses
+import itertools
+from warp.runtime import internal, store, templateLookup, exposedStormClasses
 from warp.helpers import url, link, getNode, renderTemplateObj, getCrudClass, getCrudObj, getCrudNode
+from warp.forms.validators import StopValidation
+from warp.forms import validators
 
 
 class BaseProxy(object):
 
-    def __init__(self, obj, col):
+    _formfield = True
+    data = ""
+    errors = list()    
+
+    def __init__(self, obj, col, valid=[]):
         self.obj = obj
         self.col = col
-
+        self.validators = valid
+        
     def fieldName(self):
 
         id = self.obj.fakeID if hasattr(self.obj, 'fakeID') else self.obj.id
@@ -28,6 +35,24 @@ class BaseProxy(object):
             self.fieldName(),
             getattr(self.obj, self.col) or "")
 
+    def render_inputs(self):
+        fieldName = "%s-%s-%s" % (self.obj.__class__.__name__,
+            self.obj.id, self.col)
+        return u'<input type="text" name="%s" value="%s" />' % (
+            fieldName, self.data)
+
+    def render_label(self):
+        return u'<label for="%s">%s</label>' % (self.col, self.col.title())
+
+    def render_errors(self):
+        error = ""
+        if len(self.errors) > 0:
+            error = u'<span class="error">%s</span>' % (self.errors[0])
+        return error
+
+    def render_field(self):        
+        return u'%s %s %s' % (
+            self.render_label(), self.render_inputs(), self.render_errors())
 
     def save(self, val, request):
         try:
@@ -35,7 +60,24 @@ class BaseProxy(object):
         except (TypeError, ValueError):
             return u"Invalid value"
             
+    def populate_obj(self, obj, name):
+        setattr(obj, name, self.data)
 
+    def gettext(self, string):
+        return string
+    
+    def validate(self, form, extra_validators=tuple()): 
+        self.errors = list()       
+        for validator in itertools.chain(self.validators, extra_validators):
+            try:
+                validator(form, self)
+            except StopValidation, e:
+                if e.args and e.args[0]:
+                    self.errors.append(e.args[0])                    
+                break
+            except ValueError, e:
+                self.errors.append(e.args[0])
+        return len(self.errors) == 0
 
 class StringProxy(BaseProxy):
     pass
@@ -65,6 +107,9 @@ class RawStringProxy(BaseProxy):
 
 
 class NonEmptyStringProxy(StringProxy):
+    def __init__(self, obj=None, col=None, valid=[]):
+        valid.append(validators.Required())
+        super(NonEmptyStringProxy, self).__init__(obj, col, valid=valid)
 
     def save(self, val, request):
         if not val:
@@ -72,11 +117,9 @@ class NonEmptyStringProxy(StringProxy):
         super(NonEmptyStringProxy, self).save(val, request)
 
 
-
 class AreaProxy(StringProxy):
-
-    def __init__(self, obj, col, rows=6, cols=80):
-        super(AreaProxy, self).__init__(obj, col)
+    def __init__(self, obj=None, col=None, rows=6, cols=80, valid=[]):
+        super(AreaProxy, self).__init__(obj, col, valid)
         self.rows = rows
         self.cols = cols
 
@@ -86,15 +129,21 @@ class AreaProxy(StringProxy):
     def render_edit(self, request):
         return u'<textarea name="warpform-%s" cols="%s" rows="%s">%s</textarea>' % (
             self.fieldName(), self.cols, self.rows,
-            getattr(self.obj, self.col) or '')
+            getattr(self.obj, self.col))
 
+    def render_inputs(self):
+        fieldName = "%s-%s-%s" % (self.obj.__class__.__name__,
+            self.obj.id, self.col)
+        return u'<textarea name="%s" cols="%s" rows="%s">%s</textarea>' % (
+                fieldName, self.cols, self.rows, self.data) 
+        
 
 class HTMLAreaProxy(StringProxy):
     
     def render_edit(self, request):
         return u'<textarea name="warpform-%s" cols="80" rows="20" class="markItUp">%s</textarea>' % (
             self.fieldName(),
-            getattr(self.obj, self.col) or '')
+            getattr(self.obj, self.col))
 
 
 
@@ -228,23 +277,17 @@ jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
     dateFormat = "%m/%d/%Y"
     timezone = pytz.UTC
 
-    def to_db(self, val):
-        return val
-
-    def from_db(self, val):
-        return val
-
     def render_view(self, request):
         val = getattr(self.obj, self.col)
         if val is None: return u"[None]"
-        return self.from_db(val).strftime(self.dateFormat)
+        return val.strftime(self.dateFormat)
 
     def render_edit(self, request):
         fieldName = self.fieldName()
         val = getattr(self.obj, self.col)
 
         dateField = u'<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
-            fieldName, fieldName, self.from_db(val).strftime("%m/%d/%Y") if val else "")
+            fieldName, fieldName, val.strftime("%m/%d/%Y") if val else "")
 
         return u"%s %s" % (dateField, self.jsTemplate % fieldName)
 
@@ -266,9 +309,9 @@ jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
                     # .astimezone(pytz.UTC)
                     .date())
         except ValueError:
-            return u"Value '%s' didn't match format '%s'" % (val, self.dateFormat)
+            return u"Value '%s' didn't match format '%m/%d/%Y'" % (val, self.dateFormat)
                 
-        setattr(self.obj, self.col, self.to_db(date))
+        setattr(self.obj, self.col, date)
 
 
 class DateTimeProxy(DateProxy):
@@ -419,12 +462,11 @@ class ReferenceProxy(BaseProxy):
         crudClass = getCrudClass(refClass)
 
         if self.col in noEdit or idCol in noEdit:
-            obj = request.store.get(refClass, objID)
+            obj = store.get(refClass, objID)
             return '<input type="hidden" name="warpform-%s" value="%s" />%s' % (
                 self.fieldName(), objID, crudClass(obj).name(request))
 
-        allObjs = [(crudClass(o).name(request), o) 
-                   for o in request.store.find(refClass, *self.conditions)]
+        allObjs = [(crudClass(o).name(request), o) for o in store.find(refClass, *self.conditions)]
         allObjs.sort()
 
         if objID is None:
@@ -461,7 +503,7 @@ class ReferenceProxy(BaseProxy):
         refClass = self.obj.__class__.__dict__[self.col]._relation.remote_cls
 
         if val is not None:
-            obj = request.store.get(refClass, val)
+            obj = store.get(refClass, val)
             if obj is None:
                 return u"No such object (id %s)" % val
             val = obj.id
