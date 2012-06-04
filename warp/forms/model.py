@@ -112,4 +112,11 @@ class FormSet(object):
             _form = FormModel('n'+str(idx))
             for name, field in _form._fields.iteritems():
                 setattr(field, "data", getattr(entry, name) if hasattr(entry, name) else "")     
-            self.subforms.append(_form)        
+            self.subforms.append(_form)
+
+    def validate(self, request, extra_validators=None):
+        success = True
+        for form in self.subforms:
+            t = form.validate(request, extra_validators)
+            success = success and t
+        return success
