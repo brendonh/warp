@@ -79,6 +79,27 @@ class BaseProxy(object):
                 self.errors.append(e.args[0])
         return len(self.errors) == 0
 
+
+class FileUploadProxy(BaseProxy):
+
+    jsTemplate = """
+<script type="text/javascript">
+jQuery(document).ready(function($) { var form = $("input[name='%s']")[0].form; 
+    $(form).attr("enctype", "multipart/form-data");
+});
+</script>
+"""
+    type = None
+    size = None
+    def __init__(self, obj=None, col=None, valid=[]):
+        super(FileUploadProxy, self).__init__(obj, col, valid=valid)
+
+    def render_inputs(self):
+        fieldName = "%s-%s-%s" % (self.obj.__class__.__name__,
+            self.obj.id, self.col) 
+        return u'<input name="%s" type="file" />' % (fieldName) 
+
+
 class StringProxy(BaseProxy):
     pass
 

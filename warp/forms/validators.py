@@ -152,6 +152,18 @@ class Optional(object):
             raise StopValidation()
 
 
+class File(object):
+    def __init__(self, extensions=None, size=None, message="Invalid file"):
+        self.message = message
+        self.extensions = extensions
+        self.size = size
+    
+    def __call__(self, form, field):
+        if not field.type or field.type not in self.extensions:
+            raise ValidationError(self.message)
+        if not field.size or field.size > self.size:
+            raise ValidationError(self.message)
+
 class Required(object):
     """
     Validates that the field contains data. This validator will stop the

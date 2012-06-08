@@ -1,7 +1,7 @@
 
 from warp.crud import colproxy, columns
 from warp import helpers
-
+import cgi
 
 try:
     import json
@@ -69,12 +69,35 @@ class FormModel(object):
 
     def widget(self, name):
         return self._fields[name].render_field()
+    
+    # twistd.web request cannot get file's information
+    def processFile(self, request):
+        headers = request.getAllHeaders()
+        f = cgi.FieldStorage(
+            fp = request.content,
+            headers = headers,
+            environ = {'REQUEST_METHOD':'POST',
+                 'CONTENT_TYPE': headers['content-type'],
+                 }
+        )
+        return f
 
-    def process(self, request):
+
+    def process(self, request):        
+        f = self.processFile(request)
         for name, field in self._fields.iteritems():
             fieldName = "%s-%s-%s" % (self.__class__.__name__, self.id, name)
             if fieldName in request.args.keys():
                 setattr(field, "data", request.args.get(fieldName)[0])
+
+                if field.__class__.__name__ == 'FileUploadProxy':
+                    # cgi does not provide function to get file size
+                    f[fieldName].file.seek(0, 2)
+                    filesize = f[fieldName].file.tell()
+                    f[fieldName].file.seek(0)
+
+                    setattr(field, "type", f[fieldName].type)
+                    setattr(field, "size", filesize*1.0/1000)
 
     def validate(self, request, extra_validators=None):
         self.process(request)
