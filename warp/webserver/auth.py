@@ -33,7 +33,7 @@ class LoginHandler(LoginBase):
 
     def doIt(self, request):
         if request.method != 'POST':
-            return
+            return False
 
         [email] = request.args.get('email', [None])
         [password] = request.args.get('password', [None])
@@ -41,7 +41,7 @@ class LoginHandler(LoginBase):
         if not (email and password):
             request.session.addFlashMessage("Login failed: Email or password not given",
                                             _domain="_warp:login")
-            return
+            return False
 
         avatar = avatar_store.find(Avatar,
                                    Avatar.email == email.decode("utf-8")
@@ -52,10 +52,12 @@ class LoginHandler(LoginBase):
         if avatar is None or not checker(avatar, password):
             request.session.addFlashMessage("Login failed: Email or password incorrect",
                                             _domain="_warp:login")
-            return
+            return False
 
         request.session.setAvatarID(avatar.id)
         request.avatar = request.session.avatar
+
+        return True
 
 
 class LogoutHandler(LoginBase):
