@@ -75,6 +75,8 @@ class DBSession(Storm):
     avatar = Reference(avatar_id, Avatar.id)
     touched = Int(default_factory=nowstamp)
 
+    isPersistent = Bool(default=False)
+
     language = u"en_US"
     messages = None
     afterLogin = None
@@ -104,6 +106,10 @@ class DBSession(Storm):
 
     def hasAvatar(self):
         return self.avatar_id is not None
+
+    def setPersistent(self, isPersistent):
+        self.isPersistent = isPersistent
+        runtime.avatar_store.commit()
 
     def setAvatarID(self, avatarID):
         self.avatar_id = avatarID
