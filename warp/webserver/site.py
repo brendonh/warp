@@ -41,6 +41,9 @@ class WarpSite(Site):
         if session is None:
             raise KeyError(uid)
 
+        if session.isPersistent:
+            return session
+
         if session.hasAvatar():
             maxAge = config.get("sessionMaxAge")
             if maxAge is not None and session.age() > maxAge:
