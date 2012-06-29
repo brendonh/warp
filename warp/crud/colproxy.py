@@ -3,14 +3,12 @@ from datetime import datetime, date
 import itertools
 from warp.runtime import internal, store, templateLookup, exposedStormClasses
 from warp.helpers import url, link, getNode, renderTemplateObj, getCrudClass, getCrudObj, getCrudNode
-from warp.forms.validators import StopValidation
 from warp.forms import validators
-
+import cgi
 
 class BaseProxy(object):
 
     _formfield = True
-    data = ""
     errors = list()    
 
     def __init__(self, obj, col, valid=[]):
@@ -35,11 +33,11 @@ class BaseProxy(object):
             self.fieldName(),
             getattr(self.obj, self.col) or "")
 
-    def render_inputs(self):
+    def render_inputs(self, val=None):
         fieldName = "%s-%s-%s" % (self.obj.__class__.__name__,
             self.obj.id, self.col)
         return u'<input type="text" name="%s" value="%s" />' % (
-            fieldName, self.data)
+            fieldName, val)
 
     def render_label(self):
         return u'<label for="%s">%s</label>' % (self.col, self.col.title())
@@ -50,34 +48,29 @@ class BaseProxy(object):
             error = u'<span class="error">%s</span>' % (self.errors[0])
         return error
 
-    def render_field(self):        
+    def render_field(self, val=None):
         return u'%s %s %s' % (
-            self.render_label(), self.render_inputs(), self.render_errors())
+            self.render_label(), self.render_inputs(val), self.render_errors())
 
     def save(self, val, request):
         try:
             setattr(self.obj, self.col, val)
         except (TypeError, ValueError):
-            return u"Invalid value"
-            
-    def populate_obj(self, obj, name):
-        setattr(obj, name, self.data)
+            return u"Invalid value"    
 
     def gettext(self, string):
         return string
     
-    def validate(self, form, extra_validators=tuple()): 
-        self.errors = list()       
-        for validator in itertools.chain(self.validators, extra_validators):
-            try:
-                validator(form, self)
-            except StopValidation, e:
-                if e.args and e.args[0]:
-                    self.errors.append(e.args[0])                    
-                break
-            except ValueError, e:
-                self.errors.append(e.args[0])
-        return len(self.errors) == 0
+    def validate(self, val, request, extra_validators=tuple()): 
+        self.errors = []
+        for validator in itertools.chain(self.validators, extra_validators):            
+            error = validator.validate(val, request)
+            print error
+            if error:
+                self.errors.append(error)
+        if self.errors != []:
+            return (False, self.errors[0])
+        return (True, None)
 
 
 class FileUploadProxy(BaseProxy):
@@ -94,10 +87,40 @@ jQuery(document).ready(function($) { var form = $("input[name='%s']")[0].form;
     def __init__(self, obj=None, col=None, valid=[]):
         super(FileUploadProxy, self).__init__(obj, col, valid=valid)
 
-    def render_inputs(self):
+    def render_inputs(self, val=None):
         fieldName = "%s-%s-%s" % (self.obj.__class__.__name__,
             self.obj.id, self.col) 
         return u'<input name="%s" type="file" />' % (fieldName) 
+
+    def validate(self, val, request, extra_validators=tuple()):
+        fieldName = "%s-%s-%s" % (self.obj.__class__.__name__, self.obj.id, self.col)
+
+        # twistd.web request cannot get file's information
+        headers = request.getAllHeaders()
+        f = cgi.FieldStorage(
+            fp = request.content,
+            headers = headers,
+            environ = {'REQUEST_METHOD':'POST',
+                 'CONTENT_TYPE': headers['content-type'],
+                 }
+        )
+
+        # cgi does not provide function to get file size
+        f[fieldName].file.seek(0, 2)
+        filesize = f[fieldName].file.tell()
+        f[fieldName].file.seek(0)
+
+        self.type = f[fieldName].type
+        self.size = filesize*1.0/1000 #kb
+
+        self.errors = []
+        for validator in itertools.chain(self.validators, extra_validators):            
+            error = validator.validate(self.type, self.size, request)
+            if error:
+                self.errors.append(error)
+        if self.errors != []:
+            return (False, self.errors[0])
+        return (True, None)
 
 
 class StringProxy(BaseProxy):
@@ -106,9 +129,10 @@ class StringProxy(BaseProxy):
 
 class RawStringProxy(BaseProxy):
 
-    def __init__(self, obj, col, encoding="utf8"):
+    def __init__(self, obj=None, col=None, encoding="utf8", valid=[]):
         self.obj = obj
         self.col = col
+        self.validators = valid
         self.encoding = encoding
 
     def render_view(self, request):
@@ -126,16 +150,17 @@ class RawStringProxy(BaseProxy):
             return u"Invalid value"
 
 
-
 class NonEmptyStringProxy(StringProxy):
     def __init__(self, obj=None, col=None, valid=[]):
-        valid.append(validators.Required())
         super(NonEmptyStringProxy, self).__init__(obj, col, valid=valid)
 
     def save(self, val, request):
         if not val:
             return u"Cannot be empty"
         super(NonEmptyStringProxy, self).save(val, request)
+
+    def validate(self, val, request):
+        return super(NonEmptyStringProxy, self).validate(val, request, [validators.Required()])
 
 
 class AreaProxy(StringProxy):
@@ -152,11 +177,11 @@ class AreaProxy(StringProxy):
             self.fieldName(), self.cols, self.rows,
             getattr(self.obj, self.col))
 
-    def render_inputs(self):
+    def render_inputs(self, val=None):
         fieldName = "%s-%s-%s" % (self.obj.__class__.__name__,
             self.obj.id, self.col)
         return u'<textarea name="%s" cols="%s" rows="%s">%s</textarea>' % (
-                fieldName, self.cols, self.rows, self.data) 
+                fieldName, self.cols, self.rows, val) 
         
 
 class HTMLAreaProxy(StringProxy):
@@ -167,8 +192,10 @@ class HTMLAreaProxy(StringProxy):
             getattr(self.obj, self.col))
 
 
-
 class BooleanProxy(BaseProxy):
+
+    def __init__(self, obj=None, col=None, valid=[]):
+        super(BooleanProxy, self).__init__(obj, col, valid=valid)
 
     def render_view(self, request):
         return u"True" if getattr(self.obj, self.col) else u"False"
@@ -183,6 +210,16 @@ class BooleanProxy(BaseProxy):
         return u'<input type="checkbox" name="warpform-%s" class="warpform-bool" value="%s" %s/>' % (
             self.fieldName(), val, checkedBit)
 
+    def render_inputs(self, val=None):
+        fieldName = "%s-%s-%s" % (self.obj.__class__.__name__,
+            self.obj.id, self.col)
+        if val:
+            checkedBit = 'checked="checked" '
+        else:
+            checkedBit = ''
+
+        return u'<input type="checkbox" name="%s" class="warpform-bool" value="%s" %s/>' % (
+                fieldName, val, checkedBit)
 
 
 class IntProxy(BaseProxy):

@@ -1,120 +1,91 @@
-
 from warp.crud import colproxy, columns
 from warp import helpers
-import cgi
 
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
-class FormMeta(type):    
-    def __init__(cls, name, bases, attrs):
-        type.__init__(cls, name, bases, attrs)
-        cls._unbound_fields = None
+class BoundField(object):
+    def __init__(self, field, data):
+        self.field = field        
+        self.data = data
 
-    def __call__(cls, *args, **kwargs):        
-        if cls._unbound_fields is None:
-            fields = []            
-            for name in dir(cls):
-                if not name.startswith('_'):                    
-                    unbound_field = getattr(cls, name)                    
-                    if hasattr(unbound_field, '_formfield'):
-                        fields.append((name, unbound_field))                     
-            cls._unbound_fields = fields
-        return type.__call__(cls, *args, **kwargs)
+    def render_field(self):
+        return self.field.render_field(self.data)
 
-    def __setattr__(cls, name, value):        
-        if not name.startswith('_') and hasattr(value, '_formfield'):
-            cls._unbound_fields = None
-        type.__setattr__(cls, name, value)
+    def render_label(self):
+        return self.field.render_label()
 
-    def __delattr__(cls, name):        
-        if not name.startswith('_'):
-            cls._unbound_fields = None
-        type.__delattr__(cls, name)
+    def render_inputs(self):
+        return self.field.render_inputs(self.data)
+
+    def render_errors(self):
+        return self.field.render_errors()
+
+    def set_data(self, data):
+        self.data = data
+
+    def get_data(self):
+        return self.data
+
+    def validate(self, request):
+        return self.field.validate(self.data, request) 
+    
 
 class FormModel(object):
-    __metaclass__ = FormMeta
-    
-    def init(self, fields):
-        self._fields = {}
-
-        if hasattr(fields, 'items'):
-            fields = fields.items()
-        
-        for name, unbound_field in fields:
-            field = unbound_field.__class__(self, name, valid=unbound_field.validators)
-            self._fields[name] = field                 
-            setattr(field, "data", self.field_value[name] if name in self.field_value.keys() else "")
         
     def __init__(self, id=1, fields={}):
         self.id = id
         self.field_value = fields
-        self.init(self._unbound_fields)
 
+    _fields = {}
     template = None    
+
+    def _build_field(self, name):
+        if name in self._fields.keys():
+            return self._fields[name]
+
+        unbound_field = getattr(self, name)
+        if not isinstance(unbound_field, colproxy.BaseProxy):
+            raise TypeError("Invalid type")
+
+        field = unbound_field.__class__(self, name, valid=unbound_field.validators)
+        bound_field = BoundField(field, self.field_value[name] if name in self.field_value.keys() else None)
+        self._fields[name] = bound_field
+
+        return bound_field
 
     def render(self, request):
         return helpers.renderLocalTemplate(request, self.template, form=self)
 
     def errors(self, name):
-        return self._fields[name].render_errors()
+        return self._build_field(name).render_errors()
 
     def inputs(self, name):
-        return self._fields[name].render_inputs()
+        return self._build_field(name).render_inputs()
 
     def label(self, name):
-        return self._fields[name].render_label()
+        return self._build_field(name).render_label()
 
     def widget(self, name):
-        return self._fields[name].render_field()
-    
-    # twistd.web request cannot get file's information
-    def processFile(self, request):
-        headers = request.getAllHeaders()
-        f = cgi.FieldStorage(
-            fp = request.content,
-            headers = headers,
-            environ = {'REQUEST_METHOD':'POST',
-                 'CONTENT_TYPE': headers['content-type'],
-                 }
-        )
-        return f
+        return self._build_field(name).render_field()
 
-
-    def process(self, request):        
-        f = self.processFile(request)
+    def process(self, request):
         for name, field in self._fields.iteritems():
             fieldName = "%s-%s-%s" % (self.__class__.__name__, self.id, name)
             if fieldName in request.args.keys():
-                setattr(field, "data", request.args.get(fieldName)[0])
+                field.data = request.args.get(fieldName)[0]                    
 
-                if field.__class__.__name__ == 'FileUploadProxy':
-                    # cgi does not provide function to get file size
-                    f[fieldName].file.seek(0, 2)
-                    filesize = f[fieldName].file.tell()
-                    f[fieldName].file.seek(0)
-
-                    setattr(field, "type", f[fieldName].type)
-                    setattr(field, "size", filesize*1.0/1000)
-
-    def validate(self, request, extra_validators=None):
+    def validate(self, request):
         self.process(request)
-        self._errors = None
-        success = True
+        errors = []
+        success = None
         for name, field in self._fields.iteritems():
-            if extra_validators is not None and name in extra_validators:
-                extra = extra_validators[name]
-            else:
-                extra = tuple()
-            if not field.validate(self, extra):
-                success = False
-        return success
+            (success, error) = field.validate(request)
+            if not success:
+                errors.append(error)
 
-    def populate_obj(self, obj):       
-        for name, field in self._fields.iteritems():
-            field.populate_obj(obj, name)
+        if errors:
+            return (False, errors)
+        return (True, errors)
+
 
 class FormSet(object):
     subforms = []    
