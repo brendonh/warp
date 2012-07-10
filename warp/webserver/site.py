@@ -3,7 +3,7 @@ from storm.locals import *
 from twisted.web.server import Session, Site, Request
 
 from warp.common.avatar import Avatar
-from warp.runtime import config
+from warp.runtime import config, avatar_store
 from warp.common.avatar import SessionManager #DBSession
 
 
@@ -11,13 +11,17 @@ class WarpRequest(Request):
     def finish(self):
         rv = Request.finish(self)
 
+        avatar_store.rollback()
+        avatar_store.commit()
+
         # Some requests, like those for static files, don't have store
         store = getattr(self, 'store', None)
         if store:
             # Roll back and then commit, so that no transaction
             # is left open between requests.
-            store.rollback()
-            store.commit()
+            if store is not avatar_store:
+                store.rollback()
+                store.commit()
 
             # Some use cases involve setting store.request in
             # getRequestStore, so remove request.store here to
