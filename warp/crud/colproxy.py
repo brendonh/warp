@@ -479,7 +479,11 @@ class ReferenceSetProxy(BaseProxy):
     Currently supports only one-to-many
     """
 
-    allowCreate = True
+    def __init__(self, obj, col, model=None, allowCreate=True)
+        self.obj = obj
+        self.col = col
+        self.model = model if model else getCrudClass(refClass)
+        self.allowCreate = allowCreate
 
     def render_view(self, request):
 
@@ -498,7 +502,7 @@ class ReferenceSetProxy(BaseProxy):
 
         return renderTemplateObj(request, 
                                  template, 
-                                 model=getCrudClass(refClass),
+                                 model=model,
                                  presets=presets,
                                  postData=postData,
                                  noEdit=noEdit,
