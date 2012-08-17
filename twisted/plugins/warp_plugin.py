@@ -18,6 +18,7 @@ from warp import runtime
 class SkeletonOptions(usage.Options):
     optParameters = (
         ("siteDir", "d", ".", "Base directory of the warp site"),
+        ("config", "c", "warpconfig", "Default config module")
     )
 
 class NodeOptions(usage.Options):
@@ -37,6 +38,7 @@ class CommandOptions(usage.Options):
 class Options(usage.Options):
     optParameters = (
         ("siteDir", "d", ".", "Base directory of the warp site"),
+        ("config", "c", "warpconfig", "Default config module")
     )
 
     subCommands = (
@@ -66,8 +68,8 @@ class WarpServiceMaker(object):
             from warp.tools import skeleton
             skeleton.createSkeleton(siteDir)
             raise SystemExit
-
-        configModule = __import__('warpconfig')
+        
+        configModule = reflect.namedModule(options['config'])
         config = configModule.config
         runtime.config.update(config)
         runtime.config['siteDir'] = siteDir

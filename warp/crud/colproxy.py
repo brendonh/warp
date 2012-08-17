@@ -418,6 +418,8 @@ class ReferenceProxy(BaseProxy):
         refClass = reference._relation.remote_cls
         crudClass = getCrudClass(refClass)
 
+        print "xxxx  ", noEdit
+
         if self.col in noEdit or idCol in noEdit:
             obj = request.store.get(refClass, objID)
             return '<input type="hidden" name="warpform-%s" value="%s" />%s' % (
@@ -479,11 +481,7 @@ class ReferenceSetProxy(BaseProxy):
     Currently supports only one-to-many
     """
 
-    def __init__(self, obj, col, model=None, allowCreate=True):
-        self.obj = obj
-        self.col = col
-        self.model = model
-        self.allowCreate = allowCreate
+    allowCreate = True
 
 
     def render_view(self, request):
@@ -503,7 +501,7 @@ class ReferenceSetProxy(BaseProxy):
 
         return renderTemplateObj(request, 
                                  template, 
-                                 model=self.model if self.model else getCrudClass(refClass),
+                                 model=getCrudClass(refClass),
                                  presets=presets,
                                  postData=postData,
                                  noEdit=noEdit,
