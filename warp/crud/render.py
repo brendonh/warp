@@ -142,9 +142,18 @@ class CrudRenderer(object):
     _getEditTemplate = _getViewTemplate
 
 
+    def getRequestObject(self, request):
+        try:
+            objID = int(request.resource.args[0])
+        except Exception:
+            return None
+        return request.store.get(self.model, objID)
+
     def render_view(self, request):
-        objID = int(request.resource.args[0])
-        obj = request.store.get(self.model, objID)
+        obj = self.getRequestObject(request)
+        if obj is None:
+            template = templateLookup.get_template("/error_404.mak")
+            return helpers.renderTemplateObj(request, template)
 
         return helpers.renderTemplateObj(request,
                                          self._getViewTemplate(),
@@ -154,8 +163,11 @@ class CrudRenderer(object):
 
 
     def render_edit(self, request):
-        objID = int(request.resource.args[0])
-        obj = request.store.get(self.model, objID)
+        obj = self.getRequestObject(request)
+        if obj is None:
+            template = templateLookup.get_template("/error_404.mak")
+            return helpers.renderTemplateObj(request, template)
+
         crud = self.crudModel(obj)
 
         return helpers.renderTemplateObj(request,
