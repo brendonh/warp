@@ -147,8 +147,7 @@ class CrudRenderer(object):
             objID = int(request.resource.args[0])
         except Exception:
             return None
-        obj = request.store.get(self.model, objID)
-        return obj
+        return request.store.get(self.model, objID)
 
     def render_view(self, request):
         obj = self.getRequestObject(request)
