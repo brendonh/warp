@@ -142,18 +142,17 @@ class CrudRenderer(object):
     _getEditTemplate = _getViewTemplate
 
 
-    def onMissingObject(self, request):
+    def getRequestObject(self, request):
         try:
             objID = int(request.resource.args[0])
-            if isinstance(objID, int):
-                obj = store.get(self.model, objID)
-                return obj
         except Exception:
             return None
+        obj = request.store.get(self.model, objID)
+        return obj
 
     def render_view(self, request):
-        obj = self.onMissingObject(request)
-        if not obj:
+        obj = self.getRequestObject(request)
+        if obj is None:
             template = templateLookup.get_template("/error_404.mak")
             return helpers.renderTemplateObj(request, template)
 
@@ -165,8 +164,8 @@ class CrudRenderer(object):
 
 
     def render_edit(self, request):
-        obj = self.onMissingObject(request)
-        if not obj:
+        obj = self.getRequestObject(request)
+        if obj is None:
             template = templateLookup.get_template("/error_404.mak")
             return helpers.renderTemplateObj(request, template)
 
