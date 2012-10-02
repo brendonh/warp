@@ -28,6 +28,8 @@ class CommitEventStore(Store):
         self.events = []
         super(CommitEventStore, self).__init__(database, cache)
 
+    def rollback(self):
+        self.events = []
 
     def commit(self):
         super(CommitEventStore, self).commit()
