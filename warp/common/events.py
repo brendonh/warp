@@ -30,6 +30,7 @@ class CommitEventStore(Store):
 
     def rollback(self):
         self.events = []
+        super(CommitEventStore, self).rollback()
 
     def commit(self):
         super(CommitEventStore, self).commit()
