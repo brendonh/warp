@@ -48,19 +48,20 @@ class CommitEventStore(Store):
                 
 class EventModel(Storm):
     
-    def emit(self, event):
+    def emit(self, event, **kwargs):
         store = get_obj_info(self)["store"]
         if store is None:
             raise Exception("Tried to emit event for store-less object")
 
-        store.events.append(PendingEvent(self, event))
+        store.events.append(PendingEvent(self, event, kwargs))
 
 
 
 class PendingEvent(object):
-    def __init__(self, obj, event):
+    def __init__(self, obj, event, kwargs=None):
         self.obj = obj
         self.event = event
+        self.kwargs = kwargs
 
     def run(self):
         modelName = self.obj.__class__.__name__
@@ -69,7 +70,7 @@ class PendingEvent(object):
 
         for handler in eventHandlers:
             try:
-                handler(self.obj)
+                handler(self.obj, **self.kwargs)
             except Exception:
                 print ">>> Error in event handler"
                 traceback.print_exc()
