@@ -4,10 +4,12 @@ Globally-accessible stuff (like the store) initialised at runtime, not import-ti
 
 from storm.locals import Store
 
+from warp.common.events import CommitEventStore
+
 from mako.lookup import TemplateLookup
 
 # Thanks to _habnabit for this clever trick!
-avatar_store = Store.__new__(Store)
+avatar_store = CommitEventStore.__new__(CommitEventStore)
 
 # Default for app code only.
 # Warp never uses this name, so it can be safely changed or removed.

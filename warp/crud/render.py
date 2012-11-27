@@ -6,7 +6,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from twisted.web.error import NoResource
+from twisted.web.resource import NoResource
 from twisted.web import static
 
 from storm.locals import Desc, Reference
@@ -47,6 +47,7 @@ class CrudRenderer(object):
                                          crud=self.crudModel(obj),
                                          subTemplate=templatePath)
 
+
     def renderLocalTemplate(self, request, filename):
 
         # Get a path to the local template relative to
@@ -58,7 +59,6 @@ class CrudRenderer(object):
         templatePath = "/%s/%s" % (relPath, filename)
 
         return self.renderTemplate(request, templatePath)
-
 
 
     def render_index(self, request):
@@ -123,28 +123,29 @@ class CrudRenderer(object):
     def _getListTemplate(self):
         if 'crudListTemplate' not in internal:
             internal['crudListTemplate'] = templateLookup.get_template('/crud/wrapper.mak')
-            # internal['crudListTemplate'] = Template(
-            #     '<%inherit file="/site.mak" /><%include file="/crud/list.mak" />',
-            #     lookup=templateLookup,
-            #     output_encoding="utf-8")
         return internal['crudListTemplate']
 
 
     def _getViewTemplate(self):
         if 'crudTemplate' not in internal:
             internal['crudTemplate'] = templateLookup.get_template('/crud/wrapper.mak')
-            # internal['crudTemplate'] = Template(
-            #     '<%inherit file="/site.mak" /><%include file="/crud/crud.mak" />',
-            #     lookup=templateLookup,
-            #     output_encoding="utf-8")
         return internal['crudTemplate']
 
     _getEditTemplate = _getViewTemplate
 
 
+    def getRequestObject(self, request):
+        try:
+            objID = int(request.resource.args[0])
+        except Exception:
+            return None
+        return request.store.get(self.model, objID)
+
     def render_view(self, request):
-        objID = int(request.resource.args[0])
-        obj = request.store.get(self.model, objID)
+        obj = self.getRequestObject(request)
+        if obj is None:
+            template = templateLookup.get_template("/error_404.mak")
+            return helpers.renderTemplateObj(request, template)
 
         return helpers.renderTemplateObj(request,
                                          self._getViewTemplate(),
@@ -154,8 +155,11 @@ class CrudRenderer(object):
 
 
     def render_edit(self, request):
-        objID = int(request.resource.args[0])
-        obj = request.store.get(self.model, objID)
+        obj = self.getRequestObject(request)
+        if obj is None:
+            template = templateLookup.get_template("/error_404.mak")
+            return helpers.renderTemplateObj(request, template)
+
         crud = self.crudModel(obj)
 
         return helpers.renderTemplateObj(request,

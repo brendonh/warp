@@ -6,8 +6,7 @@ from zope.interface import implements
 from twisted.python import util
 from twisted.python.filepath import FilePath, InsecurePath
 
-from twisted.web.resource import IResource
-from twisted.web.error import NoResource
+from twisted.web.resource import IResource, NoResource
 from twisted.web import static
 
 from warp.common import access, translate
@@ -33,7 +32,9 @@ class WarpResourceWrapper(object):
 
         siteTemplateDir = config['siteDir'].child("templates").path
         warpTemplateDir = self.warpTemplatePath.path
-        templateLookup.__init__(directories=[siteTemplateDir, warpTemplateDir], output_encoding="utf-8")
+        nodeDir = config['siteDir'].child("nodes").path
+        templateLookup.__init__(directories=[siteTemplateDir, warpTemplateDir, nodeDir], 
+                                output_encoding="utf-8")
 
         handle_login = config.get('loginHandler', self.handle_login)
         handle_logout = config.get('logoutHandler', self.handle_logout)

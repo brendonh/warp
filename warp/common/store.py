@@ -44,6 +44,8 @@ def getCreationSQL(store):
                 ('warp_session', """
                 CREATE TABLE warp_session (
                     uid BYTEA NOT NULL PRIMARY KEY,
+                    isPersistent BOOLEAN NOT NULL DEFAULT FALSE,
+                    touched INTEGER,
                     avatar_id INTEGER REFERENCES warp_avatar(id) ON DELETE CASCADE)"""),
                 ('warp_avatar_role', """
                 CREATE TABLE warp_avatar_role (

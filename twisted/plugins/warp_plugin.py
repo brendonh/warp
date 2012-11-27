@@ -38,7 +38,7 @@ class CommandOptions(usage.Options):
 class Options(usage.Options):
     optParameters = (
         ("siteDir", "d", ".", "Base directory of the warp site"),
-        ("config", "c", "warpconfig", "Default config module")
+        ("config", "w", "warpconfig", "Config filename"),
     )
 
     subCommands = (
@@ -68,7 +68,11 @@ class WarpServiceMaker(object):
             from warp.tools import skeleton
             skeleton.createSkeleton(siteDir)
             raise SystemExit
+<<<<<<< HEAD
         
+=======
+
+>>>>>>> brendon-master/master
         configModule = reflect.namedModule(options['config'])
         config = configModule.config
         runtime.config.update(config)
