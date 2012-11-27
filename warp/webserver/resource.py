@@ -36,10 +36,11 @@ class WarpResourceWrapper(object):
         templateLookup.__init__(directories=[siteTemplateDir, warpTemplateDir], output_encoding="utf-8")
 
         handle_login = config.get('loginHandler', self.handle_login)
+        handle_logout = config.get('logoutHandler', self.handle_logout)
 
         self.dispatch =  {
             '__login__': handle_login,
-            '__logout__': self.handle_logout,
+            '__logout__': handle_logout,
             '_comet': self.handle_comet,
             '_warp': self.handle_warpstatic,
             '': self.handle_default,
