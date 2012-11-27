@@ -418,6 +418,8 @@ class ReferenceProxy(BaseProxy):
         refClass = reference._relation.remote_cls
         crudClass = getCrudClass(refClass)
 
+        print "xxxx  ", noEdit
+
         if self.col in noEdit or idCol in noEdit:
             obj = request.store.get(refClass, objID)
             return '<input type="hidden" name="warpform-%s" value="%s" />%s' % (
@@ -480,6 +482,7 @@ class ReferenceSetProxy(BaseProxy):
     """
 
     allowCreate = True
+
 
     def render_view(self, request):
 
