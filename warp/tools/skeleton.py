@@ -5,8 +5,8 @@ from twisted.python.filepath import FilePath
 import warp
 
 
-def createSkeleton(siteDir):
-    fromDir = FilePath(warp.__file__).sibling("priv").child("skeleton")
+def createSkeleton(siteDir, theme):
+    fromDir = FilePath(warp.__file__).sibling("priv").child("skeletons").child(theme)
 
     for entryName in (l.strip() for l in fromDir.child("MANIFEST").open()):
         entry = fromDir.preauthChild(entryName)

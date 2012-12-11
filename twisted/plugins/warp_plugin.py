@@ -17,7 +17,7 @@ from warp import runtime
 
 class SkeletonOptions(usage.Options):
     optParameters = (
-        ("siteDir", "d", ".", "Base directory of the warp site"),
+        ("theme", "t", "default", "Skeleton theme to use"),
     )
 
 class NodeOptions(usage.Options):
@@ -65,7 +65,7 @@ class WarpServiceMaker(object):
         if options.subCommand == "skeleton":
             print "Creating skeleton..."
             from warp.tools import skeleton
-            skeleton.createSkeleton(siteDir)
+            skeleton.createSkeleton(siteDir, options.subOptions['theme'])
             raise SystemExit
 
         configModule = reflect.namedModule(options['config'])
