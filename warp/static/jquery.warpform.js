@@ -73,15 +73,14 @@
 
     $.fn.warpform.handleResponse = function(form, data, callback) {
         if (data['success']) {
-
+            
             if (callback) {
                 callback(data);
                 return;
-            } else {
-                var redirect = form.attr("warp:redirect");
-                if (redirect) document.location.href = redirect;
+            } else if (form.attr("warp:redirect")) {
+                document.location.href = form.attr("warp:redirect");
                 return;
-            }
+            }                    
 
         } else {
             for (var i in data['errors']) {

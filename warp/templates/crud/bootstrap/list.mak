@@ -27,13 +27,15 @@ listID = "list%d" % gc
 %>
 
 <script>
-$(document).ready(function(){ 
 
-  function delRow(id){
-    $.post('${url(crudNode, "delete")}/' + id, function() {
-      
-    });
-  }
+function delRow${listID}(id){
+  $.post('${url(crudNode, "delete")}/' + id, function() {
+     $("#${listID}").dataTable().fnDraw();
+  });
+};
+
+
+$(document).ready(function(){ 
 
   $("#${listID}").dataTable({
     "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
@@ -50,7 +52,7 @@ $(document).ready(function(){
         "aTargets": [-1],
         "mData": 0,
         "mRender": function(id){
-          return '<a href="#" class="label label-important" onclick="if(confirm(\'Delete?\')){delRow(' + id + ');} return false">Delete</a>';
+          return '<a href="#" class="label label-important" onclick="if(confirm(\'Delete?\')){delRow${listID}(' + id + ');} return false">Delete</a>';
         }
       }
       % endif
@@ -77,7 +79,7 @@ $(document).ready(function(){
   % if allowCreate:
   <div style="margin-top: 10px">
 
-    <button id="${createButtonID}" class="btn btn-primary pull-right">Create New ${crudNode.renderer.model.__name__}</button>
+    <button id="${createButtonID}" class="btn btn-primary pull-right" style="margin-bottom: 10px">Create New ${crudNode.renderer.model.__name__}</button>
 
     <div id="${createBoxID}" class="popupBox warpCrud"></div>
     
@@ -100,12 +102,10 @@ $(document).ready(function(){
         };
   
         var popupCreateDone = function(data) {
-          $("#${listID}").trigger("reloadGrid");
-          var form = $("#${createBoxID}").find("form");
-          form.get(0).reset();
-          form.find(":input").removeAttr("disabled");
-          $("#${createBoxID}").hide();
-          $("#${createButtonID}").show();
+          console.log(data);
+          var newID = data['results']['created'][0];
+          var url = "${url(crudNode, 'view')}/" + newID;
+          location.href = url;
         };
 
         $("#${createButtonID}").click(popupCreateBox);
