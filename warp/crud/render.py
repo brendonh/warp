@@ -269,7 +269,7 @@ class CrudRenderer(object):
         fakeID = request.args.get('fakeID', [''])[0] or 1
 
         if template is None:
-            template = templateLookup.get_template("/crud/form.mak")
+            template = templateLookup.get_template(self._getTemplatePath("form"))
 
         fakeObj = self.model()
 
