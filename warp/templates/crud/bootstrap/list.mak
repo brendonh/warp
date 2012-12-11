@@ -1,3 +1,4 @@
+<%! import json %>
 <%! from warp.helpers import url, getCrudNode %>
 
 <%
@@ -47,6 +48,15 @@ $(document).ready(function(){
       "sLengthMenu": "_MENU_ records per page"
     },
     "aoColumnDefs": [
+      % for i, c in enumerate(model.listColumns):
+        <% 
+           attrs = model.listAttrs.get(c)
+           if attrs is None: continue
+           attrs = attrs.copy()
+           attrs['aTargets'] = [i]
+        %>
+        ${json.dumps(attrs)},
+      % endfor
       % if not model.hideListActions:
       {
         "aTargets": [-1],

@@ -21,6 +21,10 @@ div.dataTables_paginate {
   float: right;
   margin: 0;
 }
+
+.dataTable td.center, .dataTable th.center {
+  text-align: center;
+}
  
 table {
   margin-bottom: 6px !important;
