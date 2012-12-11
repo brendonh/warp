@@ -9,7 +9,7 @@ else:
 if crud.crudTitles:
   crudTitles = crud.crudTitles
 else:
-  crudTitles = [c.title() for c in crud.crudColumns]
+  crudTitles = [c.title().replace('_', ' ') for c in crud.crudColumns]
 %>
 
 <form class="warp form-horizontal" action="${url(node, 'save', args)}"${redirectBit}>
@@ -30,8 +30,9 @@ else:
       % endif
     </label>
     <div class="controls">
-      ${renderVal}
+      <span>${renderVal}</span>
       <span class="help-inline"></span>
+      <span class="warp-error"></span>
     </div>
   </div>
 

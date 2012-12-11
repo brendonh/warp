@@ -4,7 +4,7 @@
 if crud.crudTitles:
   crudTitles = crud.crudTitles
 else:
-  crudTitles = [c.title() for c in crud.crudColumns]
+  crudTitles = [c.title().replace('_', ' ') for c in crud.crudColumns]
 %>
 
 <table class="table">

@@ -84,7 +84,7 @@ class AreaProxy(StringProxy):
         return u'<div style="">%s</div>' % unicode(getattr(self.obj, self.col) or "")
     
     def render_edit(self, request):
-        return u'<textarea name="warpform-%s" cols="%s" rows="%s">%s</textarea>' % (
+        return u'<textarea name="warpform-%s" style="min-width: 300px" cols="%s" rows="%s">%s</textarea>' % (
             self.fieldName(), self.cols, self.rows,
             getattr(self.obj, self.col) or '')
 
@@ -243,7 +243,7 @@ jQuery(document).ready(function($) { $("#date-field-%s").datepicker(); });
         fieldName = self.fieldName()
         val = getattr(self.obj, self.col)
 
-        dateField = u'<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date" value="%s" size="10" />' % (
+        dateField = u'<input type="text" name="warpform-%s" id="date-field-%s" class="warpform-date input-small" value="%s" size="10" />' % (
             fieldName, fieldName, self.from_db(val).strftime("%m/%d/%Y") if val else "")
 
         return u"%s %s" % (dateField, self.jsTemplate % fieldName)
@@ -275,7 +275,8 @@ class DateTimeProxy(DateProxy):
 
     timeFormat = "%H:%M"
     fullFormat = "%s %s" % (DateProxy.dateFormat, timeFormat)
-
+    
+    timeDefault = ""
 
     def render_view(self, request):
         val = getattr(self.obj, self.col)
@@ -287,8 +288,8 @@ class DateTimeProxy(DateProxy):
         fieldName = self.fieldName()
         val = getattr(self.obj, self.col)
 
-        timeField = u'<input type="text" name="warpform-%s" class="warpform-time" value="%s" size="4" />' % (
-            fieldName, val.astimezone(self.timezone).strftime(self.timeFormat) if val else "")
+        timeField = u'<input type="text" name="warpform-%s" class="warpform-time input-mini" value="%s" size="4" />' % (
+            fieldName, val.astimezone(self.timezone).strftime(self.timeFormat) if val else self.timeDefault)
 
         return u"%s %s" % (super(DateTimeProxy, self).render_edit(request), timeField)
 
@@ -320,7 +321,7 @@ class ImageProxy(BaseProxy):
     def render_edit(self, request):
         fieldName = self.fieldName()
         field = '<input type="hidden" name="warpform-%s" class="warpform-upload" />' % fieldName
-        iframe = '<iframe name="%s" src="%s" width="300" height="50" id="iframe-%s"></iframe>' % (
+        iframe = '<iframe seamless="seamless" name="%s" src="%s" width="300" height="30" id="iframe-%s"></iframe>' % (
             fieldName,
             url(request.node, "uploadframe"),
             fieldName)
