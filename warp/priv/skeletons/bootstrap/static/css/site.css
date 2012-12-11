@@ -5,7 +5,8 @@ html {
 }
 
 body {
-  background: url('../img/warp-drive.png') bottom left repeat, linear-gradient(45deg, #020031 0%, #6D3353 100%);
+  background: url('/_warp/img/warp-drive.png') bottom left repeat, -webkit-linear-gradient(45deg, #020031 0%, #6D3353 100%);
+  background: url('/_warp/img/warp-drive.png') bottom left repeat, linear-gradient(45deg, #020031 0%, #6D3353 100%);
 }
 
 header,

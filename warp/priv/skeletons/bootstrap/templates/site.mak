@@ -9,9 +9,9 @@
 
     <link rel="icon" type="image/vnd.microsoft.icon" href="/favicon.ico">
     <link rel="stylesheet" href="/_warp/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/_warp/css/site.css">
+    <link rel="stylesheet" href="/css/site.css">
     
-    <%include file="/standard/includes.mak" />
+    <%include file="/standard/bootstrap.mak" />
   </head>
 
   <body>
