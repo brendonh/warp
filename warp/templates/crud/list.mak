@@ -20,64 +20,64 @@ if hasattr(request, 'gridCounter'):
 else:
    request.gridCounter = 1
 
-
 gc = request.gridCounter
 createButtonID = "createButton%d" % gc
 createBoxID = "createBox%d" % gc
 listID = "list%d" % gc
-pagerID = "pager%d" % gc
-
 %>
 
-<script type="text/javascript">
+<script>
+$(document).ready(function(){ 
 
-jQuery(document).ready(function(){ 
-
-  function delLinkFormatter (cellvalue, options, rowObject) {
-    return '[<a href="#" onclick="if (confirm(\'Delete?\')) { $.post(\'${url(crudNode, "delete")}/' + rowObject[0] + '\', {}, function() { $(\'#${listID}\').trigger(\'reloadGrid\'); }); }; return false" style="color: red">Del</a>]';
+  function delRow(id){
+    $.post('${url(crudNode, "delete")}/' + id, function() {
+      
+    });
   }
 
-  var grid = jQuery("#${listID}").jqGrid({
-    url: '${url(crudNode, 'list_json')}',
-    postData: ${postData or '{}'},
-    datatype: 'json',
-    mtype: 'GET',
-    colNames:${colNames},
-    colModel :[ 
-<%
-for c in model.listColumns:
-  if c in (exclude or []): continue
-  d = {'name': c, 'id': c}
-  d.update(model.listAttrs.get(c, {}))
-  context.write("%s," % repr(d))
-%>
-% if not model.hideListActions:
-    {'name': 'Actions', 'id': '_actions',
-     'align': 'center', 'width': 50,
-     'formatter':delLinkFormatter}
-% endif
-    ],
-    pager: '#${pagerID}',
-% for k, v in model.gridAttrs.iteritems():
-  ${k}: ${v},
-% endfor
-  dummy: false
-  }); 
+  $("#${listID}").dataTable({
+    "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span6'i><'span6'p>>",
+    "sPaginationType": "bootstrap",
+    "bFilter": false,
+    "bServerSide": true,
+    "sAjaxSource": "${url(crudNode, 'list_json')}",
+    "oLanguage": {
+      "sLengthMenu": "_MENU_ records per page"
+    },
+    "aoColumnDefs": [
+      % if not model.hideListActions:
+      {
+        "aTargets": [-1],
+        "mData": 0,
+        "mRender": function(id){
+          return '<a href="#" class="label label-important" onclick="if(confirm(\'Delete?\')){delRow(' + id + ');} return false">Delete</a>';
+        }
+      }
+      % endif
+    ]
+	});
 
-}); 
-
+});
 </script>
 
 <div class="warpCrud-list-container">
 
-  <table id="${listID}"></table>
-  <div id="${pagerID}"></div> 
+  <table cellpadding="0" cellspacing="0" border="0" class="table table-striped table-bordered" id="${listID}">
+    <thead>
+      <tr>
+        % for c in colNames:
+        <th>${c}</th>
+        % endfor
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
 
   % if allowCreate:
   <div style="margin-top: 10px">
 
-    <input type="button" value="Create New ${crudNode.renderer.model.__name__}"
-           id="${createButtonID}" />
+    <button id="${createButtonID}" class="btn btn-primary pull-right">Create New ${crudNode.renderer.model.__name__}</button>
 
     <div id="${createBoxID}" class="popupBox warpCrud"></div>
     
