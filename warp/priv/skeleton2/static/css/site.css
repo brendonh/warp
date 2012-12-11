@@ -1,0 +1,125 @@
+/* Global */
+
+html {
+  min-height: 100%;
+}
+
+body {
+  background: url('../img/warp-drive.png') bottom left repeat, linear-gradient(45deg, #020031 0%, #6D3353 100%);
+}
+
+header,
+.container-fluid {
+  background-color: #FFF;
+}
+
+label {
+  font-weight: bold;
+}
+
+/* Header */
+
+header .navbar-inner {
+  border-radius: 0;
+}
+
+header .breadcrumb {
+  margin-bottom: 0;
+}
+
+/* Nav */
+
+.site-mainnav {
+  background-color: #FFFFFF;
+  border-radius: 6px 6px 6px 6px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.067);
+  margin-top: 30px;
+  padding: 0;
+}
+
+.site-mainnav > li:first-child > a {
+  border-radius: 6px 6px 0 0;
+}
+
+.site-mainnav > li:last-child > a {
+  border-radius: 0 0 6px 6px;
+}
+
+.site-mainnav > li > a {
+}
+
+.site-mainnav > li > a {
+  border: 1px solid #E5E5E5;
+  display: block;
+  margin: 0 0 -1px;
+  padding: 8px 14px;
+}
+
+.site-mainnav > .active > a {
+    border: 0 none;
+    box-shadow: 1px 0 0 rgba(0, 0, 0, 0.1) inset, -1px 0 0 rgba(0, 0, 0, 0.1) inset;
+    padding: 9px 15px;
+    position: relative;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.15);
+    z-index: 2;
+}
+
+.site-mainnav > .active > a, .nav-list > .active > a:hover {
+    background-color: #0088CC;
+    color: #FFFFFF;
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+.site-mainnav .icon-chevron-right {
+  float: right;
+  margin-right: -6px;
+  margin-top: 2px;
+  opacity: 0.25;
+}
+
+/* Content */
+
+#content {
+  min-height: 200px;
+  padding-bottom: 20px;
+}
+
+/* Footer */
+
+footer {
+  background: rgba(0, 0, 0, 0.4);
+  color: #DDD;
+  text-align: center;
+  padding: 15px 0 5px 0;
+}
+
+footer .container-fluid {
+  background: none;
+}
+
+/* ---------------------------- */
+
+.user-list {
+  margin: 5px;
+  font-size: smaller;
+}
+
+.user-list p {
+  margin: 5px auto;
+}
+
+.user-list input {
+  font-size: smaller;
+  margin-left: 10px;
+}
+
+.warp-message {
+  margin-bottom: 10px;
+  background-color: #FFF6D0;
+  padding: 10px;
+  font-size: smaller;
+  border: 1px solid #BC6C34;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  color: #BC6C34;
+}
