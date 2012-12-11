@@ -95,4 +95,4 @@ def button(label, node, facet="index", args=[], confirm=None, **attrs):
     if confirm is not None:
         action = "if (confirm('%s')) { %s }" % (confirm, action)
     bits = " ".join('%s="%s"' % (k.rstrip('_'), v) for (k,v) in attrs.iteritems())
-    return '<input type="button" value="%s" onclick="%s" %s>' % (label, action, bits)
+    return '<button onclick="%s" %s>%s</button>' % (action, bits, label)

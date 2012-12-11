@@ -4,3 +4,4 @@
 build
 dist
 warp.egg-info
+.DS_Store

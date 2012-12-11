@@ -1,0 +1,137 @@
+/* Data tables */
+
+div.dataTables_length label {
+  float: left;
+  text-align: left;
+}
+ 
+div.dataTables_length select {
+  width: 75px;
+}
+ 
+div.dataTables_filter label {
+  float: right;
+}
+ 
+div.dataTables_info {
+  padding-top: 8px;
+}
+ 
+div.dataTables_paginate {
+  float: right;
+  margin: 0;
+}
+ 
+table {
+  margin-bottom: 6px !important;
+  clear: both;
+}
+
+table.table thead .sorting,
+table.table thead .sorting_asc,
+table.table thead .sorting_desc,
+table.table thead .sorting_asc_disabled,
+table.table thead .sorting_desc_disabled {
+  cursor: pointer;
+  *cursor: hand;
+}
+ 
+table.table thead .sorting { background: url('../img/sort_both.png') no-repeat center right; }
+table.table thead .sorting_asc { background: url('../img/sort_asc.png') no-repeat center right; }
+table.table thead .sorting_desc { background: url('../img/sort_desc.png') no-repeat center right; }
+ 
+table.table thead .sorting_asc_disabled { background: url('../img/images/sort_asc_disabled.png') no-repeat center right; }
+table.table thead .sorting_desc_disabled { background: url('../img/images/sort_desc_disabled.png') no-repeat center right; }
+
+/* Nav */
+
+.warp-breadcrumbs {
+  font-size: 12px;
+  margin-bottom: 10px;
+  color: #bbb;
+}
+
+.warp-breadcrumbs a, .warp-breadcrumbs a:visited {
+  color: #eee;
+}
+
+.warpCrud .tabs {
+  border-bottom: 1px solid #F6A828;
+}
+
+.warpCrud .tabs a {
+  display: block;
+  float: left;
+  padding: 5px 10px;
+  margin-right: 5px;
+  text-decoration: none;
+  color: #900;
+  font-size: 12px;
+  line-height: 1.5em;
+}
+
+.warpCrud .tabs a.active {
+  background-color: #F6A828;
+  color: white;
+}
+
+.warpCrud .tabs a:hover {
+  text-decoration: underline;
+}
+
+.warpCrud .tabs input[type="button"] {
+  float: right;
+  font-size: 12px;
+  padding: 0;
+  margin: 2px 5px;
+}
+
+/* Fields */
+
+.warpCrud form > table, .warpCrud > table {
+  margin: 0 10px;
+  border-collapse: separate;
+  border-spacing: 10px 10px;
+}
+
+.warpCrud th, .warpCrud td {
+  line-height: 1.5em;
+}
+
+.warpCrud th {
+  text-align: right;
+  vertical-align: top;
+}
+
+.ui-datepicker {
+  font-size: 11px;
+}
+
+.warp-error-highlight {
+  background-color: #fcc;
+}
+
+.warp-error {
+  font-size: 12px;
+  color: #900;
+  width: 300px;
+}
+
+.popupBox {
+  display: none;
+}
+
+.del-link {
+  color: red;
+}
+
+/* Messages */
+
+.warp-message {
+  margin: 10px;
+  padding: 10px;
+  background-color: #faa;
+  border: 1px dotted #900;
+  font-size: 14px;
+  text-align: center;
+}

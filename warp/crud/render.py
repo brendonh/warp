@@ -70,52 +70,41 @@ class CrudRenderer(object):
 
 
     def render_list_json(self, request):
-
         params = dict((k, request.args.get(k, [''])[0])
-                      for k in ('_search', 'page', 'rows', 'sidx', 'sord'))
+                      for k in ('sSearch', 'iDisplayStart', 'iDisplayLength', 'iSortCol_0', 'sSortDir_0', 'sEcho'))
 
         # XXX Todo -- Search
 
-        sortCol = getattr(self.model, params['sidx'])
+        sortCol = getattr(self.model, 
+            self.crudModel.listColumns[int(params["iSortCol_0"])])
 
         if isinstance(sortCol, Reference):
             sortCol = sortCol._local_key[0]
 
-        if params['sord'] == 'desc':
+        if params['sSortDir_0'] == 'desc':
             sortCol = Desc(sortCol)
 
-        rowsPerPage = int(params['rows'])
-        start = (int(params['page']) - 1) * rowsPerPage
-        end = start + rowsPerPage
+        start = int(params["iDisplayStart"])
+        end = start + int(params["iDisplayLength"])
 
         conditions = self.crudModel.listConditions(self.model, request)
-
         totalResults = request.store.find(self.model, *conditions).count()
-
         results = list(request.store.find(self.model, *conditions).order_by(sortCol)[start:end])
 
         exclude = json.loads(request.args.get('exclude', ['[]'])[0])
-
+        
         makeRow = lambda row: [row.renderListView(colName, request)
                                for colName in row.listColumns
                                if colName not in exclude]
 
-        rows = [{'id': '.'.join(str(getattr(row, k)) for k in row.__storm_primary__)
-                       if hasattr(row, '__storm_primary__')
-                       else row.id,
-                 'cell': makeRow(self.crudModel(row))}
-                for row in results]
-
-        (totalPages, addOne) = divmod(totalResults, rowsPerPage)
-        if addOne: totalPages += 1
-
+        rows = [makeRow(self.crudModel(row)) for row in results]
 
         obj = {
-            'total': totalPages,
-            'page': params['page'],
-            'records': len(results),
-            'rows': rows,
-            }
+            'sEcho': int(params["sEcho"]),
+            'iTotalRecords': totalResults,
+            'iTotalDisplayRecords': len(results),
+            'aaData': rows,
+        }
 
         return json.dumps(obj)
 
@@ -150,7 +139,7 @@ class CrudRenderer(object):
         return helpers.renderTemplateObj(request,
                                          self._getViewTemplate(),
                                          crud=self.crudModel(obj),
-                                         subTemplate="form.mak")
+                                         subTemplate="view.mak")
 
 
 
