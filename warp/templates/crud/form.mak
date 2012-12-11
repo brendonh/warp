@@ -1,43 +1,73 @@
 <%! from warp.helpers import link, button, url %>
 
 <%
+
+editing = facet in ('edit', 'create')
+
+if editing:
+  renderFunc = crud.renderEdit
+else:
+  renderFunc = crud.renderView
+
 if redirect:
   redirectBit = ' warp:redirect="%s"' % redirect
 else:
   redirectBit = ''
-  
+
+%>
+
+<div class="warpCrud">
+
+% if editing:
+<form class="warp" action="${url(node, 'save', args)}"${redirectBit}>
+% endif
+
+  <table>
+
+  <tr>
+    <th></th>
+    <td colspan="2" class="warp-error generic-errors"></td>
+  </tr>
+
+<%
 if crud.crudTitles:
   crudTitles = crud.crudTitles
 else:
   crudTitles = [c.title() for c in crud.crudColumns]
 %>
 
-<form class="warp form-horizontal" action="${url(node, 'save', args)}"${redirectBit}>
-  <div class="warp-error generic-errors"></div>
+%for (col, colTitle) in zip(crud.crudColumns, crudTitles):
 
-% for (col, colTitle) in zip(crud.crudColumns, crudTitles):
+<%
+renderVal = renderFunc(col, request)
+if renderVal is None:
+  continue
+%>
 
-  <%
-  renderVal = crud.renderEdit(col, request)
-  if renderVal is None:
-    continue
-  %>
-
-  <div class="control-group">
-    <label class="control-label" for="warp-${col}">
-      % if colTitle:
-        ${colTitle}:
+    <tr>
+      <th>
+        % if colTitle:
+          ${colTitle}:
+        % endif
+      </th>
+      <td>${renderVal}</td>
+      % if editing:
+      <td class="warp-error"></td>
       % endif
-    </label>
-    <div class="controls">
-      ${renderVal}
-      <span class="help-inline"></span>
-    </div>
-  </div>
+    </tr>
+%endfor
 
-% endfor
+%if editing:
+    <tr>
+      <td></td>
+      <td><input type="submit" value="Save" /></td>
+    </tr>
+%endif
 
-  <div class="form-actions">
-    <button type="submit" class="btn btn-primary">Save</button>
-  </div>
+  </table>
+
+% if editing:
 </form>
+% endif
+
+</div>

@@ -9,29 +9,16 @@
   % endif
 
   % if context.get('crud'):
-  <span class="facets">
-
-    % if crud.showListLink and not crud.parentCrumb(request):
-      ${link("List", node)}
-    % endif
-
+    <div class="btn-group" style="margin-right:15px">
     % for f in ('view', 'edit') + crud.extraFacets:
-
-      |
-
       % if f == facet:
-        ${link(f.title(), node, f, args, class_="active")}
-
+        ${link(f.title(), node, f, args, class_="btn disabled")}
       % else:
-        ${link(f.title(), node, f, args)}
-
+        ${link(f.title(), node, f, args, class_="btn")}
       % endif
     % endfor
-
-    | ${button("Delete", node, "delete", args, "Delete this item?")}
-    <div style="clear: both"> </div>
-
-  </span>
+    </div>
+    ${button("Delete", node, "delete", args, "Delete this item?", class_="btn btn-danger")}
   % endif
 
 </%def>
