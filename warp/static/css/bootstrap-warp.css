@@ -45,14 +45,8 @@ table.table thead .sorting_desc_disabled { background: url('../img/images/sort_d
 
 /* Nav */
 
-.warp-breadcrumbs {
-  font-size: 12px;
-  margin-bottom: 10px;
-  color: #bbb;
-}
-
-.warp-breadcrumbs a, .warp-breadcrumbs a:visited {
-  color: #eee;
+.breadcrumb {
+  margin: 20px 20px 10px 0;
 }
 
 .warpCrud .tabs {

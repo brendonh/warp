@@ -36,23 +36,6 @@
           </div>
         </div>
       </div>
-      
-      <div class="container-fluid">  
-        <%def name="breadCrumbs()"><% return [] %></%def>
-        <% crumbs = self.breadCrumbs() %>
-        % if crumbs:
-          <ul class="breadcrumb">
-          % for i, crumb in enumerate(crumbs):
-            <% linker = getattr(crumb, 'linkAsParent', None) %>
-            <% if linker is None: continue %>
-            % if i:
-              <span class="divider">&raquo;</span>
-            % endif
-            <li>${linker(request)}</li>
-          % endfor
-          </ul>
-        % endif
-      </div>
     </header>
       
     <div class="container-fluid">
@@ -92,6 +75,21 @@
             ${t(message, *args, **kwargs)}
           </div>
           % endfor
+  
+          <%def name="breadCrumbs()"><% return [] %></%def>
+          <% crumbs = self.breadCrumbs() %>
+          % if crumbs:
+            <ul class="breadcrumb">
+            % for i, crumb in enumerate(crumbs):
+              <% linker = getattr(crumb, 'linkAsParent', None) %>
+              <% if linker is None: continue %>
+              % if i:
+                <span class="divider">&raquo;</span>
+              % endif
+              <li>${linker(request)}</li>
+            % endfor
+            </ul>
+          % endif
   
           <div class="page-header">
           <%def name="contentHeader()">
