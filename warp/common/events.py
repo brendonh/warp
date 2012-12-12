@@ -45,16 +45,26 @@ class CommitEventStore(Store):
                 event.run()
 
 
-                
 class EventModel(Storm):
-    
-    def emit(self, event, **kwargs):
+    # NTA TODO: Shouldn't skip_duplicate default to True?
+    def emit(self, event, skip_duplicate=False, **kwargs):
+        """Emits an event to be run when the model's associated store
+        commits. Handlers will be called like handler(model, **kwargs).
+
+        Does nothing if \"skip_duplicate\" is True, and an \"identical\"
+        event was already emitted."""
+
         store = get_obj_info(self)["store"]
         if store is None:
             raise Exception("Tried to emit event for store-less object")
 
-        store.events.append(PendingEvent(self, event, kwargs))
+        if skip_duplicate:
+            for pending in store.events:
+                # NTA XXX: Equality in Python is unreliable
+                if pending.obj == self and pending.event == event and pending.kwargs == kwargs:
+                    return
 
+        store.events.append(PendingEvent(self, event, kwargs))
 
 
 class PendingEvent(object):
@@ -65,7 +75,7 @@ class PendingEvent(object):
 
     def run(self):
         modelName = self.obj.__class__.__name__
-        eventHandlers = (set(handlers.get((modelName, self.event), [])) 
+        eventHandlers = (set(handlers.get((modelName, self.event), []))
                          | set(handlers.get((None, self.event), [])))
 
         for handler in eventHandlers:
