@@ -2,11 +2,11 @@
 <%! from warp.helpers import url, getCrudNode %>
 
 <%
+
 if model.listTitles:
-   listTitles = [t for (c,t) in zip(model.listColumns, model.listTitles)
-                 if c not in (exclude or [])]
+   listTitles = [t for (c,t) in zip(model.listColumns, model.listTitles)]
 else:
-   listTitles = [c.title() for c in model.listColumns if c not in (exclude or [])]
+   listTitles = [c.title() for c in model.listColumns]
 
 colNames = list(listTitles)
 if not model.hideListActions:
@@ -54,6 +54,8 @@ $(document).ready(function(){
            if attrs is None: continue
            attrs = attrs.copy()
            attrs['aTargets'] = [i]
+           if c in (exclude or []):
+             attrs['bVisible'] = False
         %>
         ${json.dumps(attrs)},
       % endfor

@@ -491,15 +491,22 @@ class ReferenceSetProxy(BaseProxy):
         remoteColName = relation.remote_key[0].name
 
         presets = '{"%s": %s}' % (remoteColName, self.obj.id)
-        postData = "{'where': '%s', 'exclude': '[\"%s\"]'}" % (presets, remoteColName.rstrip("_id"))
+        postData = "{'where': '%s', 'exclude': '[\"%s\"]'}" % (
+            presets, remoteColName.rstrip("_id"))
 
         noEdit = '["%s"]' % remoteColName
 
-        template = templateLookup.get_template("/crud/list.mak")
+        crudClass = getCrudClass(refClass)        
+        if getattr(crudClass, "theme", None) == "bootstrap":
+            path = "/crud/bootstrap/list.mak"
+        else:
+            path = "/crud/list.mak"
+
+        template = templateLookup.get_template(path)
 
         return renderTemplateObj(request, 
                                  template, 
-                                 model=getCrudClass(refClass),
+                                 model=crudClass,
                                  presets=presets,
                                  postData=postData,
                                  noEdit=noEdit,
