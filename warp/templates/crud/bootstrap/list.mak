@@ -44,6 +44,11 @@ $(document).ready(function(){
     "bFilter": false,
     "bServerSide": true,
     "sAjaxSource": "${url(crudNode, 'list_json')}",
+    % if presets:
+      "fnServerParams": function(aoData) {
+          aoData.push({"name": "where", "value": ${json.dumps(presets)} });
+      },
+    % endif
     "oLanguage": {
       "sLengthMenu": "_MENU_ records per page"
     },

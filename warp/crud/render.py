@@ -136,7 +136,7 @@ class CrudRenderer(object):
         # XXX Todo -- Search
 
         sortCol = getattr(self.model, 
-            self.crudModel.listColumns[int(params["iSortCol_0"])])
+                          self.crudModel.listColumns[int(params["iSortCol_0"])])
 
         if isinstance(sortCol, Reference):
             sortCol = sortCol._local_key[0]
@@ -148,6 +148,7 @@ class CrudRenderer(object):
         end = start + int(params["iDisplayLength"])
 
         conditions = self.crudModel.listConditions(self.model, request)
+
         totalResults = request.store.find(self.model, *conditions).count()
         results = list(request.store.find(self.model, *conditions).order_by(sortCol)[start:end])
 
