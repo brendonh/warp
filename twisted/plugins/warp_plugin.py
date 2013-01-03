@@ -63,10 +63,7 @@ class WarpServiceMaker(object):
         sys.path.insert(0, siteDir.path)
 
         if options.subCommand == "skeleton":
-            print "Creating skeleton..."
-            from warp.tools import skeleton
-            skeleton.createSkeleton(siteDir)
-            raise SystemExit
+            doSkeleton(options)
 
         configModule = reflect.namedModule(options['config'])
         config = configModule.config
@@ -77,49 +74,19 @@ class WarpServiceMaker(object):
         translate.loadMessages()
 
         if options.subCommand == "node":
-            nodes = siteDir.child("nodes")
-            if not nodes.exists():
-                print "Please run this from a Warp site directory"
-                raise SystemExit
-
-            from warp.tools import skeleton
-            skeleton.createNode(nodes, options.subOptions['name'])
-            raise SystemExit
-
+            doNode(options)
         elif options.subCommand == 'crud':
-            nodes = siteDir.child("nodes")
-            if not nodes.exists():
-                print "Please run this from a Warp site directory"
-                raise SystemExit
-
-            from warp.tools import autocrud
-            autocrud.autocrud(nodes, options.subOptions['name'], options.subOptions['model'])
-            raise SystemExit
-
+            doCrud(options)
         elif options.subCommand == 'adduser':
-            from warp.tools import adduser
-            adduser.addUser()
-            raise SystemExit
-
+            doAddUser(options)
 
         factory = site.WarpSite(resource.WarpResourceWrapper())
         runtime.config['warpSite'] = factory
 
-        if hasattr(configModule, 'startup'):
-            configModule.startup()
-
         if options.subCommand == "console":
-            import code
-            locals = {'store': runtime.store}
-            c = code.InteractiveConsole(locals)
-            c.interact()
-            raise SystemExit
-        
+            doConsole(options)
         if options.subCommand == 'command':
-            obj = reflect.namedObject(options.subOptions['fqn'])
-            obj()
-            raise SystemExit
-            
+            doCommand(options)
 
         if config.get('ssl'):
             from warp.webserver import sslcontext
@@ -132,6 +99,75 @@ class WarpServiceMaker(object):
             service = configModule.mungeService(service)
 
         return service
+
+
+def getSiteDir(options):
+    """Utility function to get the `siteDir` out of `options`"""
+    return FilePath(options['siteDir'])
+
+
+def doStartup(options):
+    """Utility function to execute the startup function"""
+    configModule = reflect.namedModule(options['config'])
+    if hasattr(configModule, 'startup'):
+        configModule.startup()
+
+
+def doSkeleton(options):
+    """Execute the `skeleton` sub-command"""
+    print 'Creating skeleton...'
+    from warp.tools import skeleton
+    skeleton.createSkeleton(getSiteDir(options))
+    raise SystemExit
+
+
+def doNode(options):
+    """Execute the `node` sub-command"""
+    nodes = getSiteDir(options).child('nodes')
+    if not nodes.exists():
+        print 'Please run this from a Warp site directory'
+        raise SystemExit
+
+    from warp.tools import skeleton
+    skeleton.createNode(nodes, options.subOptions['name'])
+    raise SystemExit
+
+
+def doCrud(options):
+    """Execute the `crud` sub-command"""
+    nodes = getSiteDir(options).child('nodes')
+    if not nodes.exists():
+        print 'Please run this from a Warp site directory'
+        raise SystemExit
+
+    from warp.tools import autocrud
+    autocrud.autocrud(nodes, options.subOptions['name'], options.subOptions['model'])
+    raise SystemExit
+
+
+def doAddUser(options):
+    """Execute the `adduser` sub-command"""
+    from warp.tools import adduser
+    adduser.addUser()
+    raise SystemExit
+
+
+def doConsole(options):
+    """Execute the `console` sub-command"""
+    import code
+    doStartup(options)
+    locals = {'store': runtime.store}
+    c = code.InteractiveConsole(locals)
+    c.interact()
+    raise SystemExit
+
+
+def doCommand(options):
+    """Execute the `command` sub-command"""
+    obj = reflect.namedObject(options.subOptions['fqn'])
+    doStartup(options)
+    obj()
+    raise SystemExit
 
 
 serviceMaker = WarpServiceMaker()
