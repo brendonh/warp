@@ -20,9 +20,11 @@ class SkeletonOptions(usage.Options):
         ("siteDir", "d", ".", "Base directory of the warp site"),
     )
 
+
 class NodeOptions(usage.Options):
     def parseArgs(self, name):
         self['name'] = name
+
 
 class CrudOptions(usage.Options):
     def parseArgs(self, name, model):
@@ -33,6 +35,7 @@ class CrudOptions(usage.Options):
 class CommandOptions(usage.Options):
     def parseArgs(self, fqn):
         self['fqn'] = fqn
+
 
 class Options(usage.Options):
     optParameters = (
@@ -58,19 +61,19 @@ class WarpServiceMaker(object):
 
     def makeService(self, options):
 
-        if options.subCommand == 'skeleton':
-            doSkeleton(options)
-        if options.subCommand == 'node':
-            doNode(options)
-        elif options.subCommand == 'crud':
-            doCrud(options)
-        elif options.subCommand == 'adduser':
-            doAddUser(options)
-        if options.subCommand == 'console':
-            doConsole(options)
-        if options.subCommand == 'command':
-            doCommand(options)
+        subCommand = options.subCommand
+        if subCommand:
+            {
+                'skeleton': doSkeleton,
+                'node': doNode,
+                'crud': doCrud,
+                'adduser': doAddUser,
+                'console': doConsole,
+                'command': doCommand,
+            }[subCommand](options)
+            raise SystemExit
 
+        config = runtime.config
         if config.get('ssl'):
             from warp.webserver import sslcontext
             service = internet.SSLServer(config['port'], factory,
@@ -123,36 +126,32 @@ def needConfig(f):
 
 def doSkeleton(options):
     """Execute the `skeleton` sub-command"""
-    print 'Creating skeleton...'
     from warp.tools import skeleton
+    print 'Creating skeleton...'
     skeleton.createSkeleton(getSiteDir(options))
-    raise SystemExit
 
 
 @needConfig
 def doNode(options):
     """Execute the `node` sub-command"""
+    from warp.tools import skeleton
     nodes = getSiteDir(options).child('nodes')
     if not nodes.exists():
         print 'Please run this from a Warp site directory'
-        raise SystemExit
-
-    from warp.tools import skeleton
+        return
     skeleton.createNode(nodes, options.subOptions['name'])
-    raise SystemExit
 
 
 @needConfig
 def doCrud(options):
     """Execute the `crud` sub-command"""
+    from warp.tools import autocrud
     nodes = getSiteDir(options).child('nodes')
     if not nodes.exists():
         print 'Please run this from a Warp site directory'
-        raise SystemExit
-
-    from warp.tools import autocrud
-    autocrud.autocrud(nodes, options.subOptions['name'], options.subOptions['model'])
-    raise SystemExit
+        return
+    subOptions = options.subOptions
+    autocrud.autocrud(nodes, subOptions['name'], subOptions['model'])
 
 
 @needConfig
@@ -160,7 +159,6 @@ def doAddUser(options):
     """Execute the `adduser` sub-command"""
     from warp.tools import adduser
     adduser.addUser()
-    raise SystemExit
 
 
 @needConfig
@@ -171,7 +169,6 @@ def doConsole(options):
     locals = {'store': runtime.store}
     c = code.InteractiveConsole(locals)
     c.interact()
-    raise SystemExit
 
 
 @needConfig
@@ -180,7 +177,6 @@ def doCommand(options):
     obj = reflect.namedObject(options.subOptions['fqn'])
     doStartup(options)
     obj()
-    raise SystemExit
 
 
 serviceMaker = WarpServiceMaker()
