@@ -58,32 +58,15 @@ class WarpServiceMaker(object):
 
     def makeService(self, options):
 
-        siteDir = FilePath(options['siteDir'])
-
-        sys.path.insert(0, siteDir.path)
-
-        if options.subCommand == "skeleton":
+        if options.subCommand == 'skeleton':
             doSkeleton(options)
-
-        configModule = reflect.namedModule(options['config'])
-        config = configModule.config
-        runtime.config.update(config)
-        runtime.config['siteDir'] = siteDir
-        runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
-        store.setupStore()
-        translate.loadMessages()
-
-        if options.subCommand == "node":
+        if options.subCommand == 'node':
             doNode(options)
         elif options.subCommand == 'crud':
             doCrud(options)
         elif options.subCommand == 'adduser':
             doAddUser(options)
-
-        factory = site.WarpSite(resource.WarpResourceWrapper())
-        runtime.config['warpSite'] = factory
-
-        if options.subCommand == "console":
+        if options.subCommand == 'console':
             doConsole(options)
         if options.subCommand == 'command':
             doCommand(options)
@@ -113,6 +96,31 @@ def doStartup(options):
         configModule.startup()
 
 
+def loadConfig(options):
+    """Load the Warp config"""
+    siteDir = FilePath(options['siteDir'])
+    sys.path.insert(0, siteDir.path)
+
+    configModule = reflect.namedModule(options['config'])
+    config = configModule.config
+    runtime.config.update(config)
+    runtime.config['siteDir'] = siteDir
+    runtime.config['warpDir'] = FilePath(runtime.__file__).parent()
+    store.setupStore()
+    translate.loadMessages()
+
+    factory = site.WarpSite(resource.WarpResourceWrapper())
+    runtime.config['warpSite'] = factory
+
+
+def needConfig(f):
+    """Decorator to call `loadConfig` when needed"""
+    def wrapper(options):
+        loadConfig(options)
+        f(options)
+    return wrapper
+
+
 def doSkeleton(options):
     """Execute the `skeleton` sub-command"""
     print 'Creating skeleton...'
@@ -121,6 +129,7 @@ def doSkeleton(options):
     raise SystemExit
 
 
+@needConfig
 def doNode(options):
     """Execute the `node` sub-command"""
     nodes = getSiteDir(options).child('nodes')
@@ -133,6 +142,7 @@ def doNode(options):
     raise SystemExit
 
 
+@needConfig
 def doCrud(options):
     """Execute the `crud` sub-command"""
     nodes = getSiteDir(options).child('nodes')
@@ -145,6 +155,7 @@ def doCrud(options):
     raise SystemExit
 
 
+@needConfig
 def doAddUser(options):
     """Execute the `adduser` sub-command"""
     from warp.tools import adduser
@@ -152,6 +163,7 @@ def doAddUser(options):
     raise SystemExit
 
 
+@needConfig
 def doConsole(options):
     """Execute the `console` sub-command"""
     import code
@@ -162,6 +174,7 @@ def doConsole(options):
     raise SystemExit
 
 
+@needConfig
 def doCommand(options):
     """Execute the `command` sub-command"""
     obj = reflect.namedObject(options.subOptions['fqn'])
