@@ -73,13 +73,17 @@ class WarpServiceMaker(object):
             }[subCommand](options)
             raise SystemExit
 
+        configModule = loadConfig(options)
         config = runtime.config
+        port = config['port']
+        factory = config['warpSite']
+
         if config.get('ssl'):
             from warp.webserver import sslcontext
-            service = internet.SSLServer(config['port'], factory,
+            service = internet.SSLServer(port, factory,
                                          sslcontext.ServerContextFactory())
         else:
-            service = internet.TCPServer(config["port"], factory)
+            service = internet.TCPServer(port, factory)
 
         if hasattr(configModule, 'mungeService'):
             service = configModule.mungeService(service)
@@ -114,6 +118,8 @@ def loadConfig(options):
 
     factory = site.WarpSite(resource.WarpResourceWrapper())
     runtime.config['warpSite'] = factory
+
+    return configModule
 
 
 def needConfig(f):
