@@ -88,6 +88,7 @@ class WarpServiceMaker(object):
         if hasattr(configModule, 'mungeService'):
             service = configModule.mungeService(service)
 
+        doStartup(options)
         return service
 
 
