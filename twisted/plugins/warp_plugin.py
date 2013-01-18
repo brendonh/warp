@@ -63,14 +63,18 @@ class WarpServiceMaker(object):
 
         subCommand = options.subCommand
         if subCommand:
-            {
+            cmd = {
                 'skeleton': doSkeleton,
                 'node': doNode,
                 'crud': doCrud,
                 'adduser': doAddUser,
                 'console': doConsole,
                 'command': doCommand,
-            }[subCommand](options)
+            }[subCommand]
+
+            if cmd not in _skipConfig:
+                loadConfig(options)
+            cmd(options)
             raise SystemExit
 
         configModule = loadConfig(options)
@@ -91,6 +95,11 @@ class WarpServiceMaker(object):
         doStartup(options)
         return service
 
+_skipConfig = []
+
+def skipConfig(fn):
+    _skipConfig.append(fn)
+    return fn
 
 def getSiteDir(options):
     """Utility function to get the `siteDir` out of `options`"""
@@ -130,7 +139,7 @@ def needConfig(f):
         f(options)
     return wrapper
 
-
+@skipConfig
 def doSkeleton(options):
     """Execute the `skeleton` sub-command"""
     from warp.tools import skeleton
@@ -138,7 +147,6 @@ def doSkeleton(options):
     skeleton.createSkeleton(getSiteDir(options))
 
 
-@needConfig
 def doNode(options):
     """Execute the `node` sub-command"""
     from warp.tools import skeleton
@@ -149,7 +157,6 @@ def doNode(options):
     skeleton.createNode(nodes, options.subOptions['name'])
 
 
-@needConfig
 def doCrud(options):
     """Execute the `crud` sub-command"""
     from warp.tools import autocrud
@@ -161,14 +168,12 @@ def doCrud(options):
     autocrud.autocrud(nodes, subOptions['name'], subOptions['model'])
 
 
-@needConfig
 def doAddUser(options):
     """Execute the `adduser` sub-command"""
     from warp.tools import adduser
     adduser.addUser()
 
 
-@needConfig
 def doConsole(options):
     """Execute the `console` sub-command"""
     import code
@@ -178,7 +183,6 @@ def doConsole(options):
     c.interact()
 
 
-@needConfig
 def doCommand(options):
     """Execute the `command` sub-command"""
     obj = reflect.namedObject(options.subOptions['fqn'])
