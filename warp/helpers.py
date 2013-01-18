@@ -52,6 +52,7 @@ def getTemplate(templatePath):
     return Template(filename=templatePath,
                     lookup=templateLookup,
                     format_exceptions=config.get('makoErrorPages', True),
+                    default_filters=['unicode', 'h']
                     output_encoding="utf-8")
 
 def renderTemplate(request, templatePath, **kw):
