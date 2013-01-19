@@ -108,7 +108,8 @@ def doSkeleton(options):
     """Execute the `skeleton` sub-command"""
     from warp.tools import skeleton
     print 'Creating skeleton...'
-    skeleton.createSkeleton(getSiteDir(options))
+    siteDir = getSiteDir(options.subOptions) or getSiteDir(options)
+    skeleton.createSkeleton(siteDir)
 
 
 def doNode(options):
