@@ -1,5 +1,7 @@
 import sys
 
+from inspect import getargspec
+
 from twisted.python import usage, reflect
 from twisted.python.filepath import FilePath
 
@@ -8,68 +10,78 @@ from warp.common import store, translate
 from warp import runtime
 
 
-class SkeletonOptions(usage.Options):
-    optParameters = (
-        ("siteDir", "d", ".", "Base directory of the warp site"),
-    )
-
-
-class NodeOptions(usage.Options):
-    def parseArgs(self, name):
-        self['name'] = name
-
-
-class CrudOptions(usage.Options):
-    def parseArgs(self, name, model):
-        self['name'] = name
-        self['model'] = model
-
-
-class CommandOptions(usage.Options):
-    def parseArgs(self, fqn):
-        self['fqn'] = fqn
-
-
 class Options(usage.Options):
     optParameters = (
         ("siteDir", "d", ".", "Base directory of the warp site"),
         ("config", "w", "warpconfig", "Config filename"),
     )
 
-    subCommands = (
-        ("skeleton", None, SkeletonOptions, "Copy Warp site skeleton into current directory"),
-        ("node", None, NodeOptions, "Create a new node"),
-        ("crud", None, CrudOptions, "Create a new CRUD node"),
-        ("adduser", None, usage.Options, "Add a user (interactive)"),
-        ("console", None, usage.Options, "Python console with Warp runtime available"),
-        ("command", "c", CommandOptions, "Run a site-specific command"),
-    )
+    subCommands = []
+
+
+_commands = {}
+
+# NTA XXX: This is not usable by app, because when command-line
+# options are parsed app-specific information is not available yet.
+# A hacky workaround would be some code in twisted.warp_plugin to
+# import a "magic" app-defined module
+def register(shortName=None, skipConfig=False, needStartup=False, optionsParser=None):
+    """Decorator to register functions as commands. Functions must
+    accept options map as the first parameter.
+
+    Usage:
+
+    @register(*params)
+    def foo(options, arg1):
+        pass
+    """
+    def decorator(fn):
+        name = fn.__name__
+        doc = fn.__doc__ or ""
+
+        if optionsParser is None:
+            class CmdOptions(usage.Options):
+                def parseArgs(self, *args):
+                    spec = getargspec(fn)
+                    if spec.defaults:
+                        raise usage.UsageError("Custom command cannot have arguments with default values")
+                    if spec.varargs:
+                        raise usage.UsageError("Custom command cannot take variable number of arguments")
+                    if spec.keywords:
+                        raise usage.UsageError("Custom command cannot take keyword arguments")
+
+                    cmd_args = spec.args[1:]
+                    count = len(cmd_args)
+                    if len(args) != count:
+                        raise usage.UsageError(
+                            "Wrong number of arguments, %d expected:\n    twistd warp %s %s"
+                            % (count, name, " ".join(["<%s>" % arg for arg in cmd_args])))
+                    self["args"] = args
+            klass = CmdOptions
+        else:
+            klass = optionsParser
+
+        Options.subCommands.append((name, shortName, klass, doc))
+
+        def wrapped(options):
+            if not skipConfig:
+                loadConfig(options)
+            if needStartup:
+                doStartup(options)
+            fn(options, *options.subOptions.get("args", ()))
+
+        _commands[name] = wrapped
+        return wrapped
+    return decorator
 
 
 def maybeRun(options):
     subCommand = options.subCommand
 
     if subCommand:
-        cmd = {
-            'skeleton': doSkeleton,
-            'node': doNode,
-            'crud': doCrud,
-            'adduser': doAddUser,
-            'console': doConsole,
-            'command': doCommand,
-        }[subCommand]
-
-        if cmd not in _skipConfig:
-            loadConfig(options)
-        cmd(options)
+        command = _commands[subCommand]
+        command(options)
         raise SystemExit
-
-
-_skipConfig = []
-
-def skipConfig(fn):
-    _skipConfig.append(fn)
-    return fn
 
 
 def getSiteDir(options):
@@ -103,53 +115,62 @@ def loadConfig(options):
     return configModule
 
 
-@skipConfig
-def doSkeleton(options):
-    """Execute the `skeleton` sub-command"""
+# Pre-defined commands -----------------------------------------------
+
+
+class SkeletonOptions(Options):
+    optParameters = (
+        ("siteDir", "d", ".", "Base directory of the warp site to generate"),
+    )
+@register(skipConfig = True, optionsParser = SkeletonOptions)
+def skeleton(options):
+    "Copy Warp site skeleton into current directory"
     from warp.tools import skeleton
     print 'Creating skeleton...'
     siteDir = getSiteDir(options.subOptions) or getSiteDir(options)
     skeleton.createSkeleton(siteDir)
 
 
-def doNode(options):
-    """Execute the `node` sub-command"""
+@register()
+def node(options, name):
+    "Create a new node"
     from warp.tools import skeleton
     nodes = getSiteDir(options).child('nodes')
     if not nodes.exists():
         print 'Please run this from a Warp site directory'
         return
-    skeleton.createNode(nodes, options.subOptions['name'])
+    skeleton.createNode(nodes, name)
 
 
-def doCrud(options):
-    """Execute the `crud` sub-command"""
+@register()
+def crud(options, name, model):
+    "Create a new CRUD node"
     from warp.tools import autocrud
     nodes = getSiteDir(options).child('nodes')
     if not nodes.exists():
         print 'Please run this from a Warp site directory'
         return
-    subOptions = options.subOptions
-    autocrud.autocrud(nodes, subOptions['name'], subOptions['model'])
+    autocrud.autocrud(nodes, name, model)
 
 
-def doAddUser(options):
-    """Execute the `adduser` sub-command"""
+@register()
+def adduser(options):
+    "Add a user (interactive)"
     from warp.tools import adduser
     adduser.addUser()
 
 
-def doConsole(options):
-    """Execute the `console` sub-command"""
+@register(needStartup = True)
+def console(options):
+    "Python console with Warp runtime available"
     import code
-    doStartup(options)
     locals = {'store': runtime.store}
     c = code.InteractiveConsole(locals)
     c.interact()
 
 
-def doCommand(options):
-    """Execute the `command` sub-command"""
-    obj = reflect.namedObject(options.subOptions['fqn'])
-    doStartup(options)
+@register(needStartup = True, shortName = "c")
+def command(options, function):
+    "Run a site-specific command"
+    obj = reflect.namedObject(function)
     obj()
