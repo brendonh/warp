@@ -118,16 +118,12 @@ def loadConfig(options):
 # Pre-defined commands -----------------------------------------------
 
 
-class SkeletonOptions(Options):
-    optParameters = (
-        ("siteDir", "d", ".", "Base directory of the warp site to generate"),
-    )
-@register(skipConfig = True, optionsParser = SkeletonOptions)
+@register(skipConfig = True)
 def skeleton(options):
     "Copy Warp site skeleton into current directory"
     from warp.tools import skeleton
     print 'Creating skeleton...'
-    siteDir = getSiteDir(options.subOptions) or getSiteDir(options)
+    siteDir = getSiteDir(options)
     skeleton.createSkeleton(siteDir)
 
 
