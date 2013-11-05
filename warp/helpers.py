@@ -7,18 +7,18 @@ from mako.template import Template
 from warp.runtime import templateLookup, config, exposedStormClasses
 
 
-def honeypot(renderer):
+def antispam(renderer):
     '''
     Prevent automated POST (actually non-GET) requests by checking a form
     attribute set by JavaScript, in the hope that spammers will not execute
     JavaScript.
 
     Usage:
-      - Include '/honeypot.mak' in the form to be protected
-            <%include file='/honeypot.mak'/>
+      - Include '/antispam.mak' in the form to be protected
+            <%include file='/antispam.mak'/>
       - Use this function as a decorator of the renderer that the form posts to
-            from warp.helpers import honeypot
-            @honeypot
+            from warp.helpers import antispam
+            @antispam
             def render_contact(request):
                 pass
     '''
