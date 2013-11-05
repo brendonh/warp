@@ -23,7 +23,7 @@ def antispam(renderer):
                 pass
     '''
     def wrapped(request):
-        ama = request.args.get('ama', ['robot'])[0]
+        ama = request.args.get('_warp_antispam', ['robot'])[0]
         if request.method != 'GET' and ama != 'human':
             request.redirect("/")
             return "Redirecting..."
