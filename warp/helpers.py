@@ -7,14 +7,38 @@ from mako.template import Template
 from warp.runtime import templateLookup, config, exposedStormClasses
 
 
+def antispam(renderer):
+    '''
+    Prevent automated POST (actually non-GET) requests by checking a form
+    attribute set by JavaScript, in the hope that spammers will not execute
+    JavaScript.
+
+    Usage:
+      - Include '/antispam.mak' in the form to be protected
+            <%include file='/antispam.mak'/>
+      - Use this function as a decorator of the renderer that the form posts to
+            from warp.helpers import antispam
+            @antispam
+            def render_contact(request):
+                pass
+    '''
+    def wrapped(request):
+        ama = request.args.get('_warp_antispam', ['robot'])[0]
+        if request.method != 'GET' and ama != 'human':
+            request.redirect("/")
+            return "Redirecting..."
+        return renderer(request)
+    return wrapped
+
+
 def getNode(name):
 
     bits = name.split('/')
     leaf = bits[-1]
 
     try:
-        return getattr(__import__("nodes.%s" % ".".join(bits), 
-                                  fromlist=[leaf]), 
+        return getattr(__import__("nodes.%s" % ".".join(bits),
+                                  fromlist=[leaf]),
                        leaf, None)
     except ImportError, ie:
         # Hrgh
@@ -34,7 +58,7 @@ def getCrudNode(crudClass):
     # XXX WHAT - God, what *should* this do??
     return sys.modules[crudClass.__module__]
 
-    
+
 
 def renderTemplateObj(request, template, **kw):
     if kw.pop("return_unicode", False): renderFunc = template.render_unicode
@@ -64,7 +88,7 @@ def getLocalTemplatePath(request, filename):
 
 
 def renderLocalTemplate(request, filename, **kw):
-    return renderTemplate(request, 
+    return renderTemplate(request,
                           getLocalTemplatePath(request, filename),
                           **kw)
 
@@ -82,7 +106,7 @@ def url(node, facet="index", args=(), query=()):
     if query:
         u = "%s?%s" % (u, urllib.urlencode(query))
     return u
-        
+
 
 def link(label, node, facet="index", args=(), query=(), **attrs):
     attrs['href'] = url(node, facet, args, query)
