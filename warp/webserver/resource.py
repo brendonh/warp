@@ -107,10 +107,9 @@ class WarpResourceWrapper(object):
         return NoResource()
 
 
-    def setCaseInsensitiveURL(self):
-        self.caseInsensitiveUrl = True
-
     def putChild(self, path, child):
+        if self.caseInsensitiveUrl:
+            path = path.lower()
         self.dispatch[path] = lambda r: child
 
 
