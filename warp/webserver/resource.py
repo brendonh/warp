@@ -50,6 +50,8 @@ class WarpResourceWrapper(object):
             '': handle_default,
         }
 
+        self.caseInsensitiveUrl = False
+
 
     def getChildWithDefault(self, firstSegment, request):
 
@@ -87,7 +89,10 @@ class WarpResourceWrapper(object):
         request.translateTerm = translate.getTranslator(session.language)
 
 
-        handler = self.dispatch.get(firstSegment)
+        segment = firstSegment
+        if self.caseInsensitiveUrl:
+            segment = firstSegment.lower()
+        handler = self.dispatch.get(segment)
 
         if handler is not None:
             return handler(request)
@@ -103,6 +108,8 @@ class WarpResourceWrapper(object):
 
 
     def putChild(self, path, child):
+        if self.caseInsensitiveUrl:
+            path = path.lower()
         self.dispatch[path] = lambda r: child
 
 
