@@ -29,10 +29,11 @@ class CrudOptions(usage.Options):
         self['name'] = name
         self['model'] = model
 
-
 class CommandOptions(usage.Options):
-    def parseArgs(self, fqn):
+    def parseArgs(self, fqn, *args):
         self['fqn'] = fqn
+        self['args'] = args
+
 
 class Options(usage.Options):
     optParameters = (
@@ -114,12 +115,14 @@ class WarpServiceMaker(object):
             c = code.InteractiveConsole(locals)
             c.interact()
             raise SystemExit
-        
+
         if options.subCommand == 'command':
             obj = reflect.namedObject(options.subOptions['fqn'])
-            obj()
+            if options.subOptions['args']:
+                obj(*options.subOptions['args'])
+            else:
+                obj()
             raise SystemExit
-            
 
         if config.get('ssl'):
             from warp.webserver import sslcontext
