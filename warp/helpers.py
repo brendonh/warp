@@ -42,7 +42,8 @@ def getNode(name):
                        leaf, None)
     except ImportError, ie:
         # Hrgh
-        if ie.message.startswith("No module named"):
+        #if ie.message.startswith("No module named"):
+        if ie.args[0].startswith("No module named"):
             return None
         raise
 
